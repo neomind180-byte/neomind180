@@ -1,102 +1,107 @@
 "use client";
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Logo } from '@/components/Logo';
+import { Typewriter } from '@/components/Typewriter';
 
 export default function UnderstandPhase() {
-  const [step, setStep] = useState(1); // 1: Socratic/Friend, 2: Values Shift
-  const [friendPerspective, setFriendPerspective] = useState("");
-  const router = useRouter();
+  // 1. STATE MANAGEMENT
+  const [userFeeling, setUserFeeling] = useState('');
+  const [userIntention, setUserIntention] = useState('');
+  const [neoResponse, setNeoResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1); // 1: Input, 2: Neo's Shift
 
-  const values = [
-    { name: "Peace", icon: "🕊️" },
-    { name: "Clarity", icon: "💎" },
-    { name: "Courage", icon: "🦁" },
-    { name: "Authenticity", icon: "✨" },
-    { name: "Connection", icon: "🤝" },
-    { name: "Balance", icon: "⚖️" },
-    { name: "Meaning", icon: "🌱" }
-  ];
+  // 2. THE AI CONNECTION (The "handleSubmit" logic)
+  const getNeoShift = async () => {
+    if (!userFeeling || !userIntention) return alert("Please fill in both fields.");
+    
+    setLoading(true);
+    try {
+      const res = await fetch('/api/neo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          feeling: userFeeling, 
+          intention: userIntention 
+        }),
+      });
+      
+      const data = await res.json();
+      setNeoResponse(data.message);
+      setStep(2); // Move to the result screen
+    } catch (error) {
+      setNeoResponse("Neo is momentarily recharging. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 flex flex-col items-center justify-center p-6">
-      
-      {/* --- PROGRESS INDICATOR --- */}
-      <div className="fixed top-12 flex gap-2">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-1.5 w-12 rounded-full bg-slate-200"></div>
-        ))}
-        <div className="h-1.5 w-12 rounded-full bg-[#993366]"></div>
-        <div className="h-1.5 w-12 rounded-full bg-slate-100"></div>
-      </div>
-
-      {/* --- SAVE & EXIT --- */}
-      <div className="fixed top-8 right-8">
-        <Link href="/dashboard" className="text-xs font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition">
-          Save & Exit
-        </Link>
-      </div>
-
-      <main className="max-w-xl w-full text-center space-y-12">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-slate-800">
+      <div className="max-w-2xl w-full space-y-8">
         
-        {/* --- STEP 1: COMPASSIONATE INQUIRY --- */}
-        {step === 1 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left">
-            <h2 className="text-3xl font-black text-slate-900 text-center">Phase 4: Understand</h2>
-            
-            <div className="space-y-6 bg-[#993366]/5 p-8 rounded-[40px] border border-[#993366]/10">
-              <p className="text-xl font-medium text-slate-800 leading-relaxed">
-                "If your best friend had this thought, what else might be true?"
-              </p>
+        {/* Header */}
+        <div className="flex flex-col items-center mb-8">
+          <Logo className="w-12 h-12 mb-4" />
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#00538e]">Phase 3: Understand</h2>
+        </div>
+
+        {step === 1 ? (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-2">What is the current feeling?</label>
               <textarea 
-                autoFocus
-                value={friendPerspective}
-                onChange={(e) => setFriendPerspective(e.target.value)}
-                placeholder="Looking with kindness, I would tell them..."
-                className="w-full p-6 bg-white border-none rounded-3xl text-lg focus:ring-2 focus:ring-[#993366]/20 outline-none resize-none h-40 shadow-sm"
+                value={userFeeling}
+                onChange={(e) => setUserFeeling(e.target.value)}
+                placeholder="e.g. I feel overwhelmed by my to-do list..."
+                className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-[#00538e]/10 h-32 outline-none transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-2">What is your true intention?</label>
+              <textarea 
+                value={userIntention}
+                onChange={(e) => setUserIntention(e.target.value)}
+                placeholder="e.g. I want to provide high-quality computer services to my community..."
+                className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-[#00538e]/10 h-32 outline-none transition-all"
               />
             </div>
 
             <button 
-              onClick={() => setStep(2)}
-              disabled={!friendPerspective}
-              className="w-full py-4 bg-[#993366] text-white rounded-2xl font-bold text-lg hover:shadow-xl transition disabled:opacity-20"
+              onClick={getNeoShift}
+              disabled={loading}
+              className="w-full py-4 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-lg transition-all disabled:opacity-50"
             >
-              Look Deeper
+              {loading ? "Neo is reflecting..." : "Ask Neo for a 180° Shift"}
             </button>
           </div>
-        )}
+        ) : (
+          <div className="space-y-8 animate-in zoom-in-95 duration-500">
+            {step === 2 && (
+              <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 relative">
+                <span className="absolute -top-3 left-8 bg-[#00538e] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">
+                  Neo's Perspective
+                </span>
+                <p className="text-xl leading-relaxed font-medium italic text-slate-700">
+                  "<Typewriter text={neoResponse} speed={40} />"
+                </p>
+              </div>
+            )}
 
-        {/* --- STEP 2: VALUES-BASED INTERPRETATION --- */}
-        {step === 2 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h2 className="text-2xl font-black">The Value Shift</h2>
-            <p className="text-lg text-slate-500 leading-relaxed">
-              Fear tells one story. Your values tell another. <br />
-              <span className="font-bold text-[#993366]">What value do you want to lean into right now?</span>
-            </p>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {values.map((v) => (
-                <button 
-                  key={v.name}
-                  onClick={() => router.push('/choose')}
-                  className="group p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-[#993366] transition-all text-center"
-                >
-                  <div className="text-2xl mb-1 group-hover:scale-125 transition-transform">{v.icon}</div>
-                  <div className="font-bold text-sm text-slate-600 group-hover:text-[#993366]">{v.name}</div>
-                </button>
-              ))}
+            <div className="flex flex-col gap-4">
+              <Link href="/choose" className="w-full py-4 bg-[#0AA390] text-center text-white rounded-2xl font-bold hover:shadow-lg transition-all">
+                Proceed to Phase 4: Choose
+              </Link>
+              <button onClick={() => setStep(1)} className="text-slate-400 text-sm font-medium hover:text-slate-600 transition-all">
+                Rephrase my thoughts
+              </button>
             </div>
-
-            <p className="text-sm text-slate-400 italic">
-              Choosing a value shifts your perspective from being "stuck" to being "aligned."
-            </p>
           </div>
         )}
-
-      </main>
+      </div>
     </div>
   );
 }
