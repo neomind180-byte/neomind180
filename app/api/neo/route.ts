@@ -1,59 +1,29 @@
-import { OpenAI } from 'openai';
-import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NextResponse } from "next/server";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
     const { feeling, intention } = await req.json();
 
-    // Validation: Check if both fields are provided
-    if (!feeling || !intention) {
-      return NextResponse.json(
-        { error: "Please provide both feeling and intention." },
-        { status: 400 }
-      );
-    }
-
-    const systemPrompt = `
-      You are Neo, the core intelligence of NeoMind180. 
-      Your tone is assertive, grounded, and deeply compassionate. 
-      Your goal is to help the user achieve a "180-degree shift" in perspective.
-      
-      When a user shares how they feel and what they intend:
-      1. Acknowledge the feeling without judgment (Compassion).
-      2. Challenge the limiting belief behind it (Assertiveness).
-      3. Provide one "Shift Statement" that turns the problem into a possibility.
-      
-      Keep responses under 100 words. Be the "coach" who doesn't just listen, but leads.
-    `;
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: `I feel: ${feeling}. My intention is: ${intention}.` }
-      ],
+    // 1. Initialize the model (Flash is fast and free)
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: "You are Neo, the core intelligence of NeoMind180. Your tone is assertive, grounded, and deeply compassionate. Your goal is to provide a '180-degree shift' in perspective. Acknowledge the feeling, challenge the limiting belief, and provide a punchy 'Shift Statement'. Keep it under 100 words."
     });
 
-    const message = response.choices[0].message.content;
+    // 2. Generate the shift
+    const prompt = `User feels: ${feeling}. User intention: ${intention}. Provide the 180-degree shift.`;
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
 
-    if (!message) {
-      return NextResponse.json(
-        { error: "Neo couldn't generate a response. Please try again." },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json({ message: response });
 
-    return NextResponse.json({ message });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("NEO_API_CRASH:", errorMessage);
-
+  } catch (error: any) {
+    console.error("GEMINI_API_CRASH:", error);
     return NextResponse.json(
-      { error: "Neo is currently offline. Please check your API key." },
+      { error: "Neo is momentarily recharging. Please try again." }, 
       { status: 500 }
     );
   }
