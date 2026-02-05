@@ -41,7 +41,7 @@ export default function LandingPage() {
               Log In
             </Link>
             <Link 
-              href="/signup" 
+              href="/register" 
               className="px-4 py-2 sm:px-6 sm:py-3 bg-[#00538e] text-white text-[10px] sm:text-xs font-black uppercase rounded-full hover:shadow-xl transition-all whitespace-nowrap"
             >
               Start Free
@@ -72,7 +72,7 @@ export default function LandingPage() {
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link 
-              href="/signup" 
+              href="/register" 
               className="w-full sm:w-auto px-10 py-5 bg-[#00538e] text-white rounded-[2rem] font-bold text-lg hover:shadow-2xl transition-all flex items-center justify-center gap-2 group"
             >
               Start Free

@@ -3,6 +3,24 @@
 import Link from 'next/link';
 import { Logo } from '@/components/Logo'; // Added this import
 
+const plans = [
+  {
+    name: 'Basic Self-Help',
+    // ... rest of data
+    link: '/register' // Changed from /signup
+  },
+  {
+    name: 'Monthly Support',
+    // ... rest of data
+    link: '/register' // Changed from /signup
+  },
+  {
+    name: 'Yearly Growth',
+    // ... rest of data
+    link: '/register' // Changed from /signup
+  }
+];
+
 export default function Pricing() {
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
