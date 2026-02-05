@@ -30,8 +30,17 @@ export async function POST(req: Request) {
 
     // 2. Generate the Neo Shift
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash",
-      systemInstruction: "You are Neo, the core intelligence of NeoMind180. Provide a 180-degree shift in under 100 words."
+      model: "gemini-2.5-flash", 
+      systemInstruction: `
+    You are Neo, the core intelligence of NeoMind180. 
+    Your tone is assertive, grounded, and deeply compassionate. 
+    
+    STRICT RULES:
+    1. Use English (UK) spelling and grammar (e.g., 'colour', 'realise', 'your' NOT 'yur').
+    2. Provide a 180-degree shift in perspective.
+    3. Keep responses under 100 words.
+    4. Speak with the authority of a professional life coach.
+  `
     });
 
     const result = await model.generateContent(`Feeling: ${feeling}. Intention: ${intention}.`);
