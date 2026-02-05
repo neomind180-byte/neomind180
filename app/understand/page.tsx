@@ -1,154 +1,175 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Logo } from "@/components/Logo";
-import { Typewriter } from "@/components/Typewriter";
-import { supabase } from "@/lib/supabaseClient";
-import { UpgradeModal } from "@/components/UpgradeModal";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
+import { Typewriter } from '@/components/Typewriter';
+import { UpgradeModal } from '@/components/UpgradeModal';
+import { ArrowRight, Sparkles, Brain } from 'lucide-react';
 
-export default function UnderstandPhase() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userFeeling, setUserFeeling] = useState("");
-  const [userIntention, setUserIntention] = useState("");
-  const [neoResponse, setNeoResponse] = useState("");
+export default function UnderstandPage() {
+  const router = useRouter();
+  
+  // State
+  const [step, setStep] = useState(1); // 1: Input, 2: The Shift
+  const [feeling, setFeeling] = useState('');
+  const [intention, setIntention] = useState('');
+  const [neoResponse, setNeoResponse] = useState('');
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1); // 1: Input, 2: Neo's Shift
   const [showUpgrade, setShowUpgrade] = useState(false);
 
+  // Auth Check
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    if (storedUserId) setUserId(storedUserId);
-  }, []);
-
-  const handleSessionComplete = async () => {
-    if (!userId) return;
-
-    try {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("sessions_this_month, plan")
-        .eq("id", userId)
-        .single();
-
-      // If they are on the Basic plan and this was their first session
-      if (profile?.plan === "Basic Self-Help" && profile?.sessions_this_month === 1) {
-        setShowUpgrade(true);
-      }
-    } catch (error) {
-      console.error("Error checking profile:", error);
+    async function checkUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) router.push('/login');
     }
-  };
+    checkUser();
+  }, [router]);
 
-  const getNeoShift = async () => {
-    if (!userFeeling || !userIntention) return alert("Please fill in both fields.");
-    if (!userId) return alert("User not authenticated. Please log in.");
-
+  const getNeoShift = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    
     try {
-      const res = await fetch("/api/neo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          mood: "reflecting",
-          feeling: userFeeling,
-          intention: userIntention,
+      // 1. Explicitly fetch the user to ensure the session is fresh (Crucial for Mobile)
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert("Session expired. Please sign in again.");
+        router.push('/login');
+        return;
+      }
+
+      // 2. Call the Gemini 3 Flash API
+      const response = await fetch('/api/neo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user.id,
+          feeling, 
+          intention 
         }),
       });
-
-      const data = await res.json();
-      const shiftText = data.message || data.error || "Neo is reflecting deeply. Please try rephrasing.";
-      setNeoResponse(shiftText);
-      setStep(2);
       
-      // Check if we should show upgrade modal
-      await handleSessionComplete();
-    } catch (error) {
-      console.error("Client-side Fetch Error:", error);
-      setNeoResponse("Connection lost. Please check your internet and try again.");
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || "Neo is recharging.");
+
+      // 3. Set Response and Move to Phase 2
+      setNeoResponse(data.message);
       setStep(2);
+
+      // 4. Check for Upgrade Prompt Logic (Post-First Session)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('sessions_this_month, plan')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.plan === 'Basic Self-Help' && profile?.sessions_this_month === 1) {
+        setShowUpgrade(true);
+      }
+
+    } catch (error: any) {
+      alert(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-slate-800">
-      <div className="max-w-2xl w-full space-y-8">
-        <div className="flex flex-col items-center mb-8">
-          <Logo className="w-12 h-12 mb-4" />
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#00538e]">Phase 3: Understand</h2>
-        </div>
-
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+      <div className="max-w-xl w-full bg-white rounded-[3rem] shadow-2xl p-10 border border-slate-100">
+        
         {step === 1 ? (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="space-y-2">
-              <label htmlFor="feeling" className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                What is the current feeling?
-              </label>
-              <textarea
-                id="feeling"
-                value={userFeeling}
-                onChange={(e) => setUserFeeling(e.target.value)}
-                placeholder="e.g. I feel overwhelmed by my to-do list..."
-                className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-[#00538e]/10 h-32 outline-none transition-all"
-              />
-            </div>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <header className="space-y-2">
+              <div className="flex items-center gap-2 text-[#00538e]">
+                <Brain className="w-5 h-5" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Deep Dive Session</span>
+              </div>
+              <h1 className="text-3xl font-black text-slate-900 leading-tight uppercase tracking-tighter">
+                What is clouding <br />your mind?
+              </h1>
+              <p className="text-slate-500 text-sm italic">Phase 1 & 2: Breathe and Notice.</p>
+            </header>
 
-            <div className="space-y-2">
-              <label htmlFor="intention" className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                What is your true intention?
-              </label>
-              <textarea
-                id="intention"
-                value={userIntention}
-                onChange={(e) => setUserIntention(e.target.value)}
-                placeholder="e.g. I want to provide high-quality computer services to my community..."
-                className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-[#00538e]/10 h-32 outline-none transition-all"
-              />
-            </div>
+            <form onSubmit={getNeoShift} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-400">Current Feeling</label>
+                <textarea 
+                  required rows={4}
+                  className="w-full px-6 py-4 bg-slate-50 rounded-2xl focus:ring-2 focus:ring-[#00538e]/10 outline-none resize-none transition-all text-slate-700"
+                  placeholder="Describe the thought or feeling you want to shift..."
+                  value={feeling} onChange={(e) => setFeeling(e.target.value)}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <button
-                onClick={getNeoShift}
-                disabled={loading || !userId}
-                className="w-full py-4 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-lg transition-all disabled:opacity-50"
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-400">Your Intention</label>
+                <input 
+                  type="text" required
+                  className="w-full px-6 py-4 bg-slate-50 rounded-2xl focus:ring-2 focus:ring-[#00538e]/10 outline-none transition-all text-slate-700"
+                  placeholder="What do you want to choose instead?"
+                  value={intention} onChange={(e) => setIntention(e.target.value)}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
               >
-                {loading ? "Neo is reflecting..." : "Ask Neo for a 180° Shift"}
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-pulse">Neo is reflecting...</span>
+                  </span>
+                ) : (
+                  <>
+                    Request 180° Shift
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
               </button>
-              {!userId && (
-                <p className="text-xs text-slate-500 mt-2">
-                  You must be signed in to save this session. (Sign in or set localStorage userId for testing.)
-                </p>
-              )}
-            </div>
+            </form>
           </div>
         ) : (
           <div className="space-y-8 animate-in zoom-in-95 duration-500">
-            {step === 2 && (
-              <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 relative">
-                <span className="absolute -top-3 left-8 bg-[#00538e] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">
-                  Neo's Perspective
-                </span>
-                <p className="text-xl leading-relaxed font-medium italic text-slate-700">
-                  "<Typewriter text={neoResponse} speed={40} />"
-                </p>
+             <header className="space-y-2">
+              <div className="flex items-center gap-2 text-[#0AA390]">
+                <Sparkles className="w-5 h-5" />
+                <span className="text-[10px] font-black uppercase tracking-widest">The Shift</span>
               </div>
-            )}
+              <p className="text-slate-500 text-sm italic">Phase 3 & 4: Separate and Understand.</p>
+            </header>
 
-            <div className="flex flex-col gap-4">
-              <Link href="/choose" className="w-full py-4 bg-[#0AA390] text-center text-white rounded-2xl font-bold hover:shadow-lg transition-all">
-                Proceed to Phase 4: Choose
-              </Link>
-              <button onClick={() => setStep(1)} className="text-slate-400 text-sm font-medium hover:text-slate-600 transition-all">
-                Rephrase my thoughts
+            <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 min-h-[200px]">
+              <div className="text-lg text-slate-700 leading-relaxed font-medium italic">
+                "<Typewriter text={neoResponse} speed={40} />"
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              <p className="text-[10px] font-black uppercase text-slate-400 text-center tracking-widest">Phase 5: Choose</p>
+              <button 
+                onClick={() => router.push('/dashboard')}
+                className="w-full py-5 bg-[#0AA390] text-white rounded-2xl font-bold hover:shadow-xl transition-all"
+              >
+                Carry this Grounding Forward
+              </button>
+              <button 
+                onClick={() => setStep(1)}
+                className="w-full text-slate-400 text-xs font-bold uppercase hover:text-slate-600 transition-colors"
+              >
+                Refine the perspective
               </button>
             </div>
           </div>
         )}
       </div>
 
+      {/* Upgrade Modal triggers based on session count logic in getNeoShift */}
       <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} />
     </div>
   );
