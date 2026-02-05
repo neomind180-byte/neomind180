@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     // 2. Generate the Neo Shift
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       systemInstruction: "You are Neo, the core intelligence of NeoMind180. Provide a 180-degree shift in under 100 words."
     });
 
