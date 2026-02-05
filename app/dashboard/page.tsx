@@ -158,6 +158,22 @@ export default function Dashboard() {
           </div>
         </header>
 
+        {/* --- PLAN REMINDER --- */}
+        <div className="bg-slate-50 border border-slate-200 p-6 rounded-[2rem] mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Current Plan</h4>
+              <p className="text-lg font-bold text-[#00538e]">Basic Self-Help</p>
+            </div>
+            <button className="px-4 py-2 bg-[#0AA390] text-white text-xs font-bold rounded-full hover:shadow-md transition-all">
+              Upgrade
+            </button>
+          </div>
+          <p className="text-[11px] text-slate-500 mt-4 italic">
+            "Beautiful work. Imagine having this level of clarity 2–3 times every week."
+          </p>
+        </div>
+
         {/* --- MAIN LAYOUT --- */}
         <div className="grid lg:grid-cols-3 gap-8">
           
