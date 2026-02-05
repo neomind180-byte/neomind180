@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     console.error("NEO_API_CRASH:", errorMessage);
 
     return NextResponse.json(
-      { error: "Neo is recharging. Please try again in a moment." },
+      { error: "Neo is currently offline. Please check your API key." },
       { status: 500 }
     );
   }
