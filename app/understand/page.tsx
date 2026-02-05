@@ -14,29 +14,34 @@ export default function UnderstandPhase() {
   const [step, setStep] = useState(1); // 1: Input, 2: Neo's Shift
 
   // 2. THE AI CONNECTION (The "handleSubmit" logic)
-  const getNeoShift = async () => {
-    if (!userFeeling || !userIntention) return alert("Please fill in both fields.");
+ // ...existing code...
+
+const getNeoShift = async () => {
+  if (!userFeeling || !userIntention) return alert("Please fill in both fields.");
+  
+  setLoading(true);
+  try {
+    const res = await fetch('/api/neo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feeling: userFeeling, intention: userIntention }),
+    });
     
-    setLoading(true);
-    try {
-      const res = await fetch('/api/neo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          feeling: userFeeling, 
-          intention: userIntention 
-        }),
-      });
-      
-      const data = await res.json();
-      setNeoResponse(data.message);
-      setStep(2); // Move to the result screen
-    } catch (error) {
-      setNeoResponse("Neo is momentarily recharging. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const data = await res.json();
+
+    // SAFETY CHECK: If the API returned an error, use that or a fallback
+    const shiftText = data.message || data.error || "Neo is reflecting deeply. Please try rephrasing.";
+    
+    setNeoResponse(shiftText);
+    setStep(2); 
+  } catch (error) {
+    console.error("Client-side Fetch Error:", error);
+    setNeoResponse("Connection lost. Please check your internet and try again.");
+    setStep(2);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-slate-800">
