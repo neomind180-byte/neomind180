@@ -31,12 +31,12 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ message: response.choices[0].message.content });
- } catch (error: any) {
+   } catch (error: any) {
     console.error("NEO_API_CRASH:", error.message || error);
     
     return NextResponse.json(
-      // Change "No" to "Neo" right here:
       { error: "Neo is recharging. Please try again in a moment." }, 
       { status: 500 }
     );
   }
+}
