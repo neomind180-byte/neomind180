@@ -1,9 +1,25 @@
 "use client";
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      // If a session exists, they haven't signed out, so take them to the Dashboard
+      if (session) {
+        router.push('/dashboard');
+      }
+    };
+    checkUser();
+  }, [router]);
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
       {/* --- NAVIGATION --- */}

@@ -68,6 +68,7 @@ function getGreeting() {
 
 export default function Dashboard() {
   const [userName, setUserName] = useState("Traveler");
+  const [userPlan, setUserPlan] = useState("Basic Self-Help");
   const [recentCheckins, setRecentCheckins] = useState<CheckIn[]>([]);
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
@@ -94,6 +95,17 @@ export default function Dashboard() {
       }
       setUserName(displayName || 'Traveler');
 
+      // Fetch user plan from profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileData?.plan) {
+        setUserPlan(profileData.plan);
+      }
+
       const { data, error } = await supabase
         .from('checkins')
         .select('*')
@@ -110,6 +122,12 @@ export default function Dashboard() {
     getData();
   }, [router]);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    // Clear any local storage/cookies if necessary and redirect
+    window.location.href = '/';
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       
@@ -125,7 +143,7 @@ export default function Dashboard() {
             <Settings className="w-5 h-5 text-slate-400 group-hover:text-[#00538e] transition-colors" />
           </Link>
           <button 
-            onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} 
+            onClick={handleSignOut}
             className="text-xs font-bold bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 px-4 py-2 rounded-full transition-colors uppercase tracking-widest"
           >
             Sign Out
@@ -159,7 +177,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Current Plan</h4>
-              <p className="text-lg font-bold text-[#00538e]">Basic Self-Help</p>
+              <p className="text-lg font-bold text-[#00538e]">{userPlan}</p>
             </div>
             <button className="px-4 py-2 bg-[#0AA390] text-white text-xs font-bold rounded-full hover:shadow-md transition-all">
               Upgrade
@@ -169,6 +187,20 @@ export default function Dashboard() {
             "Beautiful work. Imagine having this level of clarity 2–3 times every week."
           </p>
         </div>
+
+        {/* --- YEARLY MEMBER STATUS --- */}
+        {userPlan === 'Yearly Growth' && (
+          <div className="p-6 bg-[#00538e]/5 border border-[#00538e]/10 rounded-[2rem]">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-2 h-2 bg-[#0AA390] rounded-full animate-pulse" />
+              <h5 className="text-[10px] font-black uppercase text-[#0AA390] tracking-widest">Community Circle</h5>
+            </div>
+            <p className="text-sm font-bold text-slate-800">Next Session: Tuesday @ 7:00 PM</p>
+            <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
+              Check your inbox! Your private access link is sent via email 24 hours before we begin.
+            </p>
+          </div>
+        )}
 
         {/* --- MAIN LAYOUT --- */}
         <div className="grid lg:grid-cols-3 gap-8">
