@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { Typewriter } from '@/components/Typewriter'; // Ensure this exists
 
 export default function CheckIn() {
   const router = useRouter();
   const [mood, setMood] = useState(5);
   const [feeling, setFeeling] = useState('');
   const [intention, setIntention] = useState('');
+  const [neoResponse, setNeoResponse] = useState('');
   const [status, setStatus] = useState('idle'); // idle, loading, success
 
   useEffect(() => {
@@ -27,106 +29,106 @@ export default function CheckIn() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 2. Send to our new API Route (The Brain)
-    const response = await fetch('/api/generate-coach', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: user.id,
-        mood,
-        feeling,
-        intention
-      })
-    });
+    try {
+      // 2. Send to our new API Route (/api/neo)
+      const response = await fetch('/api/neo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          mood,
+          feeling,
+          intention
+        })
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.success) {
-      // 3. Show Success and Redirect
-      setStatus('success');
-      setTimeout(() => router.push('/dashboard'), 1500);
-    } else {
-      alert("Something went wrong with the AI coach.");
+      if (response.ok) {
+        // 3. Store Neo's Shift and Show Success
+        setNeoResponse(data.message);
+        setStatus('success');
+      } else {
+        throw new Error(data.error || "Something went wrong with Neo.");
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Connection failed");
       setStatus('idle');
     }
   }
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-lg w-full bg-white rounded-xl shadow-lg p-8 border border-slate-100">
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Daily Check-in</h1>
+      <div className="max-w-lg w-full bg-white rounded-[2rem] shadow-xl p-8 border border-slate-100">
         
         {status === 'loading' ? (
-          <div className="py-20 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-lg text-slate-600 font-medium">Analyzing your mindset...</p>
-            <p className="text-sm text-slate-400">Consulting the AI Coach</p>
+          <div className="py-20 text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00538e] mx-auto mb-4"></div>
+            <p className="text-lg text-slate-600 font-medium">Neo is reflecting on your mindset...</p>
           </div>
         ) : status === 'success' ? (
-          <div className="py-20 text-center">
-             <div className="h-12 w-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
+          <div className="py-10 text-center space-y-6">
+             <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-700 text-lg">
+               "<Typewriter text={neoResponse} speed={40} />"
              </div>
-             <p className="text-lg text-slate-800 font-medium">Check-in Complete</p>
+             <button 
+               onClick={() => router.push('/dashboard')}
+               className="w-full py-4 bg-[#0AA390] text-white rounded-2xl font-bold hover:shadow-lg transition-all"
+             >
+               Continue to Dashboard
+             </button>
           </div>
         ) : (
           <>
-            <p className="text-slate-500 mb-6">Take a breath. Be honest with yourself.</p>
+            <div className="mb-8">
+              <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Daily Check-in</h1>
+              <p className="text-slate-500 text-sm">Be honest. A 180° shift requires truth.</p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Mood */}
+              {/* Mood Slider */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  How grounded do you feel? (1-10)
-                </label>
+                <label className="block text-[10px] font-black uppercase text-slate-400 mb-2">Grounding Level ({mood}/10)</label>
                 <div className="flex items-center gap-4">
-                  <span className="text-slate-400 text-sm">Chaos</span>
                   <input 
                     type="range" min="1" max="10" value={mood} 
                     onChange={(e) => setMood(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#00538e]"
                   />
-                  <span className="text-slate-400 text-sm">Clarity</span>
                 </div>
-                <div className="text-center font-bold text-indigo-600 mt-2">{mood}/10</div>
               </div>
 
-              {/* Feeling */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">What is occupying your mind?</label>
-                <textarea 
-                  required rows={3}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
-                  placeholder="I am feeling overwhelmed because..."
-                  value={feeling} onChange={(e) => setFeeling(e.target.value)}
-                />
+              {/* Input Fields */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400">Current Feeling</label>
+                  <textarea 
+                    required rows={3}
+                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:ring-2 focus:ring-[#00538e]/10 outline-none resize-none transition-all"
+                    placeholder="I feel..."
+                    value={feeling} onChange={(e) => setFeeling(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400">Today's Intention</label>
+                  <input 
+                    type="text" required
+                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:ring-2 focus:ring-[#00538e]/10 outline-none transition-all"
+                    placeholder="I will focus on..."
+                    value={intention} onChange={(e) => setIntention(e.target.value)}
+                  />
+                </div>
               </div>
 
-              {/* Intention */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">One small intention for today?</label>
-                <input 
-                  type="text" required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  placeholder="I will focus on..."
-                  value={intention} onChange={(e) => setIntention(e.target.value)}
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => router.back()} className="flex-1 px-4 py-3 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition">Cancel</button>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => router.back()} className="flex-1 py-4 text-slate-400 font-bold hover:text-slate-600 transition">Cancel</button>
                 <button 
-  type="submit" 
-  disabled={status === 'loading'} 
-  className={`flex-1 px-4 py-3 rounded-lg font-medium transition text-white ${
-    status === 'loading' 
-      ? 'bg-indigo-400 cursor-not-allowed' 
-      : 'bg-indigo-600 hover:bg-indigo-700'
-  }`}
->
-  {status === 'loading' ? "Neo is thinking..." : "Get Coaching"}
-</button>
+                  type="submit" 
+                  className="flex-1 py-4 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-lg transition-all"
+                >
+                  Get Coaching
+                </button>
               </div>
             </form>
           </>
