@@ -22,7 +22,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#00538e]/10">
       
-      {/* 1. Header with Logo Restored */}
+      {/* 1. Header with Responsive Logo and Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-2">
           
@@ -50,7 +50,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* 2. Hero Section with New Copy */}
+      {/* 2. Hero Section */}
       <main className="pt-32 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
@@ -79,7 +79,7 @@ export default function LandingPage() {
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link 
-              href="/plans" 
+              href="/pricing" 
               className="w-full sm:w-auto px-10 py-5 bg-white text-slate-400 border border-slate-100 rounded-[2rem] font-bold text-lg hover:bg-slate-50 transition-all text-center"
             >
               View Pricing
@@ -88,7 +88,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* 3. Features */}
+      {/* 3. Key Benefits */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-white p-10 rounded-[3rem] border border-slate-100 space-y-4">
