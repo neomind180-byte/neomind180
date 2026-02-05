@@ -69,7 +69,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("NEO_API_ERROR:", error.message || error);
     return NextResponse.json(
-      { error: "Neo encountered an error. Please try again." }, 
+      { error: "Neo is thinking deeply. Try again in a moment." }, 
       { status: 500 }
     );
   }
