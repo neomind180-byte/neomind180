@@ -1,137 +1,113 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
-import { Typewriter } from '@/components/Typewriter'; // Ensure this exists
+import { Logo } from '@/components/Logo';
+import { Typewriter } from '@/components/Typewriter';
 
-export default function CheckIn() {
-  const router = useRouter();
-  const [mood, setMood] = useState(5);
+export default function CheckInPhase() {
+  const [userId, setUserId] = useState<string | null>(null);
   const [feeling, setFeeling] = useState('');
   const [intention, setIntention] = useState('');
-  const [neoResponse, setNeoResponse] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, loading, success
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
 
+  // Get userId from localStorage or auth context
   useEffect(() => {
-    async function checkUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push('/login');
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
     }
-    checkUser();
-  }, [router]);
+  }, []);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus('loading');
+  const handleCheckIn = async () => {
+    if (!feeling || !intention) return alert("Please fill in both fields.");
+    if (!userId) return alert("User not authenticated. Please log in.");
 
-    // 1. Get User ID
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
+    setLoading(true);
     try {
-      // 2. Send to our new API Route (/api/neo)
       const response = await fetch('/api/neo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          mood,
-          feeling,
-          intention
-        })
+        body: JSON.stringify({ 
+          userId,
+          mood: "checking-in",
+          feeling, 
+          intention 
+        }),
       });
 
       const data = await response.json();
-
-      if (response.ok) {
-        // 3. Store Neo's Shift and Show Success
-        setNeoResponse(data.message);
-        setStatus('success');
-      } else {
-        throw new Error(data.error || "Something went wrong with Neo.");
-      }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Connection failed");
-      setStatus('idle');
+      const shiftText = data.message || data.error || "Neo is reflecting. Please try again.";
+      setResponse(shiftText);
+      setStep(2);
+    } catch (error) {
+      console.error("Check-in Error:", error);
+      setResponse("Connection lost. Please try again.");
+      setStep(2);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-lg w-full bg-white rounded-[2rem] shadow-xl p-8 border border-slate-100">
-        
-        {status === 'loading' ? (
-          <div className="py-20 text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00538e] mx-auto mb-4"></div>
-            <p className="text-lg text-slate-600 font-medium">Neo is reflecting on your mindset...</p>
-          </div>
-        ) : status === 'success' ? (
-          <div className="py-10 text-center space-y-6">
-             <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-700 text-lg">
-               "<Typewriter text={neoResponse} speed={40} />"
-             </div>
-             <button 
-               onClick={() => router.push('/dashboard')}
-               className="w-full py-4 bg-[#0AA390] text-white rounded-2xl font-bold hover:shadow-lg transition-all"
-             >
-               Continue to Dashboard
-             </button>
-          </div>
-        ) : (
-          <>
-            <div className="mb-8">
-              <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Daily Check-in</h1>
-              <p className="text-slate-500 text-sm">Be honest. A 180° shift requires truth.</p>
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-slate-800">
+      <div className="max-w-2xl w-full space-y-8">
+        <div className="flex flex-col items-center mb-8">
+          <Logo className="w-12 h-12 mb-4" />
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#00538e]">Daily Check-In</h2>
+        </div>
+
+        {step === 1 ? (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-2">How are you feeling today?</label>
+              <textarea 
+                value={feeling}
+                onChange={(e) => setFeeling(e.target.value)}
+                placeholder="Share your current feeling..."
+                className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-[#00538e]/10 h-32 outline-none transition-all"
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Mood Slider */}
-              <div>
-                <label className="block text-[10px] font-black uppercase text-slate-400 mb-2">Grounding Level ({mood}/10)</label>
-                <div className="flex items-center gap-4">
-                  <input 
-                    type="range" min="1" max="10" value={mood} 
-                    onChange={(e) => setMood(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#00538e]"
-                  />
-                </div>
-              </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-2">What do you intend to accomplish?</label>
+              <textarea 
+                value={intention}
+                onChange={(e) => setIntention(e.target.value)}
+                placeholder="Share your intention..."
+                className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-[#00538e]/10 h-32 outline-none transition-all"
+              />
+            </div>
 
-              {/* Input Fields */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-400">Current Feeling</label>
-                  <textarea 
-                    required rows={3}
-                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:ring-2 focus:ring-[#00538e]/10 outline-none resize-none transition-all"
-                    placeholder="I feel..."
-                    value={feeling} onChange={(e) => setFeeling(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-400">Today's Intention</label>
-                  <input 
-                    type="text" required
-                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:ring-2 focus:ring-[#00538e]/10 outline-none transition-all"
-                    placeholder="I will focus on..."
-                    value={intention} onChange={(e) => setIntention(e.target.value)}
-                  />
-                </div>
+            <button 
+              onClick={handleCheckIn}
+              disabled={loading || !userId}
+              className="w-full py-4 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-lg transition-all disabled:opacity-50"
+            >
+              {loading ? "Neo is processing..." : "Check In with Neo"}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-8 animate-in zoom-in-95 duration-500">
+            {step === 2 && (
+              <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 relative">
+                <span className="absolute -top-3 left-8 bg-[#00538e] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">
+                  Neo's Insight
+                </span>
+                <p className="text-xl leading-relaxed font-medium italic text-slate-700">
+                  "<Typewriter text={response} speed={40} />"
+                </p>
               </div>
+            )}
 
-              <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => router.back()} className="flex-1 py-4 text-slate-400 font-bold hover:text-slate-600 transition">Cancel</button>
-                <button 
-                  type="submit" 
-                  className="flex-1 py-4 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-lg transition-all"
-                >
-                  Get Coaching
-                </button>
-              </div>
-            </form>
-          </>
+            <button 
+              onClick={() => setStep(1)} 
+              className="w-full py-4 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-lg transition-all"
+            >
+              Another Check-In
+            </button>
+          </div>
         )}
       </div>
     </div>

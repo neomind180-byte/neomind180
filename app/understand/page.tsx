@@ -1,47 +1,60 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { Typewriter } from '@/components/Typewriter';
 
 export default function UnderstandPhase() {
   // 1. STATE MANAGEMENT
+  const [userId, setUserId] = useState<string | null>(null);
   const [userFeeling, setUserFeeling] = useState('');
   const [userIntention, setUserIntention] = useState('');
   const [neoResponse, setNeoResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Input, 2: Neo's Shift
 
+  // Get userId from localStorage or auth context
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
   // 2. THE AI CONNECTION (The "handleSubmit" logic)
- // ...existing code...
-
-const getNeoShift = async () => {
-  if (!userFeeling || !userIntention) return alert("Please fill in both fields.");
-  
-  setLoading(true);
-  try {
-    const res = await fetch('/api/neo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feeling: userFeeling, intention: userIntention }),
-    });
+  const getNeoShift = async () => {
+    if (!userFeeling || !userIntention) return alert("Please fill in both fields.");
+    if (!userId) return alert("User not authenticated. Please log in.");
     
-    const data = await res.json();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/neo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId,
+          mood: "reflecting",
+          feeling: userFeeling, 
+          intention: userIntention 
+        }),
+      });
+      
+      const data = await res.json();
 
-    // SAFETY CHECK: If the API returned an error, use that or a fallback
-    const shiftText = data.message || data.error || "Neo is reflecting deeply. Please try rephrasing.";
-    
-    setNeoResponse(shiftText);
-    setStep(2); 
-  } catch (error) {
-    console.error("Client-side Fetch Error:", error);
-    setNeoResponse("Connection lost. Please check your internet and try again.");
-    setStep(2);
-  } finally {
-    setLoading(false);
-  }
-};
+      // SAFETY CHECK: If the API returned an error, use that or a fallback
+      const shiftText = data.message || data.error || "Neo is reflecting deeply. Please try rephrasing.";
+      
+      setNeoResponse(shiftText);
+      setStep(2); 
+    } catch (error) {
+      console.error("Client-side Fetch Error:", error);
+      setNeoResponse("Connection lost. Please check your internet and try again.");
+      setStep(2);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-slate-800">
@@ -77,7 +90,7 @@ const getNeoShift = async () => {
 
             <button 
               onClick={getNeoShift}
-              disabled={loading}
+              disabled={loading || !userId}
               className="w-full py-4 bg-[#00538e] text-white rounded-2xl font-bold hover:shadow-lg transition-all disabled:opacity-50"
             >
               {loading ? "Neo is reflecting..." : "Ask Neo for a 180° Shift"}
