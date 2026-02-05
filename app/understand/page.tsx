@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { Typewriter } from "@/components/Typewriter";
+import { supabase } from "@/lib/supabaseClient";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 export default function UnderstandPhase() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -12,11 +14,31 @@ export default function UnderstandPhase() {
   const [neoResponse, setNeoResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Input, 2: Neo's Shift
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) setUserId(storedUserId);
   }, []);
+
+  const handleSessionComplete = async () => {
+    if (!userId) return;
+
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("sessions_this_month, plan")
+        .eq("id", userId)
+        .single();
+
+      // If they are on the Basic plan and this was their first session
+      if (profile?.plan === "Basic Self-Help" && profile?.sessions_this_month === 1) {
+        setShowUpgrade(true);
+      }
+    } catch (error) {
+      console.error("Error checking profile:", error);
+    }
+  };
 
   const getNeoShift = async () => {
     if (!userFeeling || !userIntention) return alert("Please fill in both fields.");
@@ -39,6 +61,9 @@ export default function UnderstandPhase() {
       const shiftText = data.message || data.error || "Neo is reflecting deeply. Please try rephrasing.";
       setNeoResponse(shiftText);
       setStep(2);
+      
+      // Check if we should show upgrade modal
+      await handleSessionComplete();
     } catch (error) {
       console.error("Client-side Fetch Error:", error);
       setNeoResponse("Connection lost. Please check your internet and try again.");
@@ -123,6 +148,8 @@ export default function UnderstandPhase() {
           </div>
         )}
       </div>
+
+      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} />
     </div>
   );
 }
