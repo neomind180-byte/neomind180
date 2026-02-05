@@ -27,6 +27,19 @@ const MICRO_RESETS = [
   { id: 3, title: "Affirmation", desc: "I am a calm observer, taking steady action.", color: "#F39904" }
 ];
 
+import HistoryList from '@/components/HistoryList';
+
+// ... inside your Dashboard return function:
+<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  {/* Left side: Action Cards */}
+  <div>{/* Your existing check-in buttons */}</div>
+
+  {/* Right side: History */}
+  <div className="bg-slate-50/50 p-6 rounded-[2rem]">
+    <HistoryList />
+  </div>
+</div>
+
 // --- TYPES ---
 type CheckIn = {
   id: string;
