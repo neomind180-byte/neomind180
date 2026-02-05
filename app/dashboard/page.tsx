@@ -3,8 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { Logo } from '@/components/Logo'; // Make sure Logo.tsx is in your components folder
+import { Logo } from '@/components/Logo';
+import { UpgradeReminder } from '@/components/UpgradeReminder';
+import HistoryList from '@/components/HistoryList';
+import MoodChart from '@/components/MoodChart';
 
 // --- DATA: WISDOM VAULT ---
 const SCRIPTURES = [
@@ -26,19 +30,6 @@ const MICRO_RESETS = [
   { id: 2, title: "Body Check", desc: "Release your jaw and drop your shoulders away from your ears.", color: "#0AA390" },
   { id: 3, title: "Affirmation", desc: "I am a calm observer, taking steady action.", color: "#F39904" }
 ];
-
-import HistoryList from '@/components/HistoryList';
-
-// ... inside your Dashboard return function:
-<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-  {/* Left side: Action Cards */}
-  <div>{/* Your existing check-in buttons */}</div>
-
-  {/* Right side: History */}
-  <div className="bg-slate-50/50 p-6 rounded-[2rem]">
-    <HistoryList />
-  </div>
-</div>
 
 // --- TYPES ---
 type CheckIn = {
@@ -129,12 +120,17 @@ export default function Dashboard() {
           <Logo className="w-9 h-9" />
           <span className="font-bold text-xl tracking-tight text-[#00538e]">NeoMind180</span>
         </div>
-        <button 
-          onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} 
-          className="text-xs font-bold bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 px-4 py-2 rounded-full transition-colors uppercase tracking-widest"
-        >
-          Sign Out
-        </button>
+        <div className="flex items-center gap-4">
+          <Link href="/settings" className="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all border border-slate-100 group">
+            <Settings className="w-5 h-5 text-slate-400 group-hover:text-[#00538e] transition-colors" />
+          </Link>
+          <button 
+            onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} 
+            className="text-xs font-bold bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 px-4 py-2 rounded-full transition-colors uppercase tracking-widest"
+          >
+            Sign Out
+          </button>
+        </div>
       </nav>
 
       <main className="max-w-6xl mx-auto p-6 space-y-8 pb-20">
