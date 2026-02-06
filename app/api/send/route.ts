@@ -7,11 +7,16 @@ export async function POST(req: Request) {
   try {
     const { email, subject, html } = await req.json();
 
-    // In the free tier, Resend allows you to send to your own email. 
-    // To send to others, you eventually need to verify your domain.
+    // Verification check for the key
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is missing from environment.");
+    }
+
     const { data, error } = await resend.emails.send({
-      from: 'NeoMind180 <onboarding@resend.dev>', // Use this for testing
+      from: 'NeoMind180 <onboarding@resend.dev>', 
       to: [email],
+      // Adding you as a Cc so you stay in the loop
+      cc: ['neomind180@gmail.com'], 
       subject: subject,
       html: html,
     });
@@ -23,6 +28,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ data });
   } catch (error: any) {
+    console.error("EMAIL_SYSTEM_FAILURE:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
