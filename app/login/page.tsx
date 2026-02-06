@@ -5,10 +5,12 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State for toggling visibility
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -63,15 +65,34 @@ export default function Login() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#00538e]/10 outline-none text-slate-800 transition-all"
-              required
-            />
+            <div className="flex justify-between items-center px-4">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+              <Link 
+                href="/forgot-password" 
+                className="text-[10px] font-bold text-[#00538e] hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+            
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"} // Dynamic type
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-4 pr-12 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#00538e]/10 outline-none text-slate-800 transition-all"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#00538e] transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           <button

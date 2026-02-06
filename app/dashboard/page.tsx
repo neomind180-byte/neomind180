@@ -124,17 +124,15 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    // Clear any local storage/cookies if necessary and redirect
     window.location.href = '/';
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
       
       {/* --- TOP NAVIGATION --- */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          {/* THE NEW BRAND LOGO */}
           <Logo className="w-9 h-9" />
           <span className="font-bold text-xl tracking-tight text-[#00538e]">NeoMind180</span>
         </div>
@@ -151,7 +149,7 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto p-6 space-y-8 pb-20">
+      <main className="max-w-6xl mx-auto p-6 space-y-8 flex-grow w-full">
         
         {/* --- HEADER --- */}
         <header className="mt-8 flex flex-col md:flex-row md:justify-between md:items-end gap-6">
@@ -179,9 +177,13 @@ export default function Dashboard() {
               <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Current Plan</h4>
               <p className="text-lg font-bold text-[#00538e]">{userPlan}</p>
             </div>
-            <button className="px-4 py-2 bg-[#0AA390] text-white text-xs font-bold rounded-full hover:shadow-md transition-all">
+            {/* UPDATED: Changed from button to Link for active navigation */}
+            <Link 
+              href="/pricing"
+              className="px-4 py-2 bg-[#0AA390] text-white text-xs font-bold rounded-full hover:shadow-md transition-all inline-block"
+            >
               Upgrade
-            </button>
+            </Link>
           </div>
           <p className="text-[11px] text-slate-500 mt-4 italic">
             "Beautiful work. Imagine having this level of clarity 2–3 times every week."
@@ -303,6 +305,51 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* --- ADDED FOOTER --- */}
+      <footer className="py-20 px-6 border-t border-slate-100 bg-white">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+          
+          {/* Left Column: Logo & Disclaimer */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Logo className="w-8 h-8" />
+              <span className="font-bold text-xl tracking-tight text-[#00538e]">NeoMind180</span>
+            </div>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Mindset coaching for clarity, not therapy. Seek professional help for mental health concerns.
+            </p>
+          </div>
+
+          {/* Center Column: Payment Security */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-widest">
+              Payment Security
+            </h4>
+            <div className="flex items-center gap-4">
+              <span className="font-black text-slate-300 text-xl tracking-tighter">
+                PayFast
+              </span>
+              <p className="text-[11px] text-slate-500 font-medium leading-tight">
+                Secure payments powered by PayFast.<br/>
+                Cancel anytime • No hidden fees • ZAR pricing
+              </p>
+            </div>
+          </div>
+          
+          {/* Right Column: Links & Copyright */}
+          <div className="space-y-4 text-right md:self-end">
+             <div className="flex gap-6 justify-end text-[10px] font-bold uppercase tracking-tight text-slate-400">
+               <Link href="/privacy" className="hover:text-[#00538e]">Privacy</Link>
+               <Link href="/terms" className="hover:text-[#00538e]">Terms</Link>
+             </div>
+             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+              © 2026 NeoMind180
+            </div>
+          </div>
+
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,23 +1,38 @@
 "use client";
 
 import Link from 'next/link';
-import { Logo } from '@/components/Logo'; // Added this import
+import { Logo } from '@/components/Logo';
 
 const plans = [
   {
     name: 'Basic Self-Help',
-    // ... rest of data
-    link: '/register' // Changed from /signup
+    price: 'Free',
+    period: '',
+    description: 'Self-guided exploration',
+    features: ["1 AI coaching session/month", "Daily check-ins", "Up to 2 micro-resets/day", "Basic insights only", "Single coach mode", "Community access"],
+    cta: 'Current Plan',
+    active: true,
+    link: '/register'
   },
   {
     name: 'Monthly Support',
-    // ... rest of data
-    link: '/register' // Changed from /signup
+    price: 'R199',
+    period: '/month',
+    description: 'For consistent growth',
+    features: ["Up to 12 AI sessions/month", "Daily check-ins", "All micro-resets", "Full insights & trends", "All coach modes", "Email support"],
+    cta: 'Get Monthly',
+    active: false,
+    link: '/register'
   },
   {
     name: 'Yearly Growth',
-    // ... rest of data
-    link: '/register' // Changed from /signup
+    price: 'R1,999',
+    period: '/year',
+    description: '2 months free',
+    features: ["Everything in Monthly", "Up to 12 AI sessions/month", "Weekly community circles", "Book human coach sessions", "Advanced analytics", "Early feature access"],
+    cta: 'Get Yearly',
+    active: false,
+    link: '/register'
   }
 ];
 
@@ -31,7 +46,22 @@ export default function Pricing() {
           <Logo className="w-8 h-8" />
           <span className="font-bold text-xl tracking-tight text-[#00538e]">NeoMind180</span>
         </Link>
-        <Link href="/dashboard" className="text-sm font-semibold text-slate-600 hover:text-[#00538e]">Back to Dashboard</Link>
+        
+        {/* UPDATED: Right side navigation with both Home and Dashboard links */}
+        <div className="flex gap-6 items-center">
+          <Link 
+            href="/" 
+            className="text-sm font-semibold text-slate-600 hover:text-[#00538e] transition-colors"
+          >
+            Home
+          </Link>
+          <Link 
+            href="/dashboard" 
+            className="text-sm font-semibold text-slate-600 hover:text-[#00538e] transition-colors"
+          >
+            Back to Dashboard
+          </Link>
+        </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-20">
@@ -54,7 +84,7 @@ export default function Pricing() {
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 italic">Self-guided exploration</p>
             
             <ul className="space-y-4 mb-10 flex-grow">
-              {["1 AI coaching session/month", "Daily check-ins", "Up to 2 micro-resets/day", "Basic insights only", "Single coach mode", "Community access"].map((f, i) => (
+              {plans[0].features.map((f, i) => (
                 <li key={i} className="flex items-center gap-3 text-sm text-slate-600 font-medium">
                   <svg className="w-4 h-4 text-[#0AA390]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   {f}
@@ -76,16 +106,16 @@ export default function Pricing() {
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 italic">For consistent growth</p>
             
             <ul className="space-y-4 mb-10 flex-grow">
-              {["Up to 12 AI sessions/month", "Daily check-ins", "All micro-resets", "Full insights & trends", "All coach modes", "Email support"].map((f, i) => (
+              {plans[1].features.map((f, i) => (
                 <li key={i} className="flex items-center gap-3 text-sm text-slate-600 font-medium">
                   <svg className="w-4 h-4 text-[#00538e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   {f}
                 </li>
               ))}
             </ul>
-            <button className="w-full py-4 rounded-xl font-black bg-[#00538e] text-white hover:bg-[#004272] transition-colors">
+            <Link href={plans[1].link} className="w-full py-4 rounded-xl font-black bg-[#00538e] text-white hover:bg-[#004272] transition-colors text-center block">
               Get Monthly
-            </button>
+            </Link>
           </div>
 
           {/* COLUMN 3: YEARLY */}
@@ -101,16 +131,16 @@ export default function Pricing() {
             <p className="text-xs font-bold text-[#F39904] uppercase tracking-widest mb-6 italic">2 months free</p>
             
             <ul className="space-y-4 mb-10 flex-grow">
-              {["Everything in Monthly", "Up to 12 AI sessions/month", "Weekly community circles", "Book human coach sessions", "Advanced analytics", "Early feature access"].map((f, i) => (
+              {plans[2].features.map((f, i) => (
                 <li key={i} className="flex items-center gap-3 text-sm text-slate-600 font-medium">
                   <svg className="w-4 h-4 text-[#993366]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   {f}
                 </li>
               ))}
             </ul>
-            <button className="w-full py-4 rounded-xl font-black bg-[#993366] text-white hover:bg-[#7a2852] transition-colors">
+            <Link href={plans[2].link} className="w-full py-4 rounded-xl font-black bg-[#993366] text-white hover:bg-[#7a2852] transition-colors text-center block">
               Get Yearly
-            </button>
+            </Link>
           </div>
         </div>
 
