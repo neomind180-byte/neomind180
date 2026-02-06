@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Settings } from 'lucide-react';
+// Added Sparkles and Mail for the new Yearly Member section
+import { Settings, Sparkles, Mail } from 'lucide-react'; 
 import { supabase } from '@/lib/supabaseClient';
 import { Logo } from '@/components/Logo';
 import { UpgradeReminder } from '@/components/UpgradeReminder';
@@ -177,7 +178,6 @@ export default function Dashboard() {
               <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Current Plan</h4>
               <p className="text-lg font-bold text-[#00538e]">{userPlan}</p>
             </div>
-            {/* UPDATED: Changed from button to Link for active navigation */}
             <Link 
               href="/pricing"
               className="px-4 py-2 bg-[#0AA390] text-white text-xs font-bold rounded-full hover:shadow-md transition-all inline-block"
@@ -190,17 +190,35 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* --- YEARLY MEMBER STATUS --- */}
+        {/* --- UPDATED YEARLY MEMBER STATUS --- */}
         {userPlan === 'Yearly Growth' && (
-          <div className="p-6 bg-[#00538e]/5 border border-[#00538e]/10 rounded-[2rem]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-2 h-2 bg-[#0AA390] rounded-full animate-pulse" />
-              <h5 className="text-[10px] font-black uppercase text-[#0AA390] tracking-widest">Community Circle</h5>
+          <div className="p-6 bg-[#0AA390]/5 border border-[#0AA390]/10 rounded-[2.5rem] relative overflow-hidden">
+            {/* Decorative Sparkle for Premium Feel */}
+            <div className="absolute -right-4 -top-4 opacity-10">
+              <Sparkles className="w-24 h-24 text-[#0AA390]" />
             </div>
-            <p className="text-sm font-bold text-slate-800">Next Session: Tuesday @ 7:00 PM</p>
-            <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
-              Check your inbox! Your private access link is sent via email 24 hours before we begin.
-            </p>
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="px-3 py-1 bg-[#0AA390] text-white text-[9px] font-black uppercase tracking-widest rounded-full">
+                  Member Exclusive
+                </div>
+              </div>
+              
+              <h5 className="text-lg font-black text-slate-800 uppercase tracking-tighter">
+                Upcoming Circle
+              </h5>
+              
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                I meet when the collective energy is right - our next deep-dive session will be announced seven days in advance. 
+                Keep an eye on your email for your private invitation and grounding prompts.
+              </p>
+
+              <div className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase text-[#0AA390] tracking-widest">
+                <Mail className="w-4 h-4" />
+                Status: Awaiting Announcement
+              </div>
+            </div>
           </div>
         )}
 
