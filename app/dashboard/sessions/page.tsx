@@ -1,32 +1,41 @@
 "use client";
 
 import Link from 'next/link';
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Video, 
-  Clock, 
-  Star, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Calendar,
+  Video,
+  Clock,
+  Star,
+  CheckCircle2,
   ExternalLink,
   ChevronRight
 } from 'lucide-react';
+import { getCalApi } from "@calcom/embed-react";
+import { useEffect } from "react";
 
 export default function SessionsPage() {
+  useEffect(() => {
+    (async function () {
+      const cal = await getCalApi({ "namespace": "60min" });
+      cal("ui", { "cssVarsPerTheme": { "light": { "cal-brand": "#0AA390" }, "dark": { "cal-brand": "#0AA390" } }, "hideEventTypeDetails": false, "layout": "month_view" });
+    })();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <div className="max-w-5xl mx-auto p-6 md:p-12 space-y-16">
-        
+
         {/* Navigation & Header [cite: 27-38] */}
         <header className="space-y-6">
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="inline-flex items-center gap-2 text-slate-400 hover:text-[#00538e] transition-colors font-bold uppercase text-[10px] tracking-widest group"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Dashboard
           </Link>
-          
+
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="p-4 bg-[#00538e]/10 rounded-3xl">
@@ -73,14 +82,19 @@ export default function SessionsPage() {
               Ready for your next shift?
             </h2>
             <p className="text-slate-500 max-w-md leading-relaxed">
-              Select a time that allows you to be fully present. We will use this hour to rewire 
+              Select a time that allows you to be fully present. We will use this hour to rewire
               complex patterns and move toward aligned action.
             </p>
-            <button className="px-10 py-5 bg-[#00538e] text-white rounded-full font-bold text-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto md:mx-0">
+            <button
+              data-cal-namespace="60min"
+              data-cal-link="neomind180coach/60min"
+              data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+              className="px-10 py-5 bg-[#00538e] text-white rounded-full font-bold text-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto md:mx-0"
+            >
               Open Schedule <ExternalLink className="w-5 h-5" />
             </button>
           </div>
-          
+
           <div className="w-full md:w-80 bg-slate-50 rounded-[2.5rem] p-8 space-y-6">
             <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Remaining This Month</h4>
             <div className="flex justify-center items-baseline gap-2">

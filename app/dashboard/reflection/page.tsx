@@ -1,123 +1,137 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { 
-  ArrowLeft, 
-  Zap, 
-  Send, 
-  Sparkles, 
-  CheckCircle2,
-  Clock
-} from 'lucide-react';
+import { Send, Zap, Lock } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
-interface Message {
-  role: 'neo' | 'user';
-  content: string;
-}
+// --- CONFIGURATION ---
+const MAX_MESSAGES = {
+  free: 0,
+  tier2: 8,
+  tier3: 16
+};
 
 export default function ReflectionPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'neo', 
-      content: "Hello. I’ve been observing your shifts this week. Are you ready to dive into your Weekly Clarity Reflection?" 
-    }
+  const [messages, setMessages] = useState<any[]>([
+    { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [userTier, setUserTier] = useState<string>('free');
+
+  useEffect(() => {
+    async function getTier() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('subscription_tier')
+          .eq('id', user.id)
+          .single();
+
+        if (data) setUserTier(data.subscription_tier);
+      }
+    }
+    getTier();
+  }, []);
+
+  // Calculate current usage (divide by 2 if you only count user messages, or strict count)
+  // Here we count every USER message sent.
+  const userMessageCount = messages.filter(m => m.role === 'user').length;
+  const limit = MAX_MESSAGES[userTier as keyof typeof MAX_MESSAGES];
+  const isLimitReached = userMessageCount >= limit;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLimitReached) return;
 
-    // Add user message
-    const userMsg: Message = { role: 'user', content: input };
+    const userMsg = { role: 'user', content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
 
-    // Stubbed Backend Call [cite: 21, 161]
-    setTimeout(() => {
-      const neoMsg: Message = { 
-        role: 'neo', 
-        content: "I hear you. Looking at that pattern, it seems your 'observer' is noticing a disconnect between your intentions and your energy. How does that resonate with your 180° goal for this week?" 
-      };
-      setMessages(prev => [...prev, neoMsg]);
+    // Call Backend API
+    try {
+      const res = await fetch('/api/reflection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input, history: messages }),
+      });
+      const data = await res.json();
+
+      setMessages(prev => [...prev, data]);
+    } catch (error) {
+      console.error("Reflection Error", error);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 flex flex-col">
-      {/* Header with Updated Title [cite: 27-38, 146] */}
-      <header className="p-6 md:p-10 border-b border-slate-50 flex items-center justify-between bg-white sticky top-0 z-10">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="p-2 hover:bg-slate-50 rounded-full transition-colors text-slate-400 hover:text-[#00538e]">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#0AA390]/10 rounded-2xl flex items-center justify-center">
-              <Zap className="w-6 h-6 text-[#0AA390]" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-[#00538e] uppercase tracking-tighter">
-                Reflection with Neo (Your AI coach)
-              </h1>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Weekly Tier 2/3 Session</p>
-            </div>
-          </div>
+    <div className="flex flex-col h-[calc(100vh-100px)]">
+      {/* Header with Limit Counter */}
+      <div className="flex items-center justify-between px-6 py-4 bg-slate-50 rounded-t-[2.5rem]">
+        <div className="flex items-center gap-2">
+          <Zap className="w-5 h-5 text-[#0AA390]" />
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+            {userTier === 'tier2' ? 'Coaching Access' : 'Deep Coaching'}
+          </span>
         </div>
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#0AA390]/10 rounded-full text-[9px] font-black uppercase tracking-widest text-[#0AA390]">
-          <CheckCircle2 className="w-3 h-3" /> System Ready
+        <div className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+          {userMessageCount}/{limit} messages today
         </div>
-      </header>
+      </div>
 
       {/* Chat Area */}
-      <main className="flex-grow overflow-y-auto p-6 md:p-12 space-y-8 max-w-4xl mx-auto w-full">
+      <div className="flex-grow overflow-y-auto p-6 space-y-6">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-6 rounded-[2rem] text-sm leading-relaxed shadow-sm border ${
-              msg.role === 'user' 
-                ? 'bg-[#00538e] text-white border-transparent rounded-tr-none' 
-                : 'bg-white text-slate-700 border-slate-100 rounded-tl-none'
-            }`}>
+            <div className={`max-w-[85%] p-5 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
+              ? 'bg-[#00538e] text-white rounded-tr-none'
+              : 'bg-slate-50 text-slate-700 rounded-tl-none border border-slate-100'
+              }`}>
               {msg.content}
             </div>
           </div>
         ))}
-        {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-slate-50 px-6 py-4 rounded-full flex gap-1">
-              <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" />
-              <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.2s]" />
-              <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]" />
-            </div>
+        {isTyping && <div className="text-xs text-slate-300 animate-pulse pl-4">Neo is thinking...</div>}
+      </div>
+
+      {/* Input Area or Limit Reached Message */}
+      <div className="p-6 border-t border-slate-50">
+        {!isLimitReached ? (
+          <form onSubmit={handleSend} className="relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Share your reflection..."
+              className="w-full pl-6 pr-14 py-4 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-[#00538e]/10 text-sm font-medium"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isTyping}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#00538e] text-white rounded-lg disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
+        ) : (
+          <div className="bg-slate-50 p-6 rounded-2xl text-center space-y-3 border border-slate-100">
+            <Lock className="w-6 h-6 text-[#993366] mx-auto" />
+            <h3 className="text-sm font-bold text-slate-900">Daily Limit Reached</h3>
+            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+              You've hit your {limit}-message limit for today.
+              {userTier === 'tier2' && " Upgrade to Tier 3 for deeper exploration."}
+            </p>
+            {userTier === 'tier2' && (
+              <button className="text-[10px] font-black uppercase tracking-widest text-[#00538e] hover:underline">
+                Upgrade to Tier 3
+              </button>
+            )}
           </div>
         )}
-      </main>
-
-      {/* Input Band */}
-      <footer className="p-6 md:p-10 bg-white border-t border-slate-50 sticky bottom-0">
-        <form onSubmit={handleSend} className="max-w-4xl mx-auto relative group">
-          <input 
-            type="text" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Share your reflection..."
-            className="w-full pl-8 pr-20 py-5 bg-slate-50 rounded-[2rem] outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm font-medium"
-          />
-          <button 
-            type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-4 bg-[#00538e] text-white rounded-full hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50"
-            disabled={!input.trim() || isTyping}
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </form>
-        <p className="text-center mt-4 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-300">
-          Rethink. Rewire. Renew.
-        </p>
-      </footer>
+      </div>
     </div>
   );
 }
