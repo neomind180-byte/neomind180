@@ -44,15 +44,21 @@ export async function POST(req: Request) {
     });
 
     // 2. Format history for Gemini
-    // Ensure roles are strictly 'user' or 'model' and parts are correctly typed
-    const chatHistory = (history || []).map((msg: any) => ({
-      role: msg.role === 'neo' ? 'model' : 'user',
-      parts: [{ text: msg.content || "" }] as Part[],
-    }));
+    // Gemini requires the first message to be from the 'user'.
+    // We slice the history to start from the first user message.
+    const rawHistory = history || [];
+    const firstUserIndex = rawHistory.findIndex((msg: any) => msg.role !== 'neo');
+
+    const formattedHistory = firstUserIndex === -1
+      ? []
+      : rawHistory.slice(firstUserIndex).map((msg: any) => ({
+        role: msg.role === 'neo' ? 'model' : 'user',
+        parts: [{ text: msg.content || "" }] as Part[],
+      }));
 
     // 3. Start chat and get response
     const chat = model.startChat({
-      history: chatHistory,
+      history: formattedHistory,
     });
 
     const result = await chat.sendMessage(message);
