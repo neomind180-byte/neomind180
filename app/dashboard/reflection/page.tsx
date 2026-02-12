@@ -18,6 +18,7 @@ export default function ReflectionPage() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [userTier, setUserTier] = useState<string>('free');
+  const [reflectionId, setReflectionId] = useState<string | null>(null);
 
   useEffect(() => {
     async function getTier() {
@@ -35,8 +36,7 @@ export default function ReflectionPage() {
     getTier();
   }, []);
 
-  // Calculate current usage (divide by 2 if you only count user messages, or strict count)
-  // Here we count every USER message sent.
+  // Calculate current usage
   const userMessageCount = messages.filter(m => m.role === 'user').length;
   const limit = MAX_MESSAGES[userTier as keyof typeof MAX_MESSAGES];
   const isLimitReached = userMessageCount >= limit;
@@ -46,20 +46,52 @@ export default function ReflectionPage() {
     if (!input.trim() || isLimitReached) return;
 
     const userMsg = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessagesWithUser = [...messages, userMsg];
+    setMessages(updatedMessagesWithUser);
     setInput('');
     setIsTyping(true);
 
-    // Call Backend API
     try {
+      // 1. Call AI API
       const res = await fetch('/api/reflection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input, history: messages }),
       });
       const data = await res.json();
+      const finalMessages = [...updatedMessagesWithUser, data];
+      setMessages(finalMessages);
 
-      setMessages(prev => [...prev, data]);
+      // 2. Persist to Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        if (!reflectionId) {
+          // New session: Insert
+          const { data: newRef, error } = await supabase
+            .from('reflections')
+            .insert({
+              user_id: user.id,
+              messages: finalMessages,
+              last_message: data.content
+            })
+            .select()
+            .single();
+
+          if (newRef) setReflectionId(newRef.id);
+          if (error) console.error("Error saving new reflection:", error);
+        } else {
+          // Existing session: Update
+          const { error } = await supabase
+            .from('reflections')
+            .update({
+              messages: finalMessages,
+              last_message: data.content
+            })
+            .eq('id', reflectionId);
+
+          if (error) console.error("Error updating reflection:", error);
+        }
+      }
     } catch (error) {
       console.error("Reflection Error", error);
     } finally {
