@@ -67,40 +67,40 @@ export default function HistoryPage() {
     fetchHistory();
   }, []);
 
-  if (loading) return <div className="p-10 text-center text-slate-400">Loading History...</div>;
+  if (loading) return <div className="p-10 text-center text-[#475569] font-black uppercase tracking-widest text-[10px]">Loading History...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 p-6 md:p-12">
+    <div className="min-h-screen bg-[#1a1f2e] font-sans text-[#cbd5e1] p-6 md:p-12">
       <div className="max-w-4xl mx-auto space-y-8">
 
         <header className="flex items-center gap-4">
-          <Link href="/dashboard" className="p-2 hover:bg-white rounded-full transition-colors text-slate-400">
+          <Link href="/dashboard" className="p-2 hover:bg-[#232938] rounded-full transition-colors text-[#94a3b8] hover:text-white">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Your Journey</h1>
+          <h1 className="text-2xl font-black uppercase tracking-tighter text-white">Your Journey</h1>
         </header>
 
-        <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:w-0.5 before:-translate-x-px before:bg-slate-200">
+        <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:w-0.5 before:-translate-x-px before:bg-[#2d3548]">
           {historyItems.map((item) => (
             <div key={item.id} className="relative flex items-start gap-8 group">
 
               {/* Timeline Icon */}
-              <div className={`mt-2 w-10 h-10 rounded-2xl border-4 border-slate-50 flex items-center justify-center shrink-0 z-10 shadow-sm ${item.type === 'shift' ? 'bg-[#993366] text-white' :
-                  item.type === 'reflection' ? 'bg-[#0AA390] text-white' : 'bg-white text-[#0AA390]'
+              <div className={`mt-2 w-10 h-10 rounded-2xl border-4 border-[#1a1f2e] flex items-center justify-center shrink-0 z-10 shadow-sm ${item.type === 'shift' ? 'bg-[#993366] text-white' :
+                  item.type === 'reflection' ? 'bg-[#0AA390] text-white' : 'bg-[#232938] text-[#0AA390]'
                 }`}>
                 {item.type === 'shift' ? <Heart className="w-4 h-4" /> :
                   item.type === 'reflection' ? <Zap className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
               </div>
 
               {/* Card Content */}
-              <div className="flex-grow bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+              <div className="flex-grow bg-[#232938] border border-[#2d3548] p-8 rounded-[2.5rem] shadow-sm">
                 <div className="flex justify-between items-start mb-4">
                   <span className={`text-[10px] font-black uppercase tracking-widest ${item.type === 'shift' ? 'text-[#993366]' : 'text-[#0AA390]'
                     }`}>
                     {item.type === 'shift' ? 'Mindset Shift' :
                       item.type === 'reflection' ? 'Reflection with Neo' : 'Daily Check-In'}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">
+                  <span className="text-[10px] font-bold text-[#475569] uppercase tracking-wide">
                     {item.date.toLocaleString(undefined, {
                       weekday: 'short',
                       month: 'short',
@@ -114,21 +114,21 @@ export default function HistoryPage() {
                 {item.type === 'check-in' ? (
                   <div className="grid grid-cols-3 gap-2">
                     {['Mind', 'Body', 'Energy'].map(k => (
-                      <div key={k} className="bg-slate-50 px-3 py-2 rounded-xl">
-                        <p className="text-[9px] uppercase text-slate-400 font-bold">{k}</p>
-                        <p className="text-xs font-bold text-slate-700">{item.data[k.toLowerCase()]}</p>
+                      <div key={k} className="bg-[#1a1f2e] px-3 py-2 rounded-xl border border-[#2d3548]">
+                        <p className="text-[9px] uppercase text-[#94a3b8] font-bold">{k}</p>
+                        <p className="text-xs font-bold text-[#e2e8f0]">{item.data[k.toLowerCase()]}</p>
                       </div>
                     ))}
                   </div>
                 ) : item.type === 'reflection' ? (
                   <div className="space-y-4">
-                    <p className="text-sm text-slate-600 line-clamp-2 italic">
+                    <p className="text-sm text-[#cbd5e1] line-clamp-2 italic">
                       {item.data.last_message ? `"${item.data.last_message}"` : "Session started"}
                     </p>
                     {expandedId === item.id && (
-                      <div className="mt-4 pt-4 border-t border-slate-50 space-y-4 max-h-60 overflow-y-auto pr-2">
+                      <div className="mt-4 pt-4 border-t border-[#2d3548] space-y-4 max-h-60 overflow-y-auto pr-2">
                         {item.data.messages.map((msg: any, mIdx: number) => (
-                          <div key={mIdx} className={`p-3 rounded-2xl text-[11px] leading-relaxed ${msg.role === 'neo' ? 'bg-slate-50 text-slate-600' : 'bg-[#00538e] text-white'
+                          <div key={mIdx} className={`p-4 rounded-2xl text-[11px] leading-relaxed ${msg.role === 'neo' ? 'bg-[#1a1f2e] text-[#cbd5e1] border border-[#2d3548]' : 'bg-[#00538e] text-white'
                             }`}>
                             <span className="font-bold uppercase text-[8px] block mb-1 opacity-50">
                               {msg.role === 'neo' ? 'Neo' : 'You'}
@@ -151,10 +151,10 @@ export default function HistoryPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-sm text-slate-600 italic">"{item.data.thought}"</p>
+                    <p className="text-sm text-[#cbd5e1] italic">"{item.data.thought}"</p>
                     <div className="pl-4 border-l-2 border-[#993366]/20">
                       <p className="text-xs font-bold text-[#993366] uppercase tracking-widest mb-1">Shift:</p>
-                      <p className="text-sm font-medium text-slate-800">{item.data.new_perspective}</p>
+                      <p className="text-sm font-medium text-[#e2e8f0]">{item.data.new_perspective}</p>
                     </div>
                   </div>
                 )}

@@ -58,26 +58,26 @@ export default function Sidebar() {
   const currentLevel = TIER_LEVELS[userTier as keyof typeof TIER_LEVELS] || 0;
 
   return (
-    <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-100 p-8 sticky top-0 h-screen shrink-0 overflow-y-auto">
+    <aside className="hidden lg:flex flex-col w-72 bg-[#1a1f2e] border-r border-[#2d3548] p-8 sticky top-0 h-screen shrink-0 overflow-y-auto">
 
       {/* Brand Header */}
       <div className="mb-12 px-4 flex items-center gap-4">
-        <div className="w-[60px] h-[60px] relative shrink-0">
-          <Image src="/business-logo.png" alt="NeoMind180" width={60} height={60} className="object-contain" priority />
+        <div className="w-[60px] h-[60px] relative shrink-0 bg-[#fffcf6] rounded-2xl p-2 flex items-center justify-center border border-white/10">
+          <Image src="/business-logo.png" alt="NeoMind180" width={45} height={45} className="object-contain" priority />
         </div>
-        <h2 className="text-xl font-black text-[#00538e] tracking-tighter uppercase leading-none">NeoMind180</h2>
+        <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">NeoMind180</h2>
       </div>
 
       {/* Navigation */}
       <nav className="flex-grow space-y-2">
         {isCoach && (
           <div className="mb-6 space-y-2">
-            <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-300 ml-4 mb-3">Administration</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[#94a3b8] ml-4 mb-3">Administration</h3>
             <Link
               href="/dashboard/coach-admin"
               className={`flex items-center gap-4 p-4 rounded-[1.5rem] font-bold transition-all ${pathname === '/dashboard/coach-admin'
-                ? "bg-[#0AA390] text-white shadow-lg"
-                : "bg-[#0AA390]/5 text-[#0AA390] hover:bg-[#0AA390]/10"
+                ? "bg-[#0AA390] text-white shadow-lg shadow-[#0AA390]/20"
+                : "bg-white/5 text-[#0AA390] hover:bg-white/10"
                 }`}
             >
               <Inbox className="w-5 h-5" />
@@ -97,12 +97,12 @@ export default function Sidebar() {
               key={item.label}
               href={destination}
               className={`flex items-center justify-between p-4 rounded-[1.5rem] font-bold transition-all group ${isActive
-                ? (isBeEnough ? "bg-[#993366] text-white shadow-lg" : "bg-[#00538e] text-white shadow-lg")
-                : "text-slate-400 hover:bg-slate-50 hover:text-[#00538e]"
-                } ${isLocked ? "opacity-60 hover:opacity-100" : ""}`}
+                ? (isBeEnough ? "bg-[#993366] text-white shadow-lg shadow-[#993366]/20" : "bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20")
+                : "text-[#cbd5e1] hover:bg-[#2d3548] hover:text-white"
+                } ${isLocked ? "opacity-40 hover:opacity-100" : ""}`}
             >
               <div className="flex items-center gap-4">
-                <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-slate-400 group-hover:text-[#00538e]"}`} />
+                <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-[#94a3b8] group-hover:text-white"}`} />
                 <span className="text-[11px] uppercase tracking-widest leading-none">{item.label}</span>
               </div>
 
@@ -114,17 +114,17 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="pt-8 border-t border-slate-50 space-y-2">
-        <Link href="/dashboard/settings" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-slate-400 hover:bg-slate-50 hover:text-[#00538e] transition-all">
-          <Settings className="w-5 h-5" />
+      <div className="pt-8 border-t border-[#2d3548] space-y-2">
+        <Link href="/dashboard/settings" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[#cbd5e1] hover:bg-[#2d3548] hover:text-white transition-all group">
+          <Settings className="w-5 h-5 text-[#94a3b8] group-hover:text-white" />
           <span className="text-[11px] uppercase tracking-widest leading-none">Settings</span>
         </Link>
-        <Link href="/dashboard/profile" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-slate-400 hover:bg-slate-50 hover:text-[#00538e] transition-all">
-          <User className="w-5 h-5" />
+        <Link href="/dashboard/profile" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[#cbd5e1] hover:bg-[#2d3548] hover:text-white transition-all group">
+          <User className="w-5 h-5 text-[#94a3b8] group-hover:text-white" />
           <span className="text-[11px] uppercase tracking-widest leading-none">My Profile</span>
         </Link>
-        <Link href="/" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-slate-400 hover:bg-slate-50 hover:text-[#993366] transition-all">
-          <LogOut className="w-5 h-5" />
+        <Link href="/" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[#cbd5e1] hover:bg-red-500/10 hover:text-red-400 transition-all group">
+          <LogOut className="w-5 h-5 text-[#94a3b8] group-hover:text-red-400" />
           <span className="text-[11px] uppercase tracking-widest leading-none">Sign Out</span>
         </Link>
       </div>
