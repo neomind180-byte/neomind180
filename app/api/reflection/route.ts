@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     // 1. Initialize the model with the persona
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-lite-preview-02-05",
+      model: "gemini-2.5-flash-lite",
       systemInstruction: `
         You are "Neo", a grounded and compassionate AI guide for NeoMind180.
         Your goal is to help users reflect on their internal state and achieve a "180-degree shift" in their perspective.
