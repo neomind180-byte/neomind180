@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 
 export async function POST(req: Request) {
   try {
     const { message, history } = await req.json();
 
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("Gemini API key is not configured.");
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({
+        role: 'neo',
+        content: "I'm pausing for a moment to find clarity. (Error: GEMINI_API_KEY is missing. Please add it to your environment variables.)"
+      }, { status: 500 });
     }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
 
     // 1. Initialize the model with the persona
     const model = genAI.getGenerativeModel({
@@ -40,10 +44,10 @@ export async function POST(req: Request) {
     });
 
     // 2. Format history for Gemini
-    // Gemini expectation: Array of { role: "user" | "model", parts: [{ text: string }] }
-    const chatHistory = history.map((msg: any) => ({
+    // Ensure roles are strictly 'user' or 'model' and parts are correctly typed
+    const chatHistory = (history || []).map((msg: any) => ({
       role: msg.role === 'neo' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
+      parts: [{ text: msg.content || "" }] as Part[],
     }));
 
     // 3. Start chat and get response
@@ -62,9 +66,15 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Gemini Error:", error);
+
+    // Check for common errors
+    let errorMessage = error.message || "Unknown error";
+    if (errorMessage.includes("403")) errorMessage = "Access Denied (Invalid API Key or Geo-restriction)";
+    if (errorMessage.includes("404")) errorMessage = "Model not found";
+
     return NextResponse.json({
       role: 'neo',
-      content: "I'm pausing for a moment to find clarity. Let's try that reflection once more.",
+      content: `I'm pausing for a moment to find clarity. (Error: ${errorMessage})`,
       error: error.message
     }, { status: 500 });
   }
