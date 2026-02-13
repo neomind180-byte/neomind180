@@ -141,7 +141,9 @@ export default function CoachDashboard() {
                     title: newInvite.title,
                     description: newInvite.description || null,
                     session_date: newInvite.session_date || null,
-                    access_link: newInvite.access_link || null,
+                    access_link: newInvite.access_link
+                        ? (newInvite.access_link.startsWith('http') ? newInvite.access_link : `https://${newInvite.access_link}`)
+                        : null,
                     created_by: user?.id
                 });
 
@@ -468,7 +470,7 @@ export default function CoachDashboard() {
                                         type="url"
                                         value={newInvite.access_link}
                                         onChange={(e) => setNewInvite({ ...newInvite, access_link: e.target.value })}
-                                        placeholder="https://zoom.us/j/..."
+                                        placeholder="https://meet.google.com/xxx-xxxx-xxx"
                                         className="w-full p-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#0AA390] text-white transition-all"
                                     />
                                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Lightbulb, MessageSquare, BookOpen, X, Sparkles } from "lucide-react";
+import { Lightbulb, MessageSquare, BookOpen, Users, X, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 
@@ -18,8 +18,17 @@ export default function Notifications() {
             } = await supabase.auth.getUser();
             if (!user) return;
 
+            // Check user tier for circle invite notifications
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('subscription_tier')
+                .eq('id', user.id)
+                .single();
+
+            const userTier = profile?.subscription_tier || 'free';
+            const isPaid = userTier === 'tier2' || userTier === 'tier3';
+
             // 1. Check for replied coach messages
-            // We assume coach_messages has status 'replied' and updated_at
             const { data: messages } = await supabase
                 .from("coach_messages")
                 .select("id, subject, status, updated_at")
@@ -28,7 +37,7 @@ export default function Notifications() {
                 .order("updated_at", { ascending: false })
                 .limit(5);
 
-            // 2. Check for new library items (last 14 days to be safe)
+            // 2. Check for new library items (last 14 days)
             const fourteenDaysAgo = new Date();
             fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
@@ -38,6 +47,17 @@ export default function Notifications() {
                 .gt("created_at", fourteenDaysAgo.toISOString())
                 .order("created_at", { ascending: false })
                 .limit(3);
+
+            // 3. Check for circle invites (paid users only)
+            let circleInvites: any[] = [];
+            if (isPaid) {
+                const { data: invites } = await supabase
+                    .from("circle_invites")
+                    .select("id, title, session_date, created_at")
+                    .order("created_at", { ascending: false })
+                    .limit(3);
+                circleInvites = invites || [];
+            }
 
             const allNotifications = [
                 ...(messages || []).map((m) => ({
@@ -55,6 +75,14 @@ export default function Notifications() {
                     description: `New ${l.type}: ${l.title}`,
                     href: "/dashboard/library",
                     timestamp: l.created_at,
+                })),
+                ...circleInvites.map((c) => ({
+                    id: c.id,
+                    type: "circle",
+                    title: "Circle Invite!",
+                    description: c.title + (c.session_date ? ` — ${new Date(c.session_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : ''),
+                    href: "/dashboard/circles",
+                    timestamp: c.created_at,
                 })),
             ].sort(
                 (a, b) =>
@@ -109,8 +137,8 @@ export default function Notifications() {
             <button
                 onClick={toggleOpen}
                 className={`relative p-3 rounded-full transition-all group ${isOpen
-                        ? "bg-[#0AA390] text-white"
-                        : "bg-[#232938] border border-[#2d3548] text-[#94a3b8] hover:text-[#0AA390] hover:border-[#0AA390]/30"
+                    ? "bg-[#0AA390] text-white"
+                    : "bg-[#232938] border border-[#2d3548] text-[#94a3b8] hover:text-[#0AA390] hover:border-[#0AA390]/30"
                     }`}
                 aria-label="Notifications"
             >
@@ -153,11 +181,15 @@ export default function Notifications() {
                                         <div
                                             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${n.type === "message"
                                                     ? "bg-[#00538e]/10 text-[#00538e] border border-[#00538e]/20"
-                                                    : "bg-[#0AA390]/10 text-[#0AA390] border border-[#0AA390]/20"
+                                                    : n.type === "circle"
+                                                        ? "bg-[#993366]/10 text-[#993366] border border-[#993366]/20"
+                                                        : "bg-[#0AA390]/10 text-[#0AA390] border border-[#0AA390]/20"
                                                 }`}
                                         >
                                             {n.type === "message" ? (
                                                 <MessageSquare className="w-5 h-5" />
+                                            ) : n.type === "circle" ? (
+                                                <Users className="w-5 h-5" />
                                             ) : (
                                                 <BookOpen className="w-5 h-5" />
                                             )}

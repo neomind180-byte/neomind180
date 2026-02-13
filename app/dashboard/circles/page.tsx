@@ -11,7 +11,7 @@ import {
   Calendar,
   CheckCircle2,
   Bell,
-  ExternalLink,
+  Video,
   Clock
 } from 'lucide-react';
 
@@ -84,7 +84,7 @@ export default function DeepDiveCirclesPage() {
               <p className="text-sm text-[#cbd5e1] leading-relaxed">
                 <strong className="text-white font-black uppercase text-[10px] tracking-widest block mb-2">Announcement Logic</strong>
                 I announce each session exactly one week before we gather.
-                Check this page for your private access link and session themes.
+                Invitations including the date, time, and access link will appear below when the next circle is ready to form.
               </p>
             </div>
           </div>
@@ -110,27 +110,12 @@ export default function DeepDiveCirclesPage() {
           </div>
         </section>
 
-        {/* Status Widget  */}
-        <section className="bg-[#232938] border border-[#2d3548] p-10 md:p-16 rounded-[4rem] text-center space-y-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-gradient-to-r from-transparent via-[#0AA390] to-transparent opacity-30" />
-          <div className="w-20 h-20 bg-[#1a1f2e] border border-[#2d3548] rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
-            <Calendar className="w-10 h-10 text-[#475569]" />
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#475569]">Next Session Status</h3>
-            <p className="text-3xl font-black text-white uppercase tracking-tighter">
-              Awaiting Announcement
-            </p>
-          </div>
-          <p className="text-sm text-[#94a3b8] max-w-lg mx-auto italic leading-relaxed">
-            "I will send an invitation with the date, time, and private access link when the next circle is ready to form."
-          </p>
-        </section>
-
-        {/* Active Invitations */}
+        {/* Invitations Section */}
         {!loadingInvites && invites.length > 0 && (
-          <section className="space-y-6">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#94a3b8] ml-4">Active Invitations</h2>
+          <section className="space-y-8">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#94a3b8] ml-4">
+              Active Invitations
+            </h2>
             <div className="space-y-6">
               {invites.map((invite) => (
                 <div key={invite.id} className="bg-[#232938] border border-[#0AA390]/20 p-10 rounded-[3rem] shadow-xl space-y-6">
@@ -168,13 +153,13 @@ export default function DeepDiveCirclesPage() {
                   </div>
                   {invite.access_link && (
                     <a
-                      href={invite.access_link}
+                      href={invite.access_link.startsWith('http') ? invite.access_link : `https://${invite.access_link}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-3 w-full py-5 bg-[#0AA390] text-white rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] hover:shadow-2xl shadow-[#0AA390]/20 transition-all hover:-translate-y-1"
                     >
-                      <ExternalLink className="w-4 h-4" />
-                      Join Circle
+                      <Video className="w-4 h-4" />
+                      Join Google Meet
                     </a>
                   )}
                 </div>
@@ -191,6 +176,6 @@ export default function DeepDiveCirclesPage() {
           <p className="text-[10px] text-[#2d3548] font-bold uppercase tracking-widest">© 2024 NeoMind180</p>
         </footer>
       </div>
-    </div>
+    </div >
   );
 }
