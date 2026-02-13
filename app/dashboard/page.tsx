@@ -4,6 +4,7 @@ import { useCheckInData } from '@/hooks/useCheckInData';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Notifications from '@/components/Notifications';
 import {
   BookOpen,
   MessageSquare,
@@ -15,7 +16,8 @@ import {
   Heart,
   History,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Lightbulb
 } from 'lucide-react';
 
 // --- DATA STUBS ---
@@ -104,7 +106,8 @@ export default function DashboardPage() {
             Rethink. Rewire. Renew.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <Notifications />
           <Link
             href="/pricing"
             className="flex items-center gap-2 px-6 py-3 bg-[#00538e] text-white rounded-full text-[10px] font-black uppercase hover:shadow-2xl shadow-[#00538e]/20 transition-all"

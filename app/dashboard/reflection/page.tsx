@@ -7,8 +7,8 @@ import { supabase } from '@/lib/supabaseClient';
 // --- CONFIGURATION ---
 const MAX_MESSAGES = {
   free: 0,
-  tier2: 8,
-  tier3: 16
+  tier2: 10,
+  tier3: 20
 };
 
 export default function ReflectionPage() {
@@ -110,7 +110,7 @@ export default function ReflectionPage() {
           </span>
         </div>
         <div className="text-[10px] font-black uppercase tracking-widest text-[#475569]">
-          {userMessageCount}/{limit} messages today
+          {userMessageCount}/{limit} messages per session
         </div>
       </div>
 
@@ -153,10 +153,10 @@ export default function ReflectionPage() {
             <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto border border-red-500/20">
               <Lock className="w-6 h-6 text-[#993366]" />
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-tight">Daily Limit Reached</h3>
+            <h3 className="text-sm font-black text-white uppercase tracking-tight">Session Limit Reached</h3>
             <p className="text-xs text-[#94a3b8] max-w-xs mx-auto leading-relaxed">
-              You've hit your {limit}-message limit for today.
-              {userTier === 'tier2' && " Practice your observations and return tomorrow for more."}
+              You've hit your {limit}-message limit for this session.
+              {userTier === 'tier2' && " Practice your observations and return later for more."}
             </p>
             {userTier === 'tier2' && (
               <button className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00538e] hover:text-[#0AA390] transition-colors mt-2">
