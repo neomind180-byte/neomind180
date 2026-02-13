@@ -25,6 +25,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to handle metadata (Internal only)
+DROP TRIGGER IF EXISTS on_coach_reply_metadata ON public.coach_messages;
 CREATE TRIGGER on_coach_reply_metadata
   BEFORE UPDATE ON public.coach_messages
   FOR EACH ROW
@@ -41,4 +42,4 @@ CREATE TRIGGER on_coach_reply_metadata
 --    - URL: https://neomind180.vercel.app/api/notify-user
 --    - Headers: 
 --        - Content-Type: application/json
---        - Authorization: Bearer re_CcaJB9Xy_C9kghr1V4iBmXkWoM32ZGGrD
+--        - Authorization: Bearer [YOUR_NOTIFY_AUTH_TOKEN]
