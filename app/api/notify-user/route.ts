@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 export async function POST(req: Request) {
     try {
         const authHeader = req.headers.get('authorization');
-        const expectedToken = 'Bearer re_CcaJB9Xy_C9kghr1V4iBmXkWoM32ZGGrD';
+        const expectedToken = `Bearer ${process.env.NOTIFY_AUTH_TOKEN}`;
 
         if (!authHeader || authHeader !== expectedToken) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
