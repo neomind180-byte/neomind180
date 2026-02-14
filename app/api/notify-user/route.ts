@@ -5,7 +5,8 @@ const SMTP_HOST = 'smtp.resend.com';
 const SMTP_PORT = 465;
 const SMTP_USER = 'resend';
 const SMTP_PASSWORD = process.env.RESEND_API_KEY;
-const FROM_EMAIL = 'onboarding@resend.dev';
+const FROM_EMAIL = 'coach_emmeline@coach.neomind180-neurocoaching.com';
+const DASHBOARD_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neomind180-neurocoaching.com';
 
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
           <p style="white-space: pre-wrap; margin: 0;">${record.coach_reply}</p>
         </div>
         <p style="margin-top: 20px;">
-          <a href="https://neomind180.com/dashboard/coach" style="background-color: #00538e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 9999px; font-weight: bold; font-size: 14px; display: inline-block;">View Conversation</a>
+          <a href="${DASHBOARD_URL}/dashboard/coach" style="background-color: #00538e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 9999px; font-weight: bold; font-size: 14px; display: inline-block;">View Conversation</a>
         </p>
         <hr>
         <p style="font-size: 12px; color: #64748b;"><em>You are receiving this because you contacted the coach on NeoMind180.</em></p>
