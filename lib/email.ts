@@ -1,16 +1,16 @@
 import nodemailer from 'nodemailer';
 
-const SMTP_HOST = 'smtp.resend.com';
-const SMTP_PORT = 587;
-const SMTP_USER = 'resend';
-const SMTP_PASSWORD = process.env.RESEND_API_KEY; // Using the new API key
-const FROM_EMAIL = 'onboarding@resend.dev';
-const COACH_EMAIL = 'neomind180@gmail.com';
+const SMTP_HOST = process.env.SMTP_HOST || 'pro.eu.turbo-smtp.com';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+const FROM_EMAIL = process.env.SMTP_FROM_EMAIL || 'noreply@neomind180.com';
+const COACH_EMAIL = process.env.COACH_EMAIL || 'emmeline@coach.neomind180.com';
 
 const transporter = nodemailer.createTransport({
   host: SMTP_HOST,
   port: SMTP_PORT,
-  secure: false, // true for 465, false for other ports
+  secure: SMTP_PORT === 465, // true for 465, false for other ports
   auth: {
     user: SMTP_USER,
     pass: SMTP_PASSWORD,
