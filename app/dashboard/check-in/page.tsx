@@ -63,29 +63,29 @@ export default function CheckInPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[#1a1f2e] flex flex-col items-center justify-center p-6 text-center space-y-6">
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-6 text-center space-y-6">
         <div className="w-24 h-24 bg-[#0AA390]/10 rounded-full flex items-center justify-center animate-bounce border border-[#0AA390]/20">
           <Wind className="w-12 h-12 text-[#0AA390]" />
         </div>
-        <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Acknowledge.</h1>
-        <p className="text-[#94a3b8] font-medium italic">Your check-in is complete. Returning to your 180° path...</p>
+        <h1 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Acknowledge.</h1>
+        <p className="text-[var(--text-muted)] font-medium italic">Your check-in is complete. Returning to your 180° path...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e] font-sans text-[#cbd5e1]">
+    <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)]">
       <div className="max-w-3xl mx-auto p-6 md:p-12 space-y-12">
 
         <header className="flex items-center">
-          <Link href="/dashboard" className="p-2 hover:bg-[#232938] rounded-full transition-colors text-[#94a3b8] hover:text-white">
+          <Link href="/dashboard" className="p-2 hover:bg-[var(--bg-card)] rounded-full transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)]">
             <ArrowLeft className="w-6 h-6" />
           </Link>
         </header>
 
         <div className="space-y-4">
-          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Daily Check-In</h1>
-          <p className="text-sm text-[#94a3b8] font-bold uppercase tracking-widest flex items-center gap-2">
+          <h1 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Daily Check-In</h1>
+          <p className="text-sm text-[var(--text-muted)] font-bold uppercase tracking-widest flex items-center gap-2">
             <Wind className="w-4 h-4 text-[#0AA390]" /> Under 1 minute to clarity
           </p>
         </div>
@@ -94,8 +94,8 @@ export default function CheckInPage() {
           {checkInSteps.map((step) => (
             <div key={step.id} className="space-y-6">
               <div className="flex justify-between items-end">
-                <h3 className="text-lg font-black text-white uppercase tracking-tight">{step.label}</h3>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#475569]">{step.description}</span>
+                <h3 className="text-lg font-black text-[var(--text-primary)] uppercase tracking-tight">{step.label}</h3>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">{step.description}</span>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -105,7 +105,7 @@ export default function CheckInPage() {
                     onClick={() => handleSelect(step.id, option)}
                     className={`py-6 rounded-[2rem] font-bold text-[10px] uppercase tracking-[0.2em] border transition-all ${selections[step.id] === option
                         ? "bg-[#0AA390] border-transparent text-white shadow-lg shadow-[#0AA390]/20 scale-[1.02]"
-                        : "bg-[#232938] border-[#2d3548] text-[#475569] hover:border-[#0AA390]/50 hover:text-white"
+                        : "bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-dim)] hover:border-[#0AA390]/50 hover:text-[var(--text-primary)]"
                       }`}
                   >
                     {option}
@@ -124,7 +124,7 @@ export default function CheckInPage() {
           >
             Complete Check-In
           </button>
-          <p className="text-center mt-6 text-[10px] font-bold uppercase tracking-widest text-[#475569]">
+          <p className="text-center mt-6 text-[10px] font-bold uppercase tracking-widest text-[var(--text-dim)]">
             Rethink. Rewire. Renew.
           </p>
         </div>

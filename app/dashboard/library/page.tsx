@@ -130,26 +130,26 @@ export default function LibraryPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e] font-sans text-[#cbd5e1] p-6 md:p-12 space-y-8">
+    <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] p-6 md:p-12 space-y-8">
 
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">
+          <h1 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
             Self-Help Library
           </h1>
-          <p className="text-[#94a3b8] font-medium mt-2 max-w-lg italic">
+          <p className="text-[var(--text-muted)] font-medium mt-2 max-w-lg italic">
             Curated tools to help you rethink, rewire, and renew at your own pace.
           </p>
         </div>
 
         {/* Toggle Switch */}
-        <div className="bg-[#232938] p-1.5 rounded-[2rem] border border-[#2d3548] flex shadow-2xl shadow-black/20">
+        <div className="bg-[var(--bg-card)] p-1.5 rounded-[2rem] border border-[var(--border)] flex shadow-2xl shadow-[var(--shadow-color)]">
           <button
             onClick={() => setActiveTab('read')}
             className={`flex items-center gap-2 px-8 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'read'
               ? 'bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20'
-              : 'text-[#475569] hover:text-[#94a3b8]'
+              : 'text-[var(--text-dim)] hover:text-[var(--text-muted)]'
               }`}
           >
             <BookOpen className="w-4 h-4" /> Read
@@ -158,7 +158,7 @@ export default function LibraryPage() {
             onClick={() => setActiveTab('listen')}
             className={`flex items-center gap-2 px-8 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'listen'
               ? 'bg-[#0AA390] text-white shadow-lg shadow-[#0AA390]/20'
-              : 'text-[#475569] hover:text-[#94a3b8]'
+              : 'text-[var(--text-dim)] hover:text-[var(--text-muted)]'
               }`}
           >
             <Headphones className="w-4 h-4" /> Listen
@@ -167,7 +167,7 @@ export default function LibraryPage() {
             onClick={() => setActiveTab('watch')}
             className={`flex items-center gap-2 px-8 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'watch'
               ? 'bg-[#993366] text-white shadow-lg shadow-[#993366]/20'
-              : 'text-[#475569] hover:text-[#94a3b8]'
+              : 'text-[var(--text-dim)] hover:text-[var(--text-muted)]'
               }`}
           >
             <Video className="w-4 h-4" /> Watch
@@ -177,7 +177,7 @@ export default function LibraryPage() {
 
       {/* CONTENT AREA */}
       {loading ? (
-        <div className="text-center py-12 text-[#475569] font-black uppercase tracking-widest text-[10px] animate-pulse">Loading library resources...</div>
+        <div className="text-center py-12 text-[var(--text-dim)] font-black uppercase tracking-widest text-[10px] animate-pulse">Loading library resources...</div>
       ) : (
         <div className="grid gap-6">
 
@@ -187,20 +187,20 @@ export default function LibraryPage() {
               {filteredItems.map((item) => {
                 const locked = isLocked(item.min_tier);
                 return (
-                  <div key={item.id} className="bg-[#232938] p-8 rounded-[2.5rem] border border-[#2d3548] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                  <div key={item.id} className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
                     <div className="w-12 h-12 bg-[#00538e]/10 rounded-2xl flex items-center justify-center mb-6 text-[#00538e] group-hover:scale-110 transition-transform">
                       <FileText className="w-6 h-6" />
                     </div>
                     <div className="flex justify-between items-start mb-4">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-[#94a3b8] bg-[#1a1f2e] border border-[#2d3548] px-2 py-1 rounded-md">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] bg-[var(--bg-primary)] border border-[var(--border)] px-2 py-1 rounded-md">
                         {item.type}
                       </span>
                       {locked && <Lock className="w-4 h-4 text-[#F39904]" />}
                     </div>
-                    <h3 className="text-lg font-bold text-white leading-tight mb-2">
+                    <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight mb-2">
                       {item.title}
                     </h3>
-                    <p className="text-[10px] text-[#475569] font-black uppercase tracking-widest flex items-center gap-2">
+                    <p className="text-[10px] text-[var(--text-dim)] font-black uppercase tracking-widest flex items-center gap-2">
                       <Clock className="w-3 h-3" /> {item.read_time}
                     </p>
                     <button
@@ -208,7 +208,7 @@ export default function LibraryPage() {
                       onClick={() => !locked && item.content_url && window.open(item.content_url, '_blank')}
                       className={`w-full mt-8 py-4 rounded-2xl border font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${locked
                         ? 'border-[#1a1f2e] text-[#2d3548] cursor-not-allowed'
-                        : 'border-[#2d3548] text-[#00538e] hover:border-[#00538e] hover:bg-[#00538e] hover:text-white'
+                        : 'border-[var(--border)] text-[#00538e] hover:border-[#00538e] hover:bg-[#00538e] hover:text-white'
                         }`}
                     >
                       {item.type === 'Worksheet' ? <Download className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
@@ -229,9 +229,9 @@ export default function LibraryPage() {
                 return (
                   <div
                     key={track.id}
-                    className={`flex items-center justify-between p-8 bg-[#232938] rounded-[2.5rem] border transition-all ${isPlaying
+                    className={`flex items-center justify-between p-8 bg-[var(--bg-card)] rounded-[2.5rem] border transition-all ${isPlaying
                       ? 'border-[#0AA390] shadow-xl shadow-[#0AA390]/10 ring-1 ring-[#0AA390]/20'
-                      : 'border-[#2d3548] shadow-sm hover:border-[#475569]'
+                      : 'border-[var(--border)] shadow-sm hover:border-[#475569]'
                       }`}
                   >
                     <div className="flex items-center gap-8">
@@ -239,10 +239,10 @@ export default function LibraryPage() {
                         onClick={() => !locked && togglePlay(track)}
                         disabled={locked}
                         className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${locked
-                          ? 'bg-[#1a1f2e] text-[#2d3548] cursor-not-allowed'
+                          ? 'bg-[var(--bg-primary)] text-[#2d3548] cursor-not-allowed'
                           : isPlaying
                             ? 'bg-[#0AA390] text-white shadow-xl shadow-[#0AA390]/20 scale-110'
-                            : 'bg-[#1a1f2e] border border-[#2d3548] text-[#0AA390] hover:bg-[#0AA390] hover:text-white'
+                            : 'bg-[var(--bg-primary)] border border-[var(--border)] text-[#0AA390] hover:bg-[#0AA390] hover:text-white'
                           }`}
                       >
                         {locked ? <Lock className="w-7 h-7" /> : isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7 ml-1" />}
@@ -250,17 +250,17 @@ export default function LibraryPage() {
 
                       <div>
                         <div className="flex items-center gap-3">
-                          <h3 className={`text-xl font-bold ${isPlaying ? 'text-[#0AA390]' : 'text-white'}`}>
+                          <h3 className={`text-xl font-bold ${isPlaying ? 'text-[#0AA390]' : 'text-[var(--text-primary)]'}`}>
                             {track.title}
                           </h3>
                           {isPlaying && <Volume2 className="w-4 h-4 text-[#0AA390] animate-bounce" />}
                         </div>
                         <div className="flex items-center gap-4 mt-2">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-[#475569]">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                             {track.category}
                           </span>
                           <span className="w-1.5 h-1.5 rounded-full bg-[#2d3548]" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] flex items-center gap-1.5">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5" /> {track.duration}
                           </span>
                         </div>
@@ -284,13 +284,13 @@ export default function LibraryPage() {
           {/* --- WATCH TAB --- */}
           {activeTab === 'watch' && (
             <div className="grid md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {filteredItems.length === 0 && <div className="col-span-2 text-center text-[#475569] py-12 font-black uppercase text-[10px] tracking-widest">No video content available yet.</div>}
+              {filteredItems.length === 0 && <div className="col-span-2 text-center text-[var(--text-dim)] py-12 font-black uppercase text-[10px] tracking-widest">No video content available yet.</div>}
               {filteredItems.map((video) => {
                 const locked = isLocked(video.min_tier);
                 return (
-                  <div key={video.id} className="bg-[#232938] p-8 rounded-[2.5rem] border border-[#2d3548] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                  <div key={video.id} className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
                     {/* Thumbnail Placeholder */}
-                    <div className="aspect-video bg-[#1a1f2e] border border-[#2d3548] rounded-2xl mb-6 flex items-center justify-center relative overflow-hidden group-hover:opacity-90 transition-opacity cursor-pointer shadow-inner">
+                    <div className="aspect-video bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl mb-6 flex items-center justify-center relative overflow-hidden group-hover:opacity-90 transition-opacity cursor-pointer shadow-inner">
                       {locked ? (
                         <Lock className="w-10 h-10 text-[#2d3548]" />
                       ) : (
@@ -299,15 +299,15 @@ export default function LibraryPage() {
                     </div>
 
                     <div className="flex justify-between items-start mb-3">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-white bg-[#993366] px-3 py-1.5 rounded-lg shadow-lg shadow-[#993366]/20">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)] bg-[#993366] px-3 py-1.5 rounded-lg shadow-lg shadow-[#993366]/20">
                         {video.category || 'Video'}
                       </span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-[#475569] flex items-center gap-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" /> {video.duration}
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-white leading-tight mb-6">
+                    <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight mb-6">
                       {video.title}
                     </h3>
 
@@ -316,7 +316,7 @@ export default function LibraryPage() {
                       onClick={() => !locked && video.content_url && window.open(video.content_url, '_blank')}
                       className={`w-full py-4 rounded-2xl border font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${locked
                         ? 'border-[#1a1f2e] text-[#2d3548] cursor-not-allowed'
-                        : 'border-[#2d3548] text-[#993366] hover:border-[#993366] hover:bg-[#993366] hover:text-white'
+                        : 'border-[var(--border)] text-[#993366] hover:border-[#993366] hover:bg-[#993366] hover:text-white'
                         }`}
                     >
                       <ExternalLink className="w-4 h-4" />

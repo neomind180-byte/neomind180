@@ -100,37 +100,37 @@ export default function ReflectionPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] bg-[#1a1f2e]">
+    <div className="flex flex-col h-[calc(100vh-120px)] bg-[var(--bg-primary)]">
       {/* Header with Limit Counter */}
-      <div className="flex items-center justify-between px-8 py-5 bg-[#232938] rounded-t-[2.5rem] border border-[#2d3548] border-b-0">
+      <div className="flex items-center justify-between px-8 py-5 bg-[var(--bg-card)] rounded-t-[2.5rem] border border-[var(--border)] border-b-0">
         <div className="flex items-center gap-3">
           <Zap className="w-5 h-5 text-[#0AA390]" />
-          <span className="text-xs font-black uppercase tracking-widest text-[#94a3b8]">
+          <span className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
             {userTier === 'tier2' ? 'Coaching Access' : 'Deep Coaching'}
           </span>
         </div>
-        <div className="text-[10px] font-black uppercase tracking-widest text-[#475569]">
+        <div className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
           {userMessageCount}/{limit} messages per session
         </div>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-grow overflow-y-auto p-8 space-y-6 border-x border-[#2d3548] bg-[#232938]/50">
+      <div className="flex-grow overflow-y-auto p-8 space-y-6 border-x border-[var(--border)] bg-[var(--bg-card)]/50">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] p-5 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
               ? 'bg-[#00538e] text-white rounded-tr-none shadow-lg shadow-[#00538e]/10'
-              : 'bg-[#1a1f2e] text-[#cbd5e1] rounded-tl-none border border-[#2d3548]'
+              : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] rounded-tl-none border border-[var(--border)]'
               }`}>
               {msg.content}
             </div>
           </div>
         ))}
-        {isTyping && <div className="text-[10px] text-[#475569] font-black uppercase tracking-widest animate-pulse pl-4">Neo is observing...</div>}
+        {isTyping && <div className="text-[10px] text-[var(--text-dim)] font-black uppercase tracking-widest animate-pulse pl-4">Neo is observing...</div>}
       </div>
 
       {/* Input Area or Limit Reached Message */}
-      <div className="p-8 bg-[#232938] rounded-b-[2.5rem] border border-[#2d3548] border-t-0">
+      <div className="p-8 bg-[var(--bg-card)] rounded-b-[2.5rem] border border-[var(--border)] border-t-0">
         {!isLimitReached ? (
           <form onSubmit={handleSend} className="relative">
             <input
@@ -138,7 +138,7 @@ export default function ReflectionPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Share your reflection..."
-              className="w-full pl-8 pr-16 py-5 bg-[#1a1f2e] border border-[#2d3548] text-white rounded-2xl outline-none focus:border-[#00538e] transition-all text-sm font-medium placeholder:text-[#475569]"
+              className="w-full pl-8 pr-16 py-5 bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-primary)] rounded-2xl outline-none focus:border-[#00538e] transition-all text-sm font-medium placeholder:text-[var(--text-dim)]"
             />
             <button
               type="submit"
@@ -149,12 +149,12 @@ export default function ReflectionPage() {
             </button>
           </form>
         ) : (
-          <div className="bg-[#1a1f2e] p-8 rounded-3xl text-center space-y-4 border border-[#2d3548]">
+          <div className="bg-[var(--bg-primary)] p-8 rounded-3xl text-center space-y-4 border border-[var(--border)]">
             <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto border border-red-500/20">
               <Lock className="w-6 h-6 text-[#993366]" />
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-tight">Session Limit Reached</h3>
-            <p className="text-xs text-[#94a3b8] max-w-xs mx-auto leading-relaxed">
+            <h3 className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tight">Session Limit Reached</h3>
+            <p className="text-xs text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">
               You've hit your {limit}-message limit for this session.
               {userTier === 'tier2' && " Practice your observations and return later for more."}
             </p>

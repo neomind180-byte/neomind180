@@ -138,7 +138,7 @@ export default function Notifications() {
                 onClick={toggleOpen}
                 className={`relative p-3 rounded-full transition-all group ${isOpen
                     ? "bg-[#0AA390] text-white"
-                    : "bg-[#232938] border border-[#2d3548] text-[#94a3b8] hover:text-[#0AA390] hover:border-[#0AA390]/30"
+                    : "bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[#0AA390] hover:border-[#0AA390]/30"
                     }`}
                 aria-label="Notifications"
             >
@@ -152,17 +152,17 @@ export default function Notifications() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-4 w-80 bg-[#1a1f2e] border border-[#2d3548] rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="p-6 bg-[#232938] border-b border-[#2d3548] flex justify-between items-center">
+                <div className="absolute right-0 mt-4 w-80 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="p-6 bg-[var(--bg-card)] border-b border-[var(--border)] flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-[#0AA390]" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">
                                 Intelligence Feed
                             </h3>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="p-1 hover:bg-[#1a1f2e] rounded-full text-[#475569] hover:text-white transition-colors"
+                            className="p-1 hover:bg-[var(--bg-primary)] rounded-full text-[var(--text-dim)] hover:text-[var(--text-primary)] transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -175,7 +175,7 @@ export default function Notifications() {
                                     key={i}
                                     href={n.href}
                                     onClick={() => setIsOpen(false)}
-                                    className="block p-5 border-b border-[#2d3548] hover:bg-[#232938]/50 transition-all group"
+                                    className="block p-5 border-b border-[var(--border)] hover:bg-[var(--bg-card)]/50 transition-all group"
                                 >
                                     <div className="flex gap-4">
                                         <div
@@ -195,13 +195,13 @@ export default function Notifications() {
                                             )}
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-xs font-black text-white group-hover:text-[#0AA390] transition-colors uppercase tracking-tight">
+                                            <p className="text-xs font-black text-[var(--text-primary)] group-hover:text-[#0AA390] transition-colors uppercase tracking-tight">
                                                 {n.title}
                                             </p>
-                                            <p className="text-[11px] text-[#94a3b8] leading-tight font-medium">
+                                            <p className="text-[11px] text-[var(--text-muted)] leading-tight font-medium">
                                                 {n.description}
                                             </p>
-                                            <p className="text-[8px] text-[#475569] font-black uppercase tracking-widest mt-2 flex items-center gap-1.5">
+                                            <p className="text-[8px] text-[var(--text-dim)] font-black uppercase tracking-widest mt-2 flex items-center gap-1.5">
                                                 <span className="w-1 h-1 bg-[#475569] rounded-full" />
                                                 {new Date(n.timestamp).toLocaleDateString(undefined, {
                                                     month: "short",
@@ -214,20 +214,20 @@ export default function Notifications() {
                             ))
                         ) : (
                             <div className="p-12 text-center space-y-4">
-                                <div className="w-16 h-16 bg-[#232938] rounded-full flex items-center justify-center mx-auto border border-[#2d3548]">
+                                <div className="w-16 h-16 bg-[var(--bg-card)] rounded-full flex items-center justify-center mx-auto border border-[var(--border)]">
                                     <Lightbulb className="w-8 h-8 text-[#2d3548]" />
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-[#475569]">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                                     No new updates for you
                                 </p>
                             </div>
                         )}
                     </div>
 
-                    <div className="p-4 bg-[#232938] border-t border-[#2d3548] text-center">
+                    <div className="p-4 bg-[var(--bg-card)] border-t border-[var(--border)] text-center">
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="text-[9px] font-black uppercase tracking-widest text-[#94a3b8] hover:text-[#0AA390] transition-colors"
+                            className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[#0AA390] transition-colors"
                         >
                             Clear Feed
                         </button>

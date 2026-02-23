@@ -175,32 +175,32 @@ export default function CoachDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1a1f2e] font-sans text-[#cbd5e1] flex flex-col">
+        <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] flex flex-col">
             {/* Header */}
-            <header className="p-8 border-b border-[#2d3548] bg-[#1a1f2e] sticky top-0 z-20 flex items-center justify-between">
+            <header className="p-8 border-b border-[var(--border)] bg-[var(--bg-primary)] sticky top-0 z-20 flex items-center justify-between">
                 <div className="flex items-center gap-6">
-                    <Link href="/dashboard" className="p-2 hover:bg-[#232938] rounded-full transition-all text-[#94a3b8] hover:text-white shadow-sm">
+                    <Link href="/dashboard" className="p-2 hover:bg-[var(--bg-card)] rounded-full transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-sm">
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-[#00538e] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00538e]/20 border border-white/5">
-                            <Inbox className="w-6 h-6 text-white" />
+                            <Inbox className="w-6 h-6 text-[var(--text-primary)]" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black text-white uppercase tracking-tighter">Coach Inbox</h1>
+                            <h1 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Coach Inbox</h1>
                             <p className="text-[10px] font-black uppercase tracking-widest text-[#0AA390]">Administration</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex bg-[#232938] rounded-full p-1 border border-[#2d3548] shadow-sm">
+                <div className="flex bg-[var(--bg-card)] rounded-full p-1 border border-[var(--border)] shadow-sm">
                     {(['pending', 'replied', 'circles'] as const).map((tab) => (
                         <button
                             key={tab}
                             onClick={() => { setActiveTab(tab); setSelectedMessage(null); }}
                             className={`px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === tab
                                 ? "bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20"
-                                : "text-[#475569] hover:text-[#94a3b8]"
+                                : "text-[var(--text-dim)] hover:text-[var(--text-muted)]"
                                 }`}
                         >
                             {tab === 'circles' ? 'Circle Invites' : tab}
@@ -218,7 +218,7 @@ export default function CoachDashboard() {
                                 <div className="w-12 h-12 bg-[#0AA390]/10 rounded-2xl flex items-center justify-center border border-[#0AA390]/20">
                                     <Users className="w-6 h-6 text-[#0AA390]" />
                                 </div>
-                                <h2 className="text-xl font-black text-white uppercase tracking-tight">Manage Circle Invitations</h2>
+                                <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Manage Circle Invitations</h2>
                             </div>
                             <button
                                 onClick={() => setShowCreateModal(true)}
@@ -233,20 +233,20 @@ export default function CoachDashboard() {
                                 <Loader2 className="w-8 h-8 animate-spin text-[#00538e]" />
                             </div>
                         ) : circleInvites.length === 0 ? (
-                            <div className="text-center py-24 bg-[#232938] rounded-[3rem] border border-[#2d3548]">
-                                <Users className="w-16 h-16 text-[#475569] mx-auto mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-[#475569]">No active invitations</p>
+                            <div className="text-center py-24 bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border)]">
+                                <Users className="w-16 h-16 text-[var(--text-dim)] mx-auto mb-4" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">No active invitations</p>
                             </div>
                         ) : (
                             <div className="grid gap-6">
                                 {circleInvites.map((invite) => (
-                                    <div key={invite.id} className="bg-[#232938] border border-[#2d3548] p-8 rounded-[3rem] space-y-4">
+                                    <div key={invite.id} className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-[3rem] space-y-4">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-2">
-                                                <h3 className="text-lg font-black text-white uppercase tracking-tight">{invite.title}</h3>
-                                                {invite.description && <p className="text-sm text-[#94a3b8]">{invite.description}</p>}
+                                                <h3 className="text-lg font-black text-[var(--text-primary)] uppercase tracking-tight">{invite.title}</h3>
+                                                {invite.description && <p className="text-sm text-[var(--text-muted)]">{invite.description}</p>}
                                                 {invite.session_date && (
-                                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#475569]">
+                                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                                                         <Calendar className="w-3.5 h-3.5" />
                                                         {new Date(invite.session_date).toLocaleString()}
                                                     </div>
@@ -259,7 +259,7 @@ export default function CoachDashboard() {
                                             </div>
                                             <button
                                                 onClick={() => handleDeleteInvite(invite.id)}
-                                                className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
+                                                className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-[var(--text-primary)] rounded-xl transition-all"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -273,34 +273,34 @@ export default function CoachDashboard() {
                     /* Existing Messages Interface */
                     <>
                         {/* Sidebar List */}
-                        <div className="w-full md:w-1/3 border-r border-[#2d3548] bg-[#1a1f2e] overflow-y-auto">
+                        <div className="w-full md:w-1/3 border-r border-[var(--border)] bg-[var(--bg-primary)] overflow-y-auto">
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-4 opacity-50">
                                     <Loader2 className="w-8 h-8 animate-spin text-[#00538e]" />
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#475569]">Syncing conversations...</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">Syncing conversations...</p>
                                 </div>
                             ) : messages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-4 p-12 text-center opacity-30">
-                                    <Inbox className="w-12 h-12 text-[#475569]" />
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#475569]">No {activeTab} messages</p>
+                                    <Inbox className="w-12 h-12 text-[var(--text-dim)]" />
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">No {activeTab} messages</p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-[#2d3548]">
+                                <div className="divide-y divide-[var(--border)]">
                                     {messages.map((msg) => (
                                         <button
                                             key={msg.id}
                                             onClick={() => { setSelectedMessage(msg); setReplyText(''); setError(null); }}
-                                            className={`w-full p-8 text-left transition-all hover:bg-[#232938] relative group ${selectedMessage?.id === msg.id ? "bg-[#232938] border-l-4 border-[#0AA390]" : "border-l-4 border-transparent"
+                                            className={`w-full p-8 text-left transition-all hover:bg-[var(--bg-card)] relative group ${selectedMessage?.id === msg.id ? "bg-[var(--bg-card)] border-l-4 border-[#0AA390]" : "border-l-4 border-transparent"
                                                 }`}
                                         >
                                             <div className="flex justify-between items-start mb-3">
                                                 <span className="text-[10px] font-black text-[#0AA390] uppercase tracking-widest">{msg.user_name}</span>
-                                                <span className="text-[9px] text-[#475569] font-bold">
+                                                <span className="text-[9px] text-[var(--text-dim)] font-bold">
                                                     {new Date(msg.created_at).toLocaleDateString()}
                                                 </span>
                                             </div>
-                                            <h4 className="text-sm font-bold text-white line-clamp-1 mb-2 tracking-tight uppercase">{msg.subject}</h4>
-                                            <p className="text-xs text-[#94a3b8] line-clamp-2 leading-relaxed italic">"{msg.message}"</p>
+                                            <h4 className="text-sm font-bold text-[var(--text-primary)] line-clamp-1 mb-2 tracking-tight uppercase">{msg.subject}</h4>
+                                            <p className="text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed italic">"{msg.message}"</p>
                                         </button>
                                     ))}
                                 </div>
@@ -308,19 +308,19 @@ export default function CoachDashboard() {
                         </div>
 
                         {/* Message Content & Reply Area */}
-                        <div className="hidden md:flex flex-1 flex-col bg-[#1a1f2e] overflow-y-auto">
+                        <div className="hidden md:flex flex-1 flex-col bg-[var(--bg-primary)] overflow-y-auto">
                             {selectedMessage ? (
                                 <div className="p-12 space-y-8 max-w-5xl mx-auto w-full">
                                     {/* Client Message */}
-                                    <div className="bg-[#232938] p-10 rounded-[3rem] shadow-xl border border-[#2d3548] space-y-6">
+                                    <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] shadow-xl border border-[var(--border)] space-y-6">
                                         <div className="flex justify-between items-center mb-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-[#1a1f2e] rounded-2xl flex items-center justify-center border border-[#2d3548]">
-                                                    <User className="w-6 h-6 text-[#94a3b8]" />
+                                                <div className="w-12 h-12 bg-[var(--bg-primary)] rounded-2xl flex items-center justify-center border border-[var(--border)]">
+                                                    <User className="w-6 h-6 text-[var(--text-muted)]" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-black text-white uppercase text-sm tracking-tight">{selectedMessage.user_name}</h3>
-                                                    <p className="text-[10px] text-[#475569] font-bold">{selectedMessage.user_email}</p>
+                                                    <h3 className="font-black text-[var(--text-primary)] uppercase text-sm tracking-tight">{selectedMessage.user_name}</h3>
+                                                    <p className="text-[10px] text-[var(--text-dim)] font-bold">{selectedMessage.user_email}</p>
                                                 </div>
                                             </div>
                                             <div className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border ${activeTab === 'pending' ? 'bg-[#993366]/10 text-[#993366] border-[#993366]/20' : 'bg-[#0AA390]/10 text-[#0AA390] border-[#0AA390]/20'
@@ -328,8 +328,8 @@ export default function CoachDashboard() {
                                                 {activeTab === 'pending' ? 'Awaiting Guidance' : 'Compassionate Close'}
                                             </div>
                                         </div>
-                                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter border-l-4 border-[#00538e] pl-6 py-1">{selectedMessage.subject}</h2>
-                                        <div className="text-sm text-[#cbd5e1] leading-relaxed whitespace-pre-wrap bg-[#1a1f2e] p-8 rounded-3xl border border-[#2d3548] italic">
+                                        <h2 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter border-l-4 border-[#00538e] pl-6 py-1">{selectedMessage.subject}</h2>
+                                        <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap bg-[var(--bg-primary)] p-8 rounded-3xl border border-[var(--border)] italic">
                                             {selectedMessage.message}
                                         </div>
                                     </div>
@@ -339,18 +339,18 @@ export default function CoachDashboard() {
                                         <div className="space-y-6">
                                             <div className="flex items-center gap-3 ml-6">
                                                 <MessageSquare className="w-5 h-5 text-[#0AA390]" />
-                                                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[#475569]">Synthesizing Guidance</span>
+                                                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Synthesizing Guidance</span>
                                             </div>
 
-                                            <div className="bg-[#232938] border border-[#2d3548] p-4 rounded-[3rem] shadow-2xl focus-within:border-[#0AA390] transition-all">
+                                            <div className="bg-[var(--bg-card)] border border-[var(--border)] p-4 rounded-[3rem] shadow-2xl focus-within:border-[#0AA390] transition-all">
                                                 <textarea
                                                     value={replyText}
                                                     onChange={(e) => setReplyText(e.target.value)}
                                                     placeholder="Lead with presence... Offer clarity and a new perspective."
-                                                    className="w-full min-h-[300px] p-8 outline-none bg-transparent text-[#e2e8f0] text-sm leading-relaxed resize-none placeholder:text-[#2d3548]"
+                                                    className="w-full min-h-[300px] p-8 outline-none bg-transparent text-[var(--text-secondary)] text-sm leading-relaxed resize-none placeholder:text-[var(--text-dim)]"
                                                 />
-                                                <div className="flex justify-between items-center p-6 border-t border-[#2d3548]">
-                                                    <p className="text-[10px] text-[#475569] font-black uppercase tracking-widest italic">
+                                                <div className="flex justify-between items-center p-6 border-t border-[var(--border)]">
+                                                    <p className="text-[10px] text-[var(--text-dim)] font-black uppercase tracking-widest italic">
                                                         Sync to Client Email & Profile
                                                     </p>
                                                     <button
@@ -379,15 +379,15 @@ export default function CoachDashboard() {
                                         <div className="space-y-6">
                                             <div className="flex items-center gap-3 ml-6">
                                                 <CheckCircle2 className="w-5 h-5 text-[#0AA390]" />
-                                                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[#475569]">Historical Perspective</span>
+                                                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Historical Perspective</span>
                                             </div>
-                                            <div className="bg-[#232938]/50 border border-[#2d3548] p-10 rounded-[3rem] space-y-6">
-                                                <div className="text-sm text-[#94a3b8] italic leading-relaxed whitespace-pre-wrap pl-6 border-l-2 border-[#0AA390]/30">
+                                            <div className="bg-[var(--bg-card)]/50 border border-[var(--border)] p-10 rounded-[3rem] space-y-6">
+                                                <div className="text-sm text-[var(--text-muted)] italic leading-relaxed whitespace-pre-wrap pl-6 border-l-2 border-[#0AA390]/30">
                                                     {selectedMessage.coach_reply}
                                                 </div>
-                                                <div className="pt-6 border-t border-[#2d3548] flex justify-between items-center">
-                                                    <span className="text-[10px] font-black uppercase text-[#475569] tracking-[0.3em]">Lifecycle Complete</span>
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">
+                                                <div className="pt-6 border-t border-[var(--border)] flex justify-between items-center">
+                                                    <span className="text-[10px] font-black uppercase text-[var(--text-dim)] tracking-[0.3em]">Lifecycle Complete</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
                                                         {new Date(selectedMessage.replied_at).toLocaleDateString()}
                                                     </span>
                                                 </div>
@@ -397,12 +397,12 @@ export default function CoachDashboard() {
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full gap-8 opacity-20 p-12 text-center">
-                                    <div className="w-24 h-24 bg-[#232938] rounded-[2.5rem] flex items-center justify-center border border-[#2d3548]">
-                                        <Mail className="w-10 h-10 text-[#475569]" />
+                                    <div className="w-24 h-24 bg-[var(--bg-card)] rounded-[2.5rem] flex items-center justify-center border border-[var(--border)]">
+                                        <Mail className="w-10 h-10 text-[var(--text-dim)]" />
                                     </div>
                                     <div>
-                                        <h3 className="text-[11px] font-black uppercase tracking-[0.4em] mb-3 text-[#475569]">Awaiting Selection</h3>
-                                        <p className="text-[10px] text-[#475569] max-w-[250px] mx-auto uppercase tracking-widest leading-loose">
+                                        <h3 className="text-[11px] font-black uppercase tracking-[0.4em] mb-3 text-[var(--text-dim)]">Awaiting Selection</h3>
+                                        <p className="text-[10px] text-[var(--text-dim)] max-w-[250px] mx-auto uppercase tracking-widest leading-loose">
                                             Choose a client signal to initiate dialogue.
                                         </p>
                                     </div>
@@ -414,8 +414,8 @@ export default function CoachDashboard() {
             </main>
 
             {/* Mobile view alert */}
-            <div className="md:hidden p-8 text-center bg-[#232938] m-6 rounded-[2.5rem] border border-[#2d3548] shadow-2xl">
-                <p className="text-[10px] font-black text-[#94a3b8] uppercase tracking-[0.2em] leading-relaxed">
+            <div className="md:hidden p-8 text-center bg-[var(--bg-card)] m-6 rounded-[2.5rem] border border-[var(--border)] shadow-2xl">
+                <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] leading-relaxed">
                     Administration requires expanded viewport resolution.
                 </p>
             </div>
@@ -423,55 +423,55 @@ export default function CoachDashboard() {
             {/* Create Invite Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-[#232938] w-full max-w-2xl p-10 rounded-[3rem] border border-[#2d3548] shadow-2xl space-y-8">
+                    <div className="bg-[var(--bg-card)] w-full max-w-2xl p-10 rounded-[3rem] border border-[var(--border)] shadow-2xl space-y-8">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-black text-white uppercase tracking-tight">Create Circle Invitation</h2>
-                            <button onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-[#1a1f2e] rounded-full text-[#475569] hover:text-white transition-colors">
+                            <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Create Circle Invitation</h2>
+                            <button onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-[var(--bg-primary)] rounded-full text-[var(--text-dim)] hover:text-[var(--text-primary)] transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-4">Title *</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Title *</label>
                                 <input
                                     type="text"
                                     value={newInvite.title}
                                     onChange={(e) => setNewInvite({ ...newInvite, title: e.target.value })}
                                     placeholder="e.g., February Collective Reset"
-                                    className="w-full p-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#0AA390] text-white transition-all"
+                                    className="w-full p-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#0AA390] text-[var(--text-primary)] transition-all"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-4">Description</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Description</label>
                                 <textarea
                                     value={newInvite.description}
                                     onChange={(e) => setNewInvite({ ...newInvite, description: e.target.value })}
                                     placeholder="Session theme or focus..."
-                                    className="w-full p-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#0AA390] text-white transition-all min-h-[100px] resize-none"
+                                    className="w-full p-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#0AA390] text-[var(--text-primary)] transition-all min-h-[100px] resize-none"
                                 />
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-4">Session Date & Time</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Session Date & Time</label>
                                     <input
                                         type="datetime-local"
                                         value={newInvite.session_date}
                                         onChange={(e) => setNewInvite({ ...newInvite, session_date: e.target.value })}
-                                        className="w-full p-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#0AA390] text-white transition-all"
+                                        className="w-full p-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#0AA390] text-[var(--text-primary)] transition-all"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-4">Access Link</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Access Link</label>
                                     <input
                                         type="url"
                                         value={newInvite.access_link}
                                         onChange={(e) => setNewInvite({ ...newInvite, access_link: e.target.value })}
                                         placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                                        className="w-full p-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#0AA390] text-white transition-all"
+                                        className="w-full p-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#0AA390] text-[var(--text-primary)] transition-all"
                                     />
                                 </div>
                             </div>
@@ -480,7 +480,7 @@ export default function CoachDashboard() {
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="py-4 rounded-2xl border border-[#2d3548] text-[10px] font-black uppercase tracking-widest text-[#94a3b8] hover:bg-[#1a1f2e] transition-all"
+                                className="py-4 rounded-2xl border border-[var(--border)] text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-primary)] transition-all"
                             >
                                 Cancel
                             </button>

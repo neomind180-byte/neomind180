@@ -113,11 +113,11 @@ export default function AskTheCoachPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e] font-sans text-[#cbd5e1] flex flex-col">
+    <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] flex flex-col">
       {/* Header */}
-      <header className="p-6 md:p-10 border-b border-[#2d3548] flex items-center justify-between sticky top-0 bg-[#1a1f2e] z-10">
+      <header className="p-6 md:p-10 border-b border-[var(--border)] flex items-center justify-between bg-[var(--bg-primary)]">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="p-2 hover:bg-[#232938] rounded-full transition-colors text-[#94a3b8] hover:text-white">
+          <Link href="/dashboard" className="p-2 hover:bg-[var(--bg-card)] rounded-full transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)]">
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <div className="flex items-center gap-4">
@@ -125,8 +125,8 @@ export default function AskTheCoachPage() {
               <MessageSquare className="w-6 h-6 text-[#00538e]" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-white uppercase tracking-tighter">Ask-the-Coach</h1>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Direct Support Channel</p>
+              <h1 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Ask-the-Coach</h1>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Direct Support Channel</p>
             </div>
           </div>
         </div>
@@ -137,13 +137,13 @@ export default function AskTheCoachPage() {
 
       <main className="flex-grow max-w-7xl mx-auto w-full p-6 md:p-12 space-y-12">
         {/* Guidance Note */}
-        <div className="bg-[#232938] border border-[#2d3548] p-8 rounded-[2.5rem] flex gap-6 items-start">
-          <div className="w-12 h-12 bg-[#1a1f2e] rounded-2xl flex items-center justify-center shrink-0 border border-[#2d3548]">
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-[2.5rem] flex gap-6 items-start">
+          <div className="w-12 h-12 bg-[var(--bg-input)] rounded-2xl flex items-center justify-center shrink-0 border border-[var(--border)]">
             <Info className="w-5 h-5 text-[#00538e]" />
           </div>
           <div className="space-y-2">
             <h3 className="font-black text-[#00538e] uppercase text-xs tracking-widest">How it works</h3>
-            <p className="text-sm text-[#cbd5e1] leading-relaxed">
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
               This is your direct line to me. Unlike the AI, I respond asynchronously.
               I review messages once a day to provide thoughtful, grounded guidance on your 180° shifts.
             </p>
@@ -153,46 +153,46 @@ export default function AskTheCoachPage() {
         <div className="grid lg:grid-cols-12 gap-12 items-start">
           {/* Left Column: Message History (7/12 area) */}
           <div className="lg:col-span-7 space-y-8">
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-4">Your Conversations</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-4">Your Conversations</h2>
             {loadingHistory ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-[#2d3548]" />
+                <Loader2 className="w-6 h-6 animate-spin text-[var(--border)]" />
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 py-12 bg-[#232938] border border-[#2d3548] rounded-[2.5rem]">
-                <Clock className="w-8 h-8 text-[#2d3548]" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#475569]">Messages will appear here</p>
+              <div className="flex flex-col items-center gap-4 py-12 bg-[var(--bg-card)] border border-[var(--border)] rounded-[2.5rem]">
+                <Clock className="w-8 h-8 text-[var(--border)]" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">Messages will appear here</p>
               </div>
             ) : (
               <div className="space-y-6">
                 {messages.map((msg) => (
-                  <div key={msg.id} className="bg-[#232938] border border-[#2d3548] p-8 rounded-[2.5rem] shadow-sm space-y-4">
+                  <div key={msg.id} className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm space-y-4">
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
                           {new Date(msg.created_at).toLocaleDateString()}
                         </span>
-                        <h4 className="font-bold text-white">{msg.subject}</h4>
+                        <h4 className="font-bold text-[var(--text-primary)]">{msg.subject}</h4>
                       </div>
-                      <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${msg.status === 'replied' ? 'bg-[#0AA390]/10 text-[#0AA390] border border-[#0AA390]/20' : 'bg-[#1a1f2e] text-[#475569]'
+                      <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${msg.status === 'replied' ? 'bg-[#0AA390]/10 text-[#0AA390] border border-[#0AA390]/20' : 'bg-[var(--bg-input)] text-[var(--text-dim)]'
                         }`}>
                         {msg.status}
                       </div>
                     </div>
 
-                    <p className="text-sm text-[#cbd5e1] bg-[#1a1f2e] p-6 rounded-2xl italic leading-relaxed border border-[#2d3548]">
-                      "{msg.message}"
+                    <p className="text-sm text-[var(--text-secondary)] bg-[var(--bg-input)] p-6 rounded-2xl italic leading-relaxed border border-[var(--border)]">
+                      &quot;{msg.message}&quot;
                     </p>
 
                     {msg.coach_reply && (
-                      <div className="pt-4 border-t border-[#2d3548] space-y-3">
+                      <div className="pt-4 border-t border-[var(--border)] space-y-3">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 bg-[#0AA390]/10 rounded-full flex items-center justify-center">
                             <CheckCircle2 className="w-3.5 h-3.5 text-[#0AA390]" />
                           </div>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-[#0AA390]">Coach Emmeline's Guidance</span>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-[#0AA390]">Coach Emmeline&apos;s Guidance</span>
                         </div>
-                        <div className="text-sm text-[#e2e8f0] leading-relaxed font-medium whitespace-pre-wrap">
+                        <div className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium whitespace-pre-wrap">
                           {msg.coach_reply}
                         </div>
                       </div>
@@ -205,8 +205,8 @@ export default function AskTheCoachPage() {
 
           {/* Right Column: Action Area (5/12 area) */}
           <div className="lg:col-span-5 sticky top-32">
-            <div className="bg-[#232938] border border-[#2d3548] p-8 rounded-[3rem] shadow-2xl shadow-black/20">
-              <h2 className="text-lg font-black text-white uppercase tracking-tighter mb-4">Start a conversation</h2>
+            <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-[3rem] shadow-2xl shadow-[var(--shadow-color)]">
+              <h2 className="text-lg font-black text-[var(--text-primary)] uppercase tracking-tighter mb-4">Start a conversation</h2>
 
               {success && (
                 <div className="mb-6 p-4 bg-[#0AA390]/10 border border-[#0AA390]/20 text-[#0AA390] text-xs font-bold rounded-2xl flex items-center justify-center gap-2">
@@ -223,7 +223,7 @@ export default function AskTheCoachPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-4">
                     Subject
                   </label>
                   <input
@@ -231,20 +231,20 @@ export default function AskTheCoachPage() {
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="What's this about?"
-                    className="w-full p-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#00538e] focus:bg-[#1a1f2e] transition-all text-sm font-medium text-white placeholder:text-[#475569]"
+                    className="w-full p-4 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#00538e] focus:bg-[var(--bg-input)] transition-all text-sm font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
                     required
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-4">
                     Message
                   </label>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="What is on your mind?"
-                    className="w-full min-h-[180px] p-6 bg-[#1a1f2e] border border-[#2d3548] rounded-[2rem] outline-none focus:border-[#00538e] focus:bg-[#1a1f2e] transition-all text-sm leading-relaxed text-white placeholder:text-[#475569]"
+                    className="w-full min-h-[180px] p-6 bg-[var(--bg-input)] border border-[var(--border)] rounded-[2rem] outline-none focus:border-[#00538e] focus:bg-[var(--bg-input)] transition-all text-sm leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
                     required
                   />
                 </div>
@@ -265,7 +265,7 @@ export default function AskTheCoachPage() {
                       </>
                     )}
                   </button>
-                  <p className="text-[9px] text-[#475569] font-medium text-center mt-6 uppercase tracking-widest">
+                  <p className="text-[9px] text-[var(--text-dim)] font-medium text-center mt-6 uppercase tracking-widest">
                     Response time: ~24 hours
                   </p>
                 </div>
@@ -277,7 +277,7 @@ export default function AskTheCoachPage() {
 
       {/* Footer Branding */}
       <footer className="p-12 text-center">
-        <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#475569]">
+        <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--text-dim)]">
           Clarity. Confidence. Compassion.
         </p>
       </footer>

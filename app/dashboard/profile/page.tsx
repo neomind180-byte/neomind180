@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { User, Mail, Phone, Save, Loader2, AlertCircle, ShieldAlert, Trash2, AlertTriangle, CheckSquare, Square, RefreshCcw } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
+import { User, Mail, Phone, Save, Loader2, AlertCircle, ShieldAlert, Trash2, AlertTriangle, CheckSquare, Square, RefreshCcw, Sun, Moon } from 'lucide-react';
 
 export default function ProfilePage() {
+    const { theme, toggleTheme } = useTheme();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
@@ -138,16 +140,16 @@ export default function ProfilePage() {
         }
     };
 
-    if (loading) return <div className="p-10 text-center text-[#475569] font-black uppercase tracking-widest text-[10px] animate-pulse">Syncing Profile...</div>;
+    if (loading) return <div className="p-10 text-center text-[var(--text-dim)] font-black uppercase tracking-widest text-[10px] animate-pulse">Syncing Profile...</div>;
 
     return (
-        <div className="min-h-screen bg-[#1a1f2e] font-sans text-[#cbd5e1] p-6 md:p-12">
+        <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] p-6 md:p-12">
             <div className="max-w-2xl mx-auto space-y-10">
 
                 <div className="space-y-4">
-                    <h1 className="text-3xl font-black text-white uppercase tracking-tighter">My Profile</h1>
+                    <h1 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter">My Profile</h1>
                     <div className="flex items-center justify-between">
-                        <p className="text-[#94a3b8] font-medium italic">Manage your identity and plan settings.</p>
+                        <p className="text-[var(--text-muted)] font-medium italic">Manage your identity and plan settings.</p>
                         <a
                             href="/pricing"
                             className="px-6 py-2.5 bg-[#0AA390] text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:shadow-lg shadow-[#0AA390]/20 transition-all hover:-translate-y-0.5"
@@ -164,58 +166,85 @@ export default function ProfilePage() {
                     </div>
                 )}
 
-                <div className="bg-[#232938] p-10 rounded-[3rem] border border-[#2d3548] shadow-2xl shadow-black/20 space-y-8">
+                <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-8">
 
                     {/* Identity Section */}
                     <div className="space-y-6">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#475569]">Contact Details</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Contact Details</h3>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-4">Full Name</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Full Name</label>
                             <div className="relative">
-                                <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                                <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-dim)]" />
                                 <input
                                     type="text"
                                     value={profile.full_name}
                                     onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                                    className="w-full pl-14 pr-6 py-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#00538e] font-medium text-white transition-all"
+                                    className="w-full pl-14 pr-6 py-4 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#00538e] font-medium text-[var(--text-primary)] transition-all"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-4">Email Address</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Email Address</label>
                             <div className="relative">
-                                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-dim)]" />
                                 <input
                                     type="text"
                                     disabled
                                     value={profile.email}
-                                    className="w-full pl-14 pr-6 py-4 bg-[#1a1f2e]/50 border border-[#2d3548] rounded-2xl font-medium text-[#475569] cursor-not-allowed italic"
+                                    className="w-full pl-14 pr-6 py-4 bg-[var(--bg-input)]/50 border border-[var(--border)] rounded-2xl font-medium text-[var(--text-dim)] cursor-not-allowed italic"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-4">Phone Number</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Phone Number</label>
                             <div className="relative">
-                                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-dim)]" />
                                 <input
                                     type="tel"
                                     value={profile.phone}
                                     onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                                     placeholder="+1 (555) 000-0000"
-                                    className="w-full pl-14 pr-6 py-4 bg-[#1a1f2e] border border-[#2d3548] rounded-2xl outline-none focus:border-[#00538e] font-medium text-white transition-all"
+                                    className="w-full pl-14 pr-6 py-4 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#00538e] font-medium text-[var(--text-primary)] transition-all"
                                 />
                             </div>
                         </div>
                     </div>
 
+                    {/* ===== APPEARANCE TOGGLE ===== */}
+                    <div className="pt-10 mt-10 border-t border-[var(--border)]">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)] mb-6">Appearance</h3>
+                        <div className="flex items-center justify-between p-5 bg-[var(--bg-input)] rounded-2xl border border-[var(--border)]">
+                            <div className="flex items-center gap-3">
+                                {theme === 'dark' ? (
+                                    <Moon className="w-5 h-5 text-[#00538e]" />
+                                ) : (
+                                    <Sun className="w-5 h-5 text-[#F39904]" />
+                                )}
+                                <span className="text-sm font-bold text-[var(--text-primary)]">
+                                    {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                                </span>
+                            </div>
+                            <button
+                                onClick={toggleTheme}
+                                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${theme === 'dark'
+                                    ? 'bg-[#00538e]'
+                                    : 'bg-[#F39904]'
+                                    }`}
+                            >
+                                <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 ${theme === 'dark' ? 'left-1' : 'left-7'
+                                    }`} />
+                            </button>
+                        </div>
+                    </div>
+
                     {/* DEVELOPER MODE: Tier Switcher */}
-                    <div className="pt-10 mt-10 border-t border-[#2d3548]">
+                    <div className="pt-10 mt-10 border-t border-[var(--border)]">
                         <div className="flex items-center gap-3 mb-6">
                             <ShieldAlert className="w-5 h-5 text-[#F39904]" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#475569]">Developer Mode: Test Tiers</h3>
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Developer Mode: Test Tiers</h3>
                         </div>
 
                         <div className="grid grid-cols-3 gap-4">
@@ -225,14 +254,14 @@ export default function ProfilePage() {
                                     onClick={() => setProfile({ ...profile, subscription_tier: tier })}
                                     className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${profile.subscription_tier === tier
                                         ? 'border-[#00538e] bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20'
-                                        : 'border-[#2d3548] bg-[#1a1f2e] text-[#475569] hover:border-[#475569] hover:text-[#94a3b8]'
+                                        : 'border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-dim)] hover:border-[var(--text-dim)] hover:text-[var(--text-muted)]'
                                         }`}
                                 >
                                     {tier === 'tier2' ? 'Coaching' : tier === 'tier3' ? 'Deep Coach' : 'Basic Free'}
                                 </button>
                             ))}
                         </div>
-                        <p className="text-[10px] text-[#475569] mt-4 italic">
+                        <p className="text-[10px] text-[var(--text-dim)] mt-4 italic">
                             *This toggle simulates stripe subscription changes for development purposes.
                         </p>
                     </div>
@@ -251,16 +280,16 @@ export default function ProfilePage() {
                 </div>
 
                 {/* --- CHAT HISTORY MANAGEMENT --- */}
-                <div className="bg-[#232938] p-10 rounded-[3rem] border border-red-500/10 shadow-2xl shadow-black/20 space-y-8">
+                <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-red-500/10 shadow-2xl shadow-[var(--shadow-color)] space-y-8">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-red-400">Manage Chat History</h3>
-                            <p className="text-[9px] text-[#475569] font-black uppercase tracking-widest">Delete conversations with Neo & Coach</p>
+                            <p className="text-[9px] text-[var(--text-dim)] font-black uppercase tracking-widest">Delete conversations with Neo & Coach</p>
                         </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => loadHistory()}
-                                className="p-3 bg-[#1a1f2e] text-[#475569] hover:text-[#0AA390] rounded-xl border border-[#2d3548] transition-colors"
+                                className="p-3 bg-[var(--bg-input)] text-[var(--text-dim)] hover:text-[#0AA390] rounded-xl border border-[var(--border)] transition-colors"
                             >
                                 <RefreshCcw className="w-4 h-4" />
                             </button>
@@ -279,7 +308,7 @@ export default function ProfilePage() {
                             <div className="flex items-center justify-between px-4">
                                 <button
                                     onClick={toggleSelectAll}
-                                    className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-[#475569] hover:text-[#94a3b8]"
+                                    className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)] hover:text-[var(--text-muted)]"
                                 >
                                     {selectedIds.length === history.length ? <CheckSquare className="w-4 h-4 text-[#0AA390]" /> : <Square className="w-4 h-4" />}
                                     {selectedIds.length === history.length ? 'Deselect All' : 'Select All'}
@@ -300,25 +329,25 @@ export default function ProfilePage() {
                                         key={item.id}
                                         onClick={() => toggleSelect(item.id)}
                                         className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group ${selectedIds.includes(item.id)
-                                                ? 'bg-red-500/5 border-red-500/20'
-                                                : 'bg-[#1a1f2e] border-[#2d3548] hover:border-[#475569]'
+                                            ? 'bg-red-500/5 border-red-500/20'
+                                            : 'bg-[var(--bg-input)] border-[var(--border)] hover:border-[var(--text-dim)]'
                                             }`}
                                     >
                                         <div className="shrink-0">
                                             {selectedIds.includes(item.id) ? (
                                                 <CheckSquare className="w-5 h-5 text-red-500" />
                                             ) : (
-                                                <Square className="w-5 h-5 text-[#475569] group-hover:text-[#94a3b8]" />
+                                                <Square className="w-5 h-5 text-[var(--text-dim)] group-hover:text-[var(--text-muted)]" />
                                             )}
                                         </div>
                                         <div className="flex-grow min-w-0">
-                                            <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{item.title}</p>
+                                            <p className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-tight truncate">{item.title}</p>
                                             <div className="flex items-center gap-3 mt-1">
                                                 <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${item.table === 'reflections' ? 'bg-[#0AA390]/10 text-[#0AA390]' : 'bg-[#00538e]/10 text-[#00538e]'
                                                     }`}>
                                                     {item.table === 'reflections' ? 'Neo AI' : 'Coach'}
                                                 </span>
-                                                <span className="text-[8px] text-[#475569] font-black uppercase">
+                                                <span className="text-[8px] text-[var(--text-dim)] font-black uppercase">
                                                     {new Date(item.date).toLocaleDateString()}
                                                 </span>
                                             </div>
@@ -328,8 +357,8 @@ export default function ProfilePage() {
                             </div>
                         </div>
                     ) : (
-                        <div className="py-12 text-center bg-[#1a1f2e] rounded-3xl border border-dashed border-[#2d3548]">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#475569]">No conversation history found</p>
+                        <div className="py-12 text-center bg-[var(--bg-input)] rounded-3xl border border-dashed border-[var(--border)]">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)]">No conversation history found</p>
                         </div>
                     )}
                 </div>
@@ -337,18 +366,18 @@ export default function ProfilePage() {
                 {/* --- DELETE CONFIRMATION MODAL --- */}
                 {showDeleteModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                        <div className="bg-[#232938] w-full max-w-md p-10 rounded-[3rem] border border-red-500/30 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
+                        <div className="bg-[var(--bg-card)] w-full max-w-md p-10 rounded-[3rem] border border-red-500/30 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
                             <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
                                 <AlertTriangle className="w-10 h-10 text-red-500 animate-pulse" />
                             </div>
 
                             <div className="text-center space-y-4">
-                                <h2 className="text-xl font-black text-white uppercase tracking-tighter">Critical Warning</h2>
-                                <p className="text-sm text-[#cbd5e1] leading-relaxed font-medium">
-                                    'Are you sure about deleting your history? <span className="text-red-400 font-bold underline">This action cannot be reversed once it is done!</span>'
+                                <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Critical Warning</h2>
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
+                                    Are you sure about deleting your history? <span className="text-red-400 font-bold underline">This action cannot be reversed once it is done!</span>
                                 </p>
                                 {showDeleteModal === 'selected' && (
-                                    <p className="text-[10px] text-[#475569] font-bold uppercase tracking-widest">
+                                    <p className="text-[10px] text-[var(--text-dim)] font-bold uppercase tracking-widest">
                                         Deleting {selectedIds.length} selected conversations
                                     </p>
                                 )}
@@ -357,7 +386,7 @@ export default function ProfilePage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setShowDeleteModal(null)}
-                                    className="py-4 rounded-2xl border border-[#2d3548] text-[10px] font-black uppercase tracking-widest text-[#94a3b8] hover:bg-[#1a1f2e] transition-all"
+                                    className="py-4 rounded-2xl border border-[var(--border)] text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-input)] transition-all"
                                 >
                                     Cancel
                                 </button>

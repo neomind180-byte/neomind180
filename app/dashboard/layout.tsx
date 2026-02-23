@@ -13,15 +13,15 @@ interface DashboardLayoutProps {
  */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen bg-[#1a1f2e] overflow-hidden font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] overflow-hidden font-sans">
       {/* Sidebar Navigation Component */}
       <Sidebar />
 
       {/* Main Content Wrapper */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Global Dashboard Header */}
-        <header className="h-20 bg-[#1a1f2e] border-b border-[#2d3548] flex items-center justify-between px-8 shrink-0 z-10">
-          <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#94a3b8]">
+        <header className="h-20 bg-[var(--bg-primary)] border-b border-[var(--border)] flex items-center justify-between px-8 shrink-0 z-10">
+          <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">
             Workspace / Overview
           </h1>
           <div className="flex items-center gap-4">
