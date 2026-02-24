@@ -20,8 +20,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content Wrapper */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Global Dashboard Header */}
-        <header className="h-20 bg-[var(--bg-primary)] border-b border-[var(--border)] flex items-center justify-between px-8 shrink-0 z-10">
-          <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">
+        <header className="h-20 bg-[var(--bg-card)] border-b border-[var(--border)] flex items-center justify-between px-8 shrink-0 z-10 transition-colors duration-300">
+          <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">
             Workspace / Overview
           </h1>
           <div className="flex items-center gap-4">

@@ -75,11 +75,11 @@ function RegisterForm() {
   };
 
   return (
-    <div className="max-w-md w-full bg-white rounded-[3rem] shadow-xl p-10 border border-slate-100">
+    <div className="max-w-md w-full bg-[var(--bg-card)] rounded-[3rem] shadow-xl p-10 border border-[var(--border)]">
 
       {/* Header & Logo */}
       <div className="flex flex-col items-center text-center mb-8">
-        <div className="w-[60px] h-[60px] relative mb-4">
+        <div className="w-[60px] h-[60px] relative mb-4 bg-white rounded-xl p-1 shadow-sm">
           <Image
             src="/business-logo.png"
             alt="NeoMind180 Logo"
@@ -89,21 +89,21 @@ function RegisterForm() {
             priority
           />
         </div>
-        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">
+        <h1 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
           Start Your Journey
         </h1>
 
         {/* Selected Tier Badge */}
-        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-          <CheckCircle2 className={`w-4 h-4 ${selectedTier === 'free' ? 'text-slate-400' : 'text-[#00538e]'}`} />
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-input)] rounded-full border border-[var(--border)]">
+          <CheckCircle2 className="w-4 h-4 text-[#00538e]" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
             Plan: <span className="text-[#00538e]">{tierNames[selectedTier] || 'Basic'}</span>
           </span>
         </div>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-2xl text-center flex items-center justify-center gap-2">
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-2xl text-center flex items-center justify-center gap-2">
           <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
@@ -112,33 +112,33 @@ function RegisterForm() {
 
         {/* Full Name */}
         <div className="space-y-1">
-          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Full Name</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Full Name</label>
           <input
             type="text"
             required
             placeholder="Jane Doe"
             value={formData.fullName}
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm font-medium"
+            className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
           />
         </div>
 
         {/* Email */}
         <div className="space-y-1">
-          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Email Address</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Email Address</label>
           <input
             type="email"
             required
             placeholder="email@example.com"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm font-medium"
+            className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
           />
         </div>
 
         {/* Password */}
         <div className="space-y-1">
-          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Password</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Password</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -146,12 +146,12 @@ function RegisterForm() {
               placeholder="••••••••"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm"
+              className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#00538e] transition-colors"
+              className="absolute right-6 top-1/2 -translate-y-1/2 text-[var(--text-dim)] hover:text-[#00538e] transition-colors"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -160,14 +160,14 @@ function RegisterForm() {
 
         {/* Confirm Password */}
         <div className="space-y-1">
-          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Confirm Password</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Confirm Password</label>
           <input
             type="password"
             required
             placeholder="••••••••"
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm"
+            className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
           />
         </div>
 
@@ -182,7 +182,7 @@ function RegisterForm() {
 
       </form>
 
-      <p className="mt-8 text-center text-xs text-slate-400 font-medium">
+      <p className="mt-8 text-center text-xs text-[var(--text-muted)] font-medium">
         Already a member? <Link href="/login" className="text-[#00538e] font-bold hover:underline">Log In</Link>
       </p>
     </div>
@@ -192,7 +192,7 @@ function RegisterForm() {
 // Wrapper for Suspense to handle useSearchParams in Next.js
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-6 font-sans">
       <Suspense fallback={<div className="text-[#00538e] font-bold">Loading...</div>}>
         <RegisterForm />
       </Suspense>

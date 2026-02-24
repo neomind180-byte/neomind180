@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 type Theme = 'dark' | 'light';
 
@@ -19,11 +20,34 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const stored = localStorage.getItem('theme') as Theme | null;
-        if (stored === 'light' || stored === 'dark') {
-            setTheme(stored);
-        }
-        setMounted(true);
+        const loadInitialTheme = async () => {
+            // 1. Check localStorage
+            const stored = localStorage.getItem('theme') as Theme | null;
+
+            // 2. Check Supabase if logged in
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('theme')
+                    .eq('id', user.id)
+                    .single();
+
+                if (data?.theme) {
+                    setTheme(data.theme as Theme);
+                } else if (stored) {
+                    setTheme(stored);
+                }
+            } else if (stored) {
+                setTheme(stored);
+            } else {
+                // Default to dark mode for new/unauthenticated users
+                setTheme('dark');
+            }
+            setMounted(true);
+        };
+
+        loadInitialTheme();
     }, []);
 
     useEffect(() => {
@@ -33,8 +57,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         }
     }, [theme, mounted]);
 
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    const toggleTheme = async () => {
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+
+        // Sync with Supabase if logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            await supabase
+                .from('profiles')
+                .update({ theme: newTheme })
+                .eq('id', user.id);
+        }
     };
 
     // Prevent flash of wrong theme

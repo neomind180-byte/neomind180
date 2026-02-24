@@ -80,8 +80,8 @@ export default function SessionsPage() {
               Ready for your next shift?
             </h2>
             <p className="text-[var(--text-muted)] leading-relaxed text-lg font-medium italic max-w-xl">
-              "Select a time that allows you to be fully present. We will use this hour to rewire
-              complex patterns and move toward aligned action."
+              &quot;Select a time that allows you to be fully present. We will use this hour to rewire
+              complex patterns and move toward aligned action.&quot;
             </p>
             <button
               data-cal-namespace="60min"
@@ -117,10 +117,10 @@ export default function SessionsPage() {
 
         {/* Footer Branding */}
         <footer className="pt-16 text-center space-y-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#2d3548]">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-dim)]">
             NeoMind180 — Clarity, not therapy
           </p>
-          <p className="text-[10px] text-[#2d3548] font-bold uppercase tracking-widest">© 2024 NeoMind180</p>
+          <p className="text-[10px] text-[var(--text-dim)] font-bold uppercase tracking-widest">© 2024 NeoMind180</p>
         </footer>
       </div>
     </div>

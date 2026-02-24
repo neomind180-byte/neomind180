@@ -86,7 +86,7 @@ export default function BeEnoughPage() {
               <div className="space-y-2">
                 <h3 className="text-sm font-bold text-[#00538e] uppercase tracking-wide">How this works</h3>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-lg">
-                  Overthinking happens when we believe a stressful thought without checking if it's true.
+                  Overthinking happens when we believe a stressful thought without checking if it&apos;s true.
                   This tool slows you down. We will <strong>name the loop</strong>, <strong>check the facts</strong>, and <strong>reset your nervous system</strong>.
                 </p>
               </div>

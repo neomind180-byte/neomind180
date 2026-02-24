@@ -73,9 +73,9 @@ export default function DeepDiveCirclesPage() {
               A Space for Collective Clarity
             </h2>
             <p className="text-[var(--text-muted)] leading-relaxed text-lg font-medium italic">
-              "I meet when the collective energy is right. These are not rigid, scheduled lectures;
+              &quot;I meet when the collective energy is right. These are not rigid, scheduled lectures;
               they are live, responsive sessions designed to help you rethink your current
-              patterns and rewire your mindset alongside a community of like-minded women."
+              patterns and rewire your mindset alongside a community of like-minded women.&quot;
             </p>
             <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] flex gap-5 items-start shadow-xl">
               <div className="p-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border)]">
@@ -170,10 +170,10 @@ export default function DeepDiveCirclesPage() {
 
         {/* Footer Branding */}
         <footer className="pt-16 text-center space-y-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#2d3548]">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-dim)]">
             NeoMind180 — Clarity, not therapy
           </p>
-          <p className="text-[10px] text-[#2d3548] font-bold uppercase tracking-widest">© 2024 NeoMind180</p>
+          <p className="text-[10px] text-[var(--text-dim)] font-bold uppercase tracking-widest">© 2024 NeoMind180</p>
         </footer>
       </div>
     </div >

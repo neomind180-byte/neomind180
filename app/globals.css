@@ -19,15 +19,18 @@
 html[data-theme='light'] {
   --bg-primary: #f8fafc;
   --bg-card: #ffffff;
-  --bg-input: #f1f5f9;
-  --border: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-dim: #78859b;
+  --bg-input: #ffffff;
+  --border: #cbd5e1;
+  --text-primary: #0f172a;    /* Primary headings */
+  --text-secondary: #334155;  /* Body text and labels */
+  --text-muted: #64748b;      /* Muted/secondary text */
+  --text-dim: #94a3b8;        /* Very muted hints/placeholders */
   --scrollbar-thumb: #cbd5e1;
   --scrollbar-hover: #94a3b8;
-  --shadow-color: rgba(0, 0, 0, 0.06);
+  --shadow-color: rgba(15, 23, 42, 0.08);
+
+  /* Sidebar Specific (Light Mode) */
+  --sidebar-hover: #e2e8f0;
 }
 
 @theme inline {

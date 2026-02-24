@@ -80,13 +80,13 @@ export default function HistoryPage() {
           <h1 className="text-2xl font-black uppercase tracking-tighter text-[var(--text-primary)]">Your Journey</h1>
         </header>
 
-        <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:w-0.5 before:-translate-x-px before:bg-[#2d3548]">
+        <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:w-0.5 before:-translate-x-px before:bg-[var(--border)]">
           {historyItems.map((item) => (
             <div key={item.id} className="relative flex items-start gap-8 group">
 
               {/* Timeline Icon */}
-              <div className={`mt-2 w-10 h-10 rounded-2xl border-4 border-[#1a1f2e] flex items-center justify-center shrink-0 z-10 shadow-sm ${item.type === 'shift' ? 'bg-[#993366] text-white' :
-                  item.type === 'reflection' ? 'bg-[#0AA390] text-white' : 'bg-[var(--bg-card)] text-[#0AA390]'
+              <div className={`mt-2 w-10 h-10 rounded-2xl border-4 border-[var(--bg-primary)] flex items-center justify-center shrink-0 z-10 shadow-sm ${item.type === 'shift' ? 'bg-[#993366] text-white' :
+                item.type === 'reflection' ? 'bg-[#0AA390] text-white' : 'bg-[var(--bg-card)] text-[#0AA390]'
                 }`}>
                 {item.type === 'shift' ? <Heart className="w-4 h-4" /> :
                   item.type === 'reflection' ? <Zap className="w-4 h-4" /> : <Activity className="w-4 h-4" />}

@@ -207,7 +207,7 @@ export default function LibraryPage() {
                       disabled={locked}
                       onClick={() => !locked && item.content_url && window.open(item.content_url, '_blank')}
                       className={`w-full mt-8 py-4 rounded-2xl border font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${locked
-                        ? 'border-[#1a1f2e] text-[#2d3548] cursor-not-allowed'
+                        ? 'border-[var(--border)] text-[var(--text-dim)] cursor-not-allowed'
                         : 'border-[var(--border)] text-[#00538e] hover:border-[#00538e] hover:bg-[#00538e] hover:text-white'
                         }`}
                     >
@@ -239,7 +239,7 @@ export default function LibraryPage() {
                         onClick={() => !locked && togglePlay(track)}
                         disabled={locked}
                         className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${locked
-                          ? 'bg-[var(--bg-primary)] text-[#2d3548] cursor-not-allowed'
+                          ? 'bg-[var(--bg-primary)] text-[var(--text-dim)] cursor-not-allowed'
                           : isPlaying
                             ? 'bg-[#0AA390] text-white shadow-xl shadow-[#0AA390]/20 scale-110'
                             : 'bg-[var(--bg-primary)] border border-[var(--border)] text-[#0AA390] hover:bg-[#0AA390] hover:text-white'
@@ -259,7 +259,7 @@ export default function LibraryPage() {
                           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                             {track.category}
                           </span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#2d3548]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--border)]" />
                           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5" /> {track.duration}
                           </span>
@@ -315,7 +315,7 @@ export default function LibraryPage() {
                       disabled={locked}
                       onClick={() => !locked && video.content_url && window.open(video.content_url, '_blank')}
                       className={`w-full py-4 rounded-2xl border font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${locked
-                        ? 'border-[#1a1f2e] text-[#2d3548] cursor-not-allowed'
+                        ? 'border-[var(--border)] text-[var(--text-dim)] cursor-not-allowed'
                         : 'border-[var(--border)] text-[#993366] hover:border-[#993366] hover:bg-[#993366] hover:text-white'
                         }`}
                     >
@@ -329,7 +329,8 @@ export default function LibraryPage() {
           )}
 
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }

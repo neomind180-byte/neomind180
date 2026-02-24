@@ -31,7 +31,7 @@ export default function LoginPage() {
       // Successful login - send to dashboard
       router.push('/dashboard');
       router.refresh();
-      
+
     } catch (err: any) {
       setError(err.message || "Invalid login credentials");
     } finally {
@@ -40,31 +40,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
-      <div className="max-w-md w-full bg-white rounded-[3rem] shadow-xl p-10 border border-slate-100">
-        
+    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full bg-[var(--bg-card)] rounded-[3rem] shadow-xl p-10 border border-[var(--border)]">
+
         {/* Logo at 60x60 */}
         <div className="flex flex-col items-center text-center mb-10">
-          <div className="w-[60px] h-[60px] relative mb-4">
-            <Image 
-              src="/business-logo.png" 
-              alt="NeoMind180 Logo" 
-              width={60} 
-              height={60} 
+          <div className="w-[60px] h-[60px] relative mb-4 bg-white rounded-xl p-1 shadow-sm">
+            <Image
+              src="/business-logo.png"
+              alt="NeoMind180 Logo"
+              width={60}
+              height={60}
               className="object-contain"
-              priority 
+              priority
             />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">
+          <h1 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
             Welcome Back
           </h1>
-          <p className="text-sm text-slate-400 mt-2 font-medium">
+          <p className="text-sm text-[var(--text-muted)] mt-2 font-medium">
             Resume your path to clarity.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-2xl text-center uppercase tracking-widest">
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-2xl text-center uppercase tracking-widest">
             {error}
           </div>
         )}
@@ -72,45 +72,45 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-6">
           {/* Email Field */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">
+            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">
               Email Address
             </label>
-            <input 
+            <input
               required
-              type="email" 
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@example.com" 
-              className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm font-medium"
+              placeholder="email@example.com"
+              className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
             />
           </div>
 
           {/* Password Field with Eye Toggle and Forgot Link */}
           <div className="space-y-1">
             <div className="flex justify-between items-center px-4">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                 Password
               </label>
-              <Link 
-                href="/forgot-password" 
-                className="text-[10px] font-bold text-[#00538e] hover:underline opacity-70"
+              <Link
+                href="/forgot-password"
+                className="text-[10px] font-bold text-[#00538e] hover:underline"
               >
                 Forgot Password?
               </Link>
             </div>
             <div className="relative">
-              <input 
+              <input
                 required
-                type={showPassword ? "text" : "password"} 
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••" 
-                className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm"
+                placeholder="••••••••"
+                className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#00538e] transition-colors"
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-[var(--text-dim)] hover:text-[#00538e] transition-colors"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -118,7 +118,7 @@ export default function LoginPage() {
           </div>
 
           {/* Primary CTA with Loading State */}
-          <button 
+          <button
             type="submit"
             disabled={loading}
             className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:shadow-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
@@ -133,7 +133,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-8 text-center text-xs text-slate-400 font-medium">
+        <p className="mt-8 text-center text-xs text-[var(--text-muted)] font-medium">
           Don’t have an account? <Link href="/register" className="text-[#00538e] font-bold hover:underline">Start free.</Link>
         </p>
       </div>

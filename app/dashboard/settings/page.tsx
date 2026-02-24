@@ -33,7 +33,7 @@ export default function SettingsPage() {
             <div
               key={mode.id}
               className={`p-10 rounded-[2.5rem] border transition-all relative overflow-visible ${isLocked ? 'bg-[var(--bg-card)]/30 border-[var(--border)] opacity-60 cursor-not-allowed' :
-                  selectedMode === mode.id ? 'border-[#00538e] bg-[var(--bg-card)] shadow-2xl shadow-[#00538e]/10' : 'border-[var(--border)] bg-[var(--bg-primary)] hover:border-[#475569] cursor-pointer'
+                selectedMode === mode.id ? 'border-[#00538e] bg-[var(--bg-card)] shadow-2xl shadow-[#00538e]/10' : 'border-[var(--border)] bg-[var(--bg-primary)] hover:border-[var(--text-dim)] cursor-pointer'
                 }`}
               onClick={() => !isLocked && setSelectedMode(mode.id)}
             >
@@ -44,7 +44,7 @@ export default function SettingsPage() {
                 </div>
                 {isLocked ? (
                   <div className="group relative">
-                    <Lock className="w-6 h-6 text-[#2d3548]" />
+                    <Lock className="w-6 h-6 text-[var(--text-dim)]" />
                     <div className="absolute right-0 bottom-full mb-4 hidden group-hover:block w-72 p-6 bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-primary)] text-[10px] rounded-2xl shadow-2xl z-50">
                       <p className="mb-4 font-black uppercase tracking-widest">Expansion Required</p>
                       <p className="mb-6 text-[var(--text-muted)] italic">Upgrade to {mode.tier} to unlock deeper guidance.</p>

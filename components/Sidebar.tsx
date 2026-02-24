@@ -62,7 +62,7 @@ export default function Sidebar() {
 
       {/* Brand Header */}
       <div className="mb-12 px-4 flex items-center gap-4">
-        <div className="w-[60px] h-[60px] relative shrink-0 bg-[#fffcf6] rounded-2xl p-2 flex items-center justify-center border border-white/10">
+        <div className="w-[60px] h-[60px] relative shrink-0 bg-white rounded-2xl p-2 flex items-center justify-center border border-[var(--border)] shadow-sm">
           <Image src="/business-logo.png" alt="NeoMind180" width={45} height={45} className="object-contain" priority />
         </div>
         <h2 className="text-xl font-black text-[var(--text-primary)] tracking-tighter uppercase leading-none">NeoMind180</h2>
@@ -98,7 +98,7 @@ export default function Sidebar() {
               href={destination}
               className={`flex items-center justify-between p-4 rounded-[1.5rem] font-bold transition-all group ${isActive
                 ? (isBeEnough ? "bg-[#993366] text-white shadow-lg shadow-[#993366]/20" : "bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20")
-                : "text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)]"
+                : "text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-primary)]"
                 } ${isLocked ? "opacity-40 hover:opacity-100" : ""}`}
             >
               <div className="flex items-center gap-4">
@@ -115,11 +115,11 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="pt-8 border-t border-[var(--border)] space-y-2">
-        <Link href="/dashboard/settings" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] transition-all group">
+        <Link href="/dashboard/settings" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-primary)] transition-all group">
           <Settings className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)]" />
           <span className="text-[11px] uppercase tracking-widest leading-none">Settings</span>
         </Link>
-        <Link href="/dashboard/profile" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] transition-all group">
+        <Link href="/dashboard/profile" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-primary)] transition-all group">
           <User className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)]" />
           <span className="text-[11px] uppercase tracking-widest leading-none">My Profile</span>
         </Link>
