@@ -81,7 +81,7 @@ Remove the manual `fetch('/api/notify-coach', ...)` call since the webhook will 
 ## 5. Summary of Actions
 1. [x] Update `lib/email.ts` to use new env variables.
 2. [x] Update `.env.local` placeholders.
-3. [ ] Update Vercel environment variables.
+3. [x] Update Vercel environment variables.
 4. [x] Configure Supabase Auth SMTP.
-5. [ ] Create new Supabase Webhooks.
-6. [ ] Implement `/api/webhooks/notify-coach` (Next.js) for secure webhook handling.
+5. [x] Create new Supabase Webhooks.
+6. [x] Implement `/api/webhooks/notify-coach` (Next.js) for secure webhook handling.
