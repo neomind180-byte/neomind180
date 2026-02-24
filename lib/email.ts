@@ -4,7 +4,7 @@ const SMTP_HOST = process.env.SMTP_HOST || 'pro.eu.turbo-smtp.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
-const FROM_EMAIL = process.env.SMTP_FROM_EMAIL || 'noreply@neomind180.com';
+const FROM_EMAIL = process.env.SMTP_FROM_EMAIL || 'noreply@coach.neomind180.com';
 const COACH_EMAIL = process.env.COACH_EMAIL || 'emmeline@coach.neomind180.com';
 
 const transporter = nodemailer.createTransport({

@@ -12,7 +12,7 @@ Update your environment variables in the Vercel Dashboard and your local `.env.l
 | `SMTP_PORT` | `465` | SSL Port |
 | `SMTP_USER` | `[your-consumer-key]` | Provided by TurboSMTP |
 | `SMTP_PASSWORD` | `[your-consumer-secret]` | Provided by TurboSMTP |
-| `SMTP_FROM_EMAIL` | `noreply@neomind180.com` | Verified sender email |
+| `SMTP_FROM_EMAIL` | `noreply@coach.neomind180.com` | Verified subdomain sender |
 | `COACH_EMAIL` | `emmeline@coach.neomind180.com` | New coach email |
 
 ### Cleanup (Vercel)
@@ -28,7 +28,7 @@ To ensure Auth emails (password reset, etc.) use TurboSMTP:
 2. Scroll to **SMTP Settings**.
 3. Enable **SMTP Service**.
 4. Configure as follows:
-   - **Sender Email**: `noreply@neomind180.com`
+   - **Sender Email**: `noreply@coach.neomind180.com`
    - **Sender Name**: `NeoMind180`
    - **Host**: `pro.eu.turbo-smtp.com`
    - **Port**: `465`
@@ -82,6 +82,6 @@ Remove the manual `fetch('/api/notify-coach', ...)` call since the webhook will 
 1. [x] Update `lib/email.ts` to use new env variables.
 2. [x] Update `.env.local` placeholders.
 3. [ ] Update Vercel environment variables.
-4. [ ] Configure Supabase Auth SMTP.
+4. [x] Configure Supabase Auth SMTP.
 5. [ ] Create new Supabase Webhooks.
 6. [ ] Implement `/api/webhooks/notify-coach` (Next.js) for secure webhook handling.
