@@ -17,23 +17,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendWelcomeEmail(toEmail: string) {
-  try {
-    const info = await transporter.sendMail({
-      from: `"NeoMind180" <${FROM_EMAIL}>`,
-      to: toEmail,
-      subject: "Welcome to NeoMind180 – Let’s begin",
-      text: "Welcome to NeoMind180.",
-      html: "<b>Welcome to NeoMind180.</b>",
-    });
-
-    console.log("✅ Welcome email sent:", info.messageId);
-    return { success: true };
-  } catch (error) {
-    console.error("❌ Error sending welcome email:", error);
-    return { success: false, error };
-  }
-}
 
 export async function notifyCoachOfMessage(record: any) {
   try {
