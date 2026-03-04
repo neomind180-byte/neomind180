@@ -50,6 +50,7 @@ function RegisterForm() {
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: window.location.origin + '/login',
           data: {
             full_name: formData.fullName,
             subscription_tier: selectedTier, // This is sent to the DB trigger
@@ -77,13 +78,18 @@ function RegisterForm() {
             <CheckCircle2 className="w-8 h-8 text-[#00538e]" />
           </div>
         </div>
-        <h2 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-4">
-          Check Your Email
+        <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-4 leading-tight">
+          Congratulations on taking the first step to an exciting, new destiny!
         </h2>
-        <p className="text-[15px] text-[var(--text-muted)] font-medium leading-relaxed mb-8">
+        <p className="text-[15px] text-[var(--text-muted)] font-medium leading-relaxed mb-6">
           We've sent a verification link to <span className="text-[#00538e] font-bold">{formData.email}</span>.
           Please click the link to confirm your account and start your journey.
         </p>
+        <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/30 mb-8">
+          <p className="text-[13px] text-amber-800 dark:text-amber-200 font-bold italic">
+            Check your junk/spam box if you don't see the confirmation email.
+          </p>
+        </div>
         <Link
           href="/login"
           className="inline-block w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-[14px] hover:shadow-2xl transition-all"
