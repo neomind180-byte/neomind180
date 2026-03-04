@@ -14,22 +14,17 @@ DECLARE
 BEGIN
   -- Only trigger if email_confirmed_at was NULL and is now NOT NULL
   IF (OLD.email_confirmed_at IS NULL AND NEW.email_confirmed_at IS NOT NULL) THEN
-    -- Construct a minimal payload to avoid binary data issues and protect privacy
+    -- Construct a minimal payload for the new sync endpoint
     payload := jsonb_build_object(
-      'record', jsonb_build_object(
-        'email', NEW.email,
-        'email_confirmed_at', NEW.email_confirmed_at,
-        'raw_user_meta_data', NEW.raw_user_meta_data
-      ),
-      'old_record', jsonb_build_object(
-        'email_confirmed_at', OLD.email_confirmed_at
-      )
+      'email', NEW.email,
+      'name', COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+      'userTier', COALESCE(NEW.raw_user_meta_data->>'subscription_tier', 'free')
     );
 
     BEGIN
       PERFORM
         net.http_post(
-          url := 'https://neomind180.vercel.app/api/webhooks/systemeio-signup',
+          url := 'https://neomind180.vercel.app/api/sync-to-systeme',
           headers := jsonb_build_object(
             'Content-Type', 'application/json',
             'x-webhook-secret', 'YOUR_WEBHOOK_SECRET' -- Match this to SUPABASE_WEBHOOK_SECRET
