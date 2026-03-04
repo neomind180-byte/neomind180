@@ -17,6 +17,7 @@ export async function POST(req: Request) {
         }
 
         const payload = await req.json();
+        console.log('📬 Webhook Body:', JSON.stringify(payload, null, 2));
 
         // Payload structure for Supabase Webhooks (UPDATE on auth.users)
         // We are looking for: email_confirmed_at changing from null to a timestamp

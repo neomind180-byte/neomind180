@@ -32,6 +32,8 @@ function RegisterForm() {
     tier3: 'Deep Coaching'
   };
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -57,9 +59,8 @@ function RegisterForm() {
 
       if (authError) throw authError;
 
-
       // Successful registration
-      router.push('/dashboard');
+      setShowSuccess(true);
 
     } catch (err: any) {
       setError(err.message || "Registration failed");
@@ -67,6 +68,31 @@ function RegisterForm() {
       setLoading(false);
     }
   };
+
+  if (showSuccess) {
+    return (
+      <div className="max-w-md w-full bg-[var(--bg-card)] rounded-[3rem] shadow-xl p-10 border border-[var(--border)] text-center">
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-[#00538e]/20 rounded-full flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-[#00538e]" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-4">
+          Check Your Email
+        </h2>
+        <p className="text-[15px] text-[var(--text-muted)] font-medium leading-relaxed mb-8">
+          We've sent a verification link to <span className="text-[#00538e] font-bold">{formData.email}</span>.
+          Please click the link to confirm your account and start your journey.
+        </p>
+        <Link
+          href="/login"
+          className="inline-block w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-[14px] hover:shadow-2xl transition-all"
+        >
+          Return to Login
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md w-full bg-[var(--bg-card)] rounded-[3rem] shadow-xl p-10 border border-[var(--border)]">

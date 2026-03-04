@@ -24,16 +24,29 @@ export async function addToSystemeIO(email: string, firstName: string, tags: str
             },
             body: JSON.stringify({
                 email: email,
-                firstName: firstName,
+                fields: [
+                    { name: 'first_name', value: firstName }
+                ],
                 tags: tags,
-                listId: listId,
             }),
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        console.log(`📡 Systeme.io Raw Response (${response.status}):`, text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            data = { raw: text };
+        }
 
         if (!response.ok) {
-            console.error('❌ Systeme.io API error:', data);
+            console.error('❌ Systeme.io API error details:', {
+                status: response.status,
+                data: data,
+                email: email
+            });
             return { success: false, error: data };
         }
 

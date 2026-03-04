@@ -9,21 +9,37 @@
 
 CREATE OR REPLACE FUNCTION public.trigger_systemeio_on_confirmation()
 RETURNS TRIGGER AS $$
+DECLARE
+  payload jsonb;
 BEGIN
   -- Only trigger if email_confirmed_at was NULL and is now NOT NULL
   IF (OLD.email_confirmed_at IS NULL AND NEW.email_confirmed_at IS NOT NULL) THEN
-    PERFORM
-      net.http_post(
-        url := 'https://neomind180.vercel.app/api/webhooks/systemeio-signup',
-        headers := jsonb_build_object(
-          'Content-Type', 'application/json',
-          'x-webhook-secret', 'YOUR_WEBHOOK_SECRET' -- Match this to SUPABASE_WEBHOOK_SECRET
-        ),
-        body := jsonb_build_object(
-          'record', row_to_json(NEW),
-          'old_record', row_to_json(OLD)
-        )::text
-      );
+    -- Construct a minimal payload to avoid binary data issues and protect privacy
+    payload := jsonb_build_object(
+      'record', jsonb_build_object(
+        'email', NEW.email,
+        'email_confirmed_at', NEW.email_confirmed_at,
+        'raw_user_meta_data', NEW.raw_user_meta_data
+      ),
+      'old_record', jsonb_build_object(
+        'email_confirmed_at', OLD.email_confirmed_at
+      )
+    );
+
+    BEGIN
+      PERFORM
+        net.http_post(
+          url := 'https://neomind180.vercel.app/api/webhooks/systemeio-signup',
+          headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'x-webhook-secret', 'YOUR_WEBHOOK_SECRET' -- Match this to SUPABASE_WEBHOOK_SECRET
+          ),
+          body := payload::text
+        );
+    EXCEPTION WHEN OTHERS THEN
+      -- Log the error to Supabase logs but don't fail the user confirmation
+      RAISE WARNING 'Systeme.io Webhook Failed: %', SQLERRM;
+    END;
   END IF;
   RETURN NEW;
 END;
