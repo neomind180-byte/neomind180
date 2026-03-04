@@ -151,12 +151,17 @@ export default function SettingsPage() {
 
       const { error } = await supabase
         .from('profiles')
-        .update({
-          ...updates
-        })
-        .eq('id', user.id);
+        .upsert({
+          id: user.id,
+          ...updates,
+          updated_at: new Date().toISOString()
+        });
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Profile Save Error:", error);
+        throw error;
+      }
+
       setProfile(prev => ({ ...prev, ...updates }));
       setMessage({ text: "Changes saved successfully.", type: 'success' });
 
