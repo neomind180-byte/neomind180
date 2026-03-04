@@ -11,24 +11,24 @@ export default function FeatureLockedPage() {
         <Lock className="w-10 h-10 text-[#F39904]" />
       </div>
 
-      <h1 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-4">
+      <h1 className="text-4xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-4">
         Expansion Required
       </h1>
 
-      <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-12 text-sm font-medium italic">
+      <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-12 text-base font-medium italic">
         This tool requires a higher coaching tier. Upgrade to access direct support, AI reflections, or 1:1 sessions.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
         <Link
           href="/pricing"
-          className="flex-1 py-5 bg-[#00538e] text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:shadow-2xl shadow-[#00538e]/20 transition-all flex items-center justify-center hover:-translate-y-1"
+          className="flex-1 py-5 bg-[#00538e] text-white rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] hover:shadow-2xl shadow-[#00538e]/20 transition-all flex items-center justify-center hover:-translate-y-1"
         >
           View Upgrade Options
         </Link>
         <Link
           href="/dashboard"
-          className="flex-1 py-5 bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-dim)] rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:border-[#94a3b8] hover:text-[var(--text-muted)] transition-all flex items-center justify-center"
+          className="flex-1 py-5 bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-dim)] rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] hover:border-[#94a3b8] hover:text-[var(--text-muted)] transition-all flex items-center justify-center"
         >
           Return Home
         </Link>

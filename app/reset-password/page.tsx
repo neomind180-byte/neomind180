@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
                     <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">
                         Set New Password
                     </h1>
-                    <p className="text-sm text-slate-400 mt-2 font-medium">
+                    <p className="text-base text-slate-400 mt-2 font-medium">
                         Choose a strong password for your account.
                     </p>
                 </div>
@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
                 <form onSubmit={handleResetPassword} className="space-y-6">
                     {/* Password Field */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">
+                        <label className="text-[12px] font-black uppercase tracking-widest text-slate-400 ml-4">
                             New Password
                         </label>
                         <div className="relative">
@@ -104,7 +104,7 @@ export default function ResetPasswordPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm"
+                                className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-base"
                             />
                             <button
                                 type="button"
@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
 
                     {/* Confirm Password Field */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">
+                        <label className="text-[12px] font-black uppercase tracking-widest text-slate-400 ml-4">
                             Confirm Password
                         </label>
                         <input
@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="••••••••"
-                            className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm"
+                            className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-base"
                         />
                     </div>
 
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                     <button
                         type="submit"
                         disabled={loading || success}
-                        className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:shadow-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                        className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-[14px] hover:shadow-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                     >
                         {loading ? (
                             <>
@@ -147,8 +147,8 @@ export default function ResetPasswordPage() {
                     </button>
                 </form>
 
-                <p className="mt-8 text-center text-xs text-slate-400 font-medium">
-                    Remember your password? <Link href="/login" className="text-[#00538e] font-bold hover:underline">Log In</Link>
+                <p className="mt-8 text-center text-[14px] text-slate-400 font-medium">
+                    Remember your password? <Link href="/login" className="text-[#00538e] font-bold hover:underline text-base">Log In</Link>
                 </p>
             </div>
         </div>

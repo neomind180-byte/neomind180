@@ -66,7 +66,7 @@ export default function BeEnoughPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">The be-Enough Shift</h1>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#993366]">Break the Overthinking Loop</p>
+            <p className="text-[12px] font-black uppercase tracking-widest text-[#993366]">Break the Overthinking Loop</p>
           </div>
         </header>
 
@@ -84,8 +84,8 @@ export default function BeEnoughPage() {
                 <HelpCircle className="w-5 h-5" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-sm font-bold text-[#00538e] uppercase tracking-wide">How this works</h3>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-lg">
+                <h3 className="text-base font-bold text-[#00538e] uppercase tracking-wide">How this works</h3>
+                <p className="text-base text-[var(--text-secondary)] leading-relaxed max-w-lg">
                   Overthinking happens when we believe a stressful thought without checking if it&apos;s true.
                   This tool slows you down. We will <strong>name the loop</strong>, <strong>check the facts</strong>, and <strong>reset your nervous system</strong>.
                 </p>
@@ -119,13 +119,13 @@ export default function BeEnoughPage() {
                   value={formData.thought}
                   onChange={(e) => setFormData({ ...formData, thought: e.target.value })}
                   placeholder="e.g., I am failing at work because I missed that deadline..."
-                  className="w-full p-6 bg-[var(--bg-primary)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#993366] text-lg font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)] resize-none h-32"
+                  className="w-full p-6 bg-[var(--bg-primary)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#993366] text-xl font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)] resize-none h-32"
                 />
                 <div className="flex justify-end">
                   <button
                     onClick={() => setStep(2)}
                     disabled={!formData.thought.trim()}
-                    className="px-8 py-4 bg-[#00538e] text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:shadow-xl shadow-[#00538e]/20 transition-all disabled:opacity-50"
+                    className="px-8 py-4 bg-[#00538e] text-white rounded-2xl font-bold uppercase text-[12px] tracking-widest hover:shadow-xl shadow-[#00538e]/20 transition-all disabled:opacity-50"
                   >
                     Next: Check Facts
                   </button>
@@ -146,11 +146,11 @@ export default function BeEnoughPage() {
                   className="w-full p-6 bg-[var(--bg-primary)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#993366] text-lg font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)] resize-none h-32"
                 />
                 <div className="flex justify-between items-center">
-                  <button onClick={() => setStep(1)} className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] hover:text-[var(--text-muted)]">Back</button>
+                  <button onClick={() => setStep(1)} className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)] hover:text-[var(--text-muted)]">Back</button>
                   <button
                     onClick={() => setStep(3)}
                     disabled={!formData.evidence.trim()}
-                    className="px-8 py-4 bg-[#00538e] text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:shadow-xl shadow-[#00538e]/20 transition-all disabled:opacity-50"
+                    className="px-8 py-4 bg-[#00538e] text-white rounded-2xl font-bold uppercase text-[12px] tracking-widest hover:shadow-xl shadow-[#00538e]/20 transition-all disabled:opacity-50"
                   >
                     Next: The Reset
                   </button>
@@ -170,7 +170,7 @@ export default function BeEnoughPage() {
                     <button
                       key={tag}
                       onClick={() => setFormData({ ...formData, emotion: tag })}
-                      className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${formData.emotion === tag
+                      className={`px-4 py-2 rounded-xl text-[12px] font-black uppercase tracking-widest border transition-all ${formData.emotion === tag
                         ? 'border-[#993366] bg-[#993366] text-white shadow-lg shadow-[#993366]/20'
                         : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[#993366]'
                         }`}
@@ -185,7 +185,7 @@ export default function BeEnoughPage() {
                   <button
                     onClick={handleSubmit}
                     disabled={!formData.emotion || isThinking}
-                    className="px-10 py-5 bg-[#993366] text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:shadow-2xl hover:shadow-[#993366]/20 transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="px-10 py-5 bg-[#993366] text-white rounded-2xl font-bold uppercase text-[12px] tracking-widest hover:shadow-2xl hover:shadow-[#993366]/20 transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     {isThinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
                     {isThinking ? "Shifting..." : "Create Shift"}
@@ -201,9 +201,9 @@ export default function BeEnoughPage() {
                   <Heart className="w-10 h-10" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-6">Shift Complete</h2>
+                  <h2 className="text-4xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-6">Shift Complete</h2>
                   <div className="bg-[var(--bg-primary)] p-8 rounded-[2rem] text-left border border-[var(--border)]">
-                    <p className="text-lg text-[var(--text-secondary)] leading-relaxed font-medium whitespace-pre-wrap">
+                    <p className="text-xl text-[var(--text-secondary)] leading-relaxed font-medium whitespace-pre-wrap">
                       {neoResponse}
                     </p>
                   </div>
@@ -215,11 +215,11 @@ export default function BeEnoughPage() {
                       setFormData({ thought: '', emotion: '', evidence: '' });
                       setNeoResponse(null);
                     }}
-                    className="px-8 py-4 rounded-2xl border border-[var(--border)] text-[var(--text-dim)] font-black uppercase text-[10px] tracking-widest hover:border-[#94a3b8] hover:text-[var(--text-muted)] transition-all"
+                    className="px-8 py-4 rounded-2xl border border-[var(--border)] text-[var(--text-dim)] font-black uppercase text-[12px] tracking-widest hover:border-[#94a3b8] hover:text-[var(--text-muted)] transition-all"
                   >
                     New Reflection
                   </button>
-                  <Link href="/dashboard" className="px-8 py-4 rounded-2xl bg-[#00538e] text-white font-black uppercase text-[10px] tracking-widest hover:shadow-2xl shadow-[#00538e]/20 transition-all">
+                  <Link href="/dashboard" className="px-8 py-4 rounded-2xl bg-[#00538e] text-white font-black uppercase text-[12px] tracking-widest hover:shadow-2xl shadow-[#00538e]/20 transition-all">
                     Return Home
                   </Link>
                 </div>

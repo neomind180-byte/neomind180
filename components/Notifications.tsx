@@ -156,7 +156,7 @@ export default function Notifications() {
                     <div className="p-6 bg-[var(--bg-card)] border-b border-[var(--border)] flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-[#0AA390]" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">
+                            <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">
                                 Intelligence Feed
                             </h3>
                         </div>
@@ -180,10 +180,10 @@ export default function Notifications() {
                                     <div className="flex gap-4">
                                         <div
                                             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${n.type === "message"
-                                                    ? "bg-[#00538e]/10 text-[#00538e] border border-[#00538e]/20"
-                                                    : n.type === "circle"
-                                                        ? "bg-[#993366]/10 text-[#993366] border border-[#993366]/20"
-                                                        : "bg-[#0AA390]/10 text-[#0AA390] border border-[#0AA390]/20"
+                                                ? "bg-[#00538e]/10 text-[#00538e] border border-[#00538e]/20"
+                                                : n.type === "circle"
+                                                    ? "bg-[#993366]/10 text-[#993366] border border-[#993366]/20"
+                                                    : "bg-[#0AA390]/10 text-[#0AA390] border border-[#0AA390]/20"
                                                 }`}
                                         >
                                             {n.type === "message" ? (
@@ -198,10 +198,10 @@ export default function Notifications() {
                                             <p className="text-xs font-black text-[var(--text-primary)] group-hover:text-[#0AA390] transition-colors uppercase tracking-tight">
                                                 {n.title}
                                             </p>
-                                            <p className="text-[11px] text-[var(--text-muted)] leading-tight font-medium">
+                                            <p className="text-[13px] text-[var(--text-muted)] leading-tight font-medium">
                                                 {n.description}
                                             </p>
-                                            <p className="text-[8px] text-[var(--text-dim)] font-black uppercase tracking-widest mt-2 flex items-center gap-1.5">
+                                            <p className="text-[10px] text-[var(--text-dim)] font-black uppercase tracking-widest mt-2 flex items-center gap-1.5">
                                                 <span className="w-1 h-1 bg-[#475569] rounded-full" />
                                                 {new Date(n.timestamp).toLocaleDateString(undefined, {
                                                     month: "short",
@@ -217,7 +217,7 @@ export default function Notifications() {
                                 <div className="w-16 h-16 bg-[var(--bg-card)] rounded-full flex items-center justify-center mx-auto border border-[var(--border)]">
                                     <Lightbulb className="w-8 h-8 text-[#2d3548]" />
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+                                <p className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                                     No new updates for you
                                 </p>
                             </div>
@@ -227,7 +227,7 @@ export default function Notifications() {
                     <div className="p-4 bg-[var(--bg-card)] border-t border-[var(--border)] text-center">
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[#0AA390] transition-colors"
+                            className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[#0AA390] transition-colors"
                         >
                             Clear Feed
                         </button>

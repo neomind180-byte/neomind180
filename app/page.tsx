@@ -129,7 +129,7 @@ export default function Page() {
             </div>
             <span className="font-extrabold tracking-tight text-[var(--text-primary)]">
               NeoMind180
-              <span className="ml-2 rounded-full border border-[var(--border)] bg-[var(--bg-input)] px-2 py-0.5 text-[10px] text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors">
+              <span className="ml-2 rounded-full border border-[var(--border)] bg-[var(--bg-input)] px-2 py-0.5 text-[12px] text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors">
                 Mindset Coaching
               </span>
             </span>
@@ -193,14 +193,14 @@ export default function Page() {
               AI-powered clarity sessions
             </div>
 
-            <h1 className="mt-4 text-balance text-[42px] font-black leading-[1.03] tracking-tighter text-[var(--text-primary)] md:text-[58px] uppercase">
+            <h1 className="mt-4 text-balance text-[50px] font-black leading-[1.03] tracking-tighter text-[var(--text-primary)] md:text-[70px] uppercase">
               Rethink. Rewire.
               <span className="block bg-gradient-to-r from-[#7c4dff] via-[#00d4ff] to-[#ff4fd8] bg-clip-text text-transparent">
                 Renew.
               </span>
             </h1>
 
-            <p className="mt-4 max-w-[60ch] text-[16px] leading-relaxed text-[var(--text-secondary)] font-medium">
+            <p className="mt-4 max-w-[60ch] text-[19px] leading-relaxed text-[var(--text-secondary)] font-medium">
               Move from overthinking to clarity. AI-powered coaching that helps you become a calm, confident observer of your thoughts.
             </p>
 
@@ -233,7 +233,7 @@ export default function Page() {
             {/* Journey Section */}
             <div className="mt-10">
               <h2 className="text-2xl font-black uppercase tracking-tighter text-[var(--text-primary)]">The Journey</h2>
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)]">
                 <span className="text-[var(--text-primary)]">Be-Enough Shift</span>
                 <span className="text-[var(--text-dim)]">→</span>
                 <span className="text-[var(--text-primary)]">Reflections with Neo</span>
@@ -269,8 +269,8 @@ export default function Page() {
           <div className="rounded-[3rem] border border-[var(--border)] bg-[var(--bg-card)] p-8 shadow-2xl shadow-[var(--shadow-color)]">
             <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--bg-input)] p-6">
               <div className="flex items-center justify-between">
-                <div className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Daily Check-in</div>
-                <span className="rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">
+                <div className="text-[12px] font-black uppercase tracking-widest text-[var(--text-primary)]">Daily Check-in</div>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1 text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)]">
                   Live Demo
                 </span>
               </div>
@@ -301,7 +301,7 @@ export default function Page() {
                 <button className="ctaBtn w-full py-4" type="submit">
                   Save Check-in
                 </button>
-                <div className="text-[10px] text-center font-bold uppercase tracking-widest text-[var(--text-dim)]">
+                <div className="text-[12px] text-center font-bold uppercase tracking-widest text-[var(--text-dim)]">
                   Stored locally for testing.
                 </div>
               </form>
@@ -325,7 +325,7 @@ export default function Page() {
                     'In-app Chat with Coach',
                     'Group coaching circles',
                   ].map((t) => (
-                    <li key={t} className="flex gap-3 text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
+                    <li key={t} className="flex gap-3 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
                       <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[#0AA390]" />
                       <span>{t}</span>
                     </li>
@@ -333,7 +333,7 @@ export default function Page() {
                 </ul>
               </div>
 
-              <button onClick={openPricing} className="secondaryBtn w-full py-4 uppercase tracking-[0.2em] text-[10px]">
+              <button onClick={openPricing} className="secondaryBtn w-full py-4 uppercase tracking-[0.2em] text-[12px]">
                 Compare all plans
               </button>
             </div>
@@ -355,13 +355,13 @@ export default function Page() {
               </div>
               <div className="space-y-1">
                 <div className="font-black uppercase tracking-tighter text-[var(--text-primary)]">NeoMind180 Mindset Coaching</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest leading-normal max-w-sm">
+                <div className="text-[12px] font-bold uppercase tracking-widest leading-normal max-w-sm">
                   Clarity, not therapy. Seek professional help for clinical mental health concerns.
                 </div>
               </div>
             </div>
 
-            <div className="grid gap-2 md:text-right font-bold uppercase tracking-widest text-[9px]">
+            <div className="grid gap-2 md:text-right font-bold uppercase tracking-widest text-[11px]">
               <div className="text-[var(--text-dim)]">Payment Security</div>
               <div className="text-[var(--text-primary)] font-black text-xs">PayFast Secure</div>
               <div className="text-[var(--text-dim)]">Cancel anytime • ZAR / USD pricing</div>
@@ -388,7 +388,7 @@ export default function Page() {
           >
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00538e] mb-2">Investment</div>
+                <div className="text-[12px] font-black uppercase tracking-[0.3em] text-[#00538e] mb-2">Investment</div>
                 <h3 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
                   Choose your transformation pace
                 </h3>
@@ -399,7 +399,7 @@ export default function Page() {
 
               <div className="flex flex-col gap-4 items-end">
                 <div className="flex items-center gap-3">
-                  <div className="inline-flex rounded-full border border-[var(--border)] bg-[var(--bg-input)] p-1.5 text-[10px] font-black uppercase tracking-widest">
+                  <div className="inline-flex rounded-full border border-[var(--border)] bg-[var(--bg-input)] p-1.5 text-[12px] font-black uppercase tracking-widest">
                     {(['ZAR', 'USD'] as const).map((c) => (
                       <button
                         key={c}
@@ -410,7 +410,7 @@ export default function Page() {
                       </button>
                     ))}
                   </div>
-                  <div className="inline-flex rounded-full border border-[var(--border)] bg-[var(--bg-input)] p-1.5 text-[10px] font-black uppercase tracking-widest">
+                  <div className="inline-flex rounded-full border border-[var(--border)] bg-[var(--bg-input)] p-1.5 text-[12px] font-black uppercase tracking-widest">
                     {(['monthly', 'yearly'] as const).map((p) => (
                       <button
                         key={p}
@@ -423,7 +423,7 @@ export default function Page() {
                   </div>
                 </div>
                 <button
-                  className="rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-6 py-2.5 text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all"
                   onClick={() => setPricingOpen(false)}
                 >
                   Close
@@ -448,9 +448,9 @@ export default function Page() {
                   >
                     <div className="relative flex-1">
                       <div className="flex items-center justify-between mb-4">
-                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">{t.name}</div>
+                        <div className="text-[12px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">{t.name}</div>
                         {featured && (
-                          <span className="rounded-full bg-[#00538e] px-3 py-1 text-[8px] font-black uppercase text-white tracking-widest">
+                          <span className="rounded-full bg-[#00538e] px-3 py-1 text-[10px] font-black uppercase text-white tracking-widest">
                             Recommended
                           </span>
                         )}
@@ -465,7 +465,7 @@ export default function Page() {
                       </div>
                       <div className="mt-4 text-xs text-[var(--text-secondary)] font-medium leading-relaxed italic">{t.blurb}</div>
 
-                      <ul className="mt-8 grid gap-4 text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
+                      <ul className="mt-8 grid gap-4 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
                         {(tier === 'basic'
                           ? ['Daily check-ins', 'Micro-resets', 'Basic insights', 'Mindfulness Audio']
                           : tier === 'plus'
@@ -480,7 +480,7 @@ export default function Page() {
                       </ul>
                     </div>
                     <div className="mt-8 pt-6 border-t border-[var(--border)]">
-                      <div className={cn('inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-widest', isPicked ? 'text-[#0AA390]' : 'text-[var(--text-dim)]')}>
+                      <div className={cn('inline-flex items-center gap-3 text-[12px] font-black uppercase tracking-widest', isPicked ? 'text-[#0AA390]' : 'text-[var(--text-dim)]')}>
                         <span className={cn('h-3 w-3 rounded-full', isPicked ? 'bg-[#0AA390] shadow-glow' : 'bg-[var(--border)]')} />
                         {isPicked ? 'Tier Selected' : 'Select Plan'}
                       </div>
@@ -491,7 +491,7 @@ export default function Page() {
             </div>
 
             <div className="mt-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+              <div className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                 Secure checkout via PayFast. Cancel anytime.
               </div>
               <div className="flex gap-4">
@@ -510,7 +510,7 @@ export default function Page() {
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-10 left-1/2 z-[200] -translate-x-1/2 animate-in slide-in-from-bottom-5">
-          <div className="rounded-full border border-[#0AA390]/30 bg-[var(--bg-card)]/90 px-8 py-3 text-[10px] font-black uppercase tracking-widest text-[#0AA390] shadow-2xl backdrop-blur-md">
+          <div className="rounded-full border border-[#0AA390]/30 bg-[var(--bg-card)]/90 px-8 py-3 text-[12px] font-black uppercase tracking-widest text-[#0AA390] shadow-2xl backdrop-blur-md">
             {toast}
           </div>
         </div>
@@ -523,7 +523,7 @@ export default function Page() {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          font-size: 10px;
+          font-size: 12px;
           padding: 8px 16px;
           border-radius: 999px;
           cursor: pointer;
@@ -541,7 +541,7 @@ export default function Page() {
           border: 1px solid var(--border);
           background: var(--bg-input);
           padding: 12px 16px;
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           text-transform: uppercase;
           letter-spacing: 0.1em;
@@ -566,7 +566,7 @@ export default function Page() {
           background: linear-gradient(135deg, #00538e, #0AA390);
           box-shadow: 0 12px 30px rgba(0, 83, 142, 0.15);
           transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          font-size: 10px;
+          font-size: 12px;
         }
         .ctaBtn:hover { 
           transform: translateY(-2px); 
@@ -574,7 +574,6 @@ export default function Page() {
           box-shadow: 0 15px 35px rgba(0, 83, 142, 0.25);
         }
         .ctaBtn:active { transform: translateY(0) scale(0.98); }
-
         .secondaryBtn {
           cursor: pointer;
           padding: 12px 24px;
@@ -586,7 +585,7 @@ export default function Page() {
           text-transform: uppercase;
           letter-spacing: 0.15em;
           transition: all 0.2s ease;
-          font-size: 10px;
+          font-size: 12px;
         }
         .secondaryBtn:hover { 
           transform: translateY(-1px); 

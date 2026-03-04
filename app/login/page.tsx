@@ -58,13 +58,13 @@ export default function LoginPage() {
           <h1 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
             Welcome Back
           </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-2 font-medium">
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
             Resume your path to clarity.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-2xl text-center uppercase tracking-widest">
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[14px] font-bold rounded-2xl text-center uppercase tracking-widest">
             {error}
           </div>
         )}
@@ -72,7 +72,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-6">
           {/* Email Field */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">
+            <label className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">
               Email Address
             </label>
             <input
@@ -81,19 +81,19 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
-              className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
+              className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-base font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
             />
           </div>
 
           {/* Password Field with Eye Toggle and Forgot Link */}
           <div className="space-y-1">
             <div className="flex justify-between items-center px-4">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+              <label className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                 Password
               </label>
               <Link
                 href="/forgot-password"
-                className="text-[10px] font-bold text-[#00538e] hover:underline"
+                className="text-[12px] font-bold text-[#00538e] hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
+                className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-base text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
               />
               <button
                 type="button"
@@ -121,7 +121,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:shadow-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+            className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-[14px] hover:shadow-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
           >
             {loading ? (
               <>
@@ -133,8 +133,8 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-8 text-center text-xs text-[var(--text-muted)] font-medium">
-          Don’t have an account? <Link href="/register" className="text-[#00538e] font-bold hover:underline">Start free.</Link>
+        <p className="mt-8 text-center text-[14px] text-[var(--text-muted)] font-medium">
+          Don’t have an account? <Link href="/register" className="text-[#00538e] font-bold hover:underline text-base">Start free.</Link>
         </p>
       </div>
     </div>

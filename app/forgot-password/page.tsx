@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
                     <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">
                         Reset Password
                     </h1>
-                    <p className="text-sm text-slate-400 mt-2 font-medium">
+                    <p className="text-base text-slate-400 mt-2 font-medium">
                         Enter your email to receive a reset link.
                     </p>
                 </div>
@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
                 <form onSubmit={handleResetPassword} className="space-y-6">
                     {/* Email Field */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">
+                        <label className="text-[12px] font-black uppercase tracking-widest text-slate-400 ml-4">
                             Email Address
                         </label>
                         <div className="relative">
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="email@example.com"
-                                className="w-full pl-14 pr-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-sm font-medium"
+                                className="w-full pl-14 pr-6 py-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#00538e]/10 focus:bg-white transition-all text-base font-medium"
                             />
                         </div>
                     </div>
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:shadow-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                        className="w-full py-5 bg-[#00538e] text-white rounded-2xl font-bold uppercase tracking-widest text-[14px] hover:shadow-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                     >
                         {loading ? (
                             <>

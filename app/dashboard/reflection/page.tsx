@@ -105,11 +105,11 @@ export default function ReflectionPage() {
       <div className="flex items-center justify-between px-8 py-5 bg-[var(--bg-card)] rounded-t-[2.5rem] border border-[var(--border)] border-b-0">
         <div className="flex items-center gap-3">
           <Zap className="w-5 h-5 text-[#0AA390]" />
-          <span className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
+          <span className="text-[14px] font-black uppercase tracking-widest text-[var(--text-muted)]">
             {userTier === 'tier2' ? 'Coaching Access' : 'Deep Coaching'}
           </span>
         </div>
-        <div className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+        <div className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)]">
           {userMessageCount}/{limit} messages per session
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function ReflectionPage() {
       <div className="flex-grow overflow-y-auto p-8 space-y-6 border-x border-[var(--border)] bg-[var(--bg-card)]/50">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-5 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
+            <div className={`max-w-[85%] p-5 rounded-2xl text-base leading-relaxed ${msg.role === 'user'
               ? 'bg-[#00538e] text-white rounded-tr-none shadow-lg shadow-[#00538e]/10'
               : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] rounded-tl-none border border-[var(--border)]'
               }`}>
@@ -126,7 +126,7 @@ export default function ReflectionPage() {
             </div>
           </div>
         ))}
-        {isTyping && <div className="text-[10px] text-[var(--text-dim)] font-black uppercase tracking-widest animate-pulse pl-4">Neo is observing...</div>}
+        {isTyping && <div className="text-[12px] text-[var(--text-dim)] font-black uppercase tracking-widest animate-pulse pl-4">Neo is observing...</div>}
       </div>
 
       {/* Input Area or Limit Reached Message */}
@@ -138,7 +138,7 @@ export default function ReflectionPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Share your reflection..."
-              className="w-full pl-8 pr-16 py-5 bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-primary)] rounded-2xl outline-none focus:border-[#00538e] transition-all text-sm font-medium placeholder:text-[var(--text-dim)]"
+              className="w-full pl-8 pr-16 py-5 bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-primary)] rounded-2xl outline-none focus:border-[#00538e] transition-all text-base font-medium placeholder:text-[var(--text-dim)]"
             />
             <button
               type="submit"
@@ -153,13 +153,13 @@ export default function ReflectionPage() {
             <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto border border-red-500/20">
               <Lock className="w-6 h-6 text-[#993366]" />
             </div>
-            <h3 className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tight">Session Limit Reached</h3>
-            <p className="text-xs text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">
+            <h3 className="text-base font-black text-[var(--text-primary)] uppercase tracking-tight">Session Limit Reached</h3>
+            <p className="text-[14px] text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">
               You've hit your {limit}-message limit for this session.
               {userTier === 'tier2' && " Practice your observations and return later for more."}
             </p>
             {userTier === 'tier2' && (
-              <button className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00538e] hover:text-[#0AA390] transition-colors mt-2">
+              <button className="text-[12px] font-black uppercase tracking-[0.2em] text-[#00538e] hover:text-[#0AA390] transition-colors mt-2">
                 Upgrade to Tier 3
               </button>
             )}

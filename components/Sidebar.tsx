@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { supabase } from '@/lib/supabaseClient';
 import {
-  LayoutDashboard, BookOpen, MessageSquare, Zap, Users, Star, Settings, LogOut, Heart, History, Lock, User, Inbox
+  LayoutDashboard, BookOpen, MessageSquare, Zap, Users, Star, Settings, LogOut, Heart, History, Lock, User, Inbox, TrendingUp
 } from "lucide-react";
 
 // define tier levels for easy comparison
@@ -18,21 +18,29 @@ const TIER_LEVELS = {
 
 const navItems = [
   // Free Features (Level 0)
-  { icon: LayoutDashboard, label: "Overview", href: "/dashboard", minTier: 0 },
-  { icon: Heart, label: "BE-ENOUGH SHIFT", href: "/dashboard/be-enough", minTier: 0 },
-  { icon: History, label: "Shift History", href: "/dashboard/history", minTier: 0 },
-  { icon: BookOpen, label: "Self-Help Library", href: "/dashboard/library", minTier: 0 },
+  { icon: LayoutDashboard, label: "Overview", href: "/dashboard", minTier: 0, color: "#00538e" },
+  { icon: Heart, label: "BE-ENOUGH SHIFT", href: "/dashboard/be-enough", minTier: 0, color: "#993366" },
+  { icon: BookOpen, label: "Self-Help Library", href: "/dashboard/library", minTier: 0, color: "#F39904" },
 
   // Tier 2 Features (Level 1)
-  { icon: MessageSquare, label: "Ask-the-Coach", href: "/dashboard/coach", minTier: 1 },
-  { icon: Zap, label: "Reflection with Neo", href: "/dashboard/reflection", minTier: 1 },
-  { icon: Users, label: "Deep-Dive Circles", href: "/dashboard/circles", minTier: 1 },
+  { icon: MessageSquare, label: "Ask-the-Coach", href: "/dashboard/coach", minTier: 1, color: "#4A90E2" },
+  { icon: Zap, label: "Reflection with Neo", href: "/dashboard/reflection", minTier: 1, color: "#8E44AD" },
+  { icon: Users, label: "Deep-Dive Circles", href: "/dashboard/circles", minTier: 1, color: "#27AE60" },
 
   // Tier 3 Features (Level 2)
-  { icon: Star, label: "1:1 Sessions", href: "/dashboard/sessions", minTier: 2 },
+  { icon: Star, label: "1:1 Sessions", href: "/dashboard/sessions", minTier: 2, color: "#E67E22" },
+
+  // Secondary/Analytics (Level 0)
+  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 0, color: "#0AA390" },
+  { icon: History, label: "Shift History", href: "/dashboard/history", minTier: 0, color: "#0AA390" },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [userTier, setUserTier] = useState<string>('free'); // Default to free while loading
   const [isCoach, setIsCoach] = useState(false);
@@ -55,10 +63,22 @@ export default function Sidebar() {
     getUserData();
   }, []);
 
+  // Close sidebar on navigation (mobile only)
+  useEffect(() => {
+    if (isOpen && onClose) {
+      onClose();
+    }
+  }, [pathname]);
+
   const currentLevel = TIER_LEVELS[userTier as keyof typeof TIER_LEVELS] || 0;
 
   return (
-    <aside className="hidden lg:flex flex-col w-72 bg-[var(--bg-primary)] border-r border-[var(--border)] p-8 sticky top-0 h-screen shrink-0 overflow-y-auto">
+    <aside className={`
+      fixed inset-y-0 left-0 z-[1001] w-72 bg-[var(--bg-primary)] border-r border-[var(--border)] p-8 
+      transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:flex lg:flex-col lg:h-screen lg:shrink-0
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      overflow-y-auto custom-scrollbar
+    `}>
 
       {/* Brand Header */}
       <div className="mb-12 px-4 flex items-center gap-4">
@@ -69,10 +89,10 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-grow space-y-2">
+      <nav className="flex-grow space-y-4">
         {isCoach && (
           <div className="mb-6 space-y-2">
-            <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] ml-4 mb-3">Administration</h3>
+            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] ml-4 mb-3">Administration</h3>
             <Link
               href="/dashboard/coach-admin"
               className={`flex items-center gap-4 p-4 rounded-[1.5rem] font-bold transition-all ${pathname === '/dashboard/coach-admin'
@@ -81,7 +101,7 @@ export default function Sidebar() {
                 }`}
             >
               <Inbox className="w-5 h-5" />
-              <span className="text-[11px] uppercase tracking-widest leading-none">Coach Inbox</span>
+              <span className="text-[13px] uppercase tracking-widest leading-none">Coach Inbox</span>
             </Link>
           </div>
         )}
@@ -90,20 +110,22 @@ export default function Sidebar() {
           const isLocked = currentLevel < item.minTier;
           const destination = isLocked ? "/dashboard/upgrade" : item.href;
           const isActive = pathname === item.href;
-          const isBeEnough = item.label === "BE-ENOUGH SHIFT";
 
           return (
             <Link
               key={item.label}
               href={destination}
-              className={`flex items-center justify-between p-4 rounded-[1.5rem] font-bold transition-all group ${isActive
-                ? (isBeEnough ? "bg-[#993366] text-white shadow-lg shadow-[#993366]/20" : "bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20")
-                : "text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-primary)]"
-                } ${isLocked ? "opacity-40 hover:opacity-100" : ""}`}
+              className={`flex items-center justify-between p-4 rounded-[1.5rem] font-bold transition-all group border ${isActive
+                ? "bg-[var(--sidebar-hover)] border-[var(--border)] text-[var(--text-primary)] shadow-sm"
+                : "bg-transparent border-transparent text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:border-[var(--border)]"
+                } ${isLocked ? "opacity-50 grayscale hover:grayscale-0 hover:opacity-100" : ""}`}
             >
               <div className="flex items-center gap-4">
-                <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
-                <span className="text-[11px] uppercase tracking-widest leading-none">{item.label}</span>
+                <item.icon
+                  className={`w-5 h-5 transition-transform group-hover:scale-110`}
+                  style={{ color: item.color }}
+                />
+                <span className="text-[13px] uppercase tracking-widest leading-none">{item.label}</span>
               </div>
 
               {/* Lock Icon Indicator */}
@@ -114,18 +136,19 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="pt-8 border-t border-[var(--border)] space-y-2">
-        <Link href="/dashboard/settings" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-primary)] transition-all group">
-          <Settings className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)]" />
-          <span className="text-[11px] uppercase tracking-widest leading-none">Settings</span>
-        </Link>
-        <Link href="/dashboard/profile" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-primary)] transition-all group">
-          <User className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)]" />
-          <span className="text-[11px] uppercase tracking-widest leading-none">My Profile</span>
+      <div className="pt-8 border-t border-[var(--border)] space-y-2 mt-8">
+        <Link
+          href="/dashboard/settings"
+          className={`flex items-center gap-4 p-4 rounded-[1.5rem] font-bold transition-all group border ${pathname === '/dashboard/settings'
+            ? "bg-[#00538e] text-white shadow-lg border-transparent"
+            : "text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--text-primary)] border-transparent"}`}
+        >
+          <Settings className={`w-5 h-5 ${pathname === '/dashboard/settings' ? "text-white" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
+          <span className="text-[13px] uppercase tracking-widest leading-none">Settings</span>
         </Link>
         <Link href="/" className="flex items-center gap-4 p-4 rounded-[1.5rem] font-bold text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-all group">
           <LogOut className="w-5 h-5 text-[var(--text-muted)] group-hover:text-red-400" />
-          <span className="text-[11px] uppercase tracking-widest leading-none">Sign Out</span>
+          <span className="text-[13px] uppercase tracking-widest leading-none">Sign Out</span>
         </Link>
       </div>
 
