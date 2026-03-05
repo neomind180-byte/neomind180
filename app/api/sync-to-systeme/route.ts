@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         }
 
         // Systeme.io API call (Tags-based)
-        const response = await fetch('https://systeme.io/api/public/contacts', {
+        const response = await fetch('https://api.systeme.io/api/contacts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

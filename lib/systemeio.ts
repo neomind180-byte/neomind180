@@ -16,11 +16,11 @@ export async function addToSystemeIO(email: string, firstName: string, tags: str
     }
 
     try {
-        const response = await fetch('https://systeme.io/api/contacts', {
+        const response = await fetch('https://api.systeme.io/api/contacts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
+                'X-API-Key': apiKey,
             },
             body: JSON.stringify({
                 email: email,
