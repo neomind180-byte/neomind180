@@ -21,30 +21,33 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const loadInitialTheme = async () => {
-            // 1. Check localStorage
-            const stored = localStorage.getItem('theme') as Theme | null;
+            try {
+                // 1. Check localStorage first (fastest)
+                const stored = localStorage.getItem('theme') as Theme | null;
+                if (stored) setTheme(stored);
 
-            // 2. Check Supabase if logged in
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('theme')
-                    .eq('id', user.id)
-                    .single();
+                // 2. Check Supabase if logged in
+                const { data: { user } } = await supabase.auth.getUser();
 
-                if (data?.theme) {
-                    setTheme(data.theme as Theme);
-                } else if (stored) {
-                    setTheme(stored);
+                // Only attempt to fetch profile if we have a user AND the API seems configured
+                const hasApiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'placeholder-key';
+
+                if (user && hasApiKey) {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('theme')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (!error && data?.theme) {
+                        setTheme(data.theme as Theme);
+                    }
                 }
-            } else if (stored) {
-                setTheme(stored);
-            } else {
-                // Default to dark mode for new/unauthenticated users
-                setTheme('dark');
+            } catch (err) {
+                console.error('⚠️ Theme Provider Error:', err);
+            } finally {
+                setMounted(true);
             }
-            setMounted(true);
         };
 
         loadInitialTheme();
