@@ -1,0 +1,8 @@
+
+Testing with payload: {"email":"test_vari1@example.com","firstName":"Var One","tags":["NeoMind180_FreeUser"]}
+Status: 422
+Body: {"type":"https:\/\/tools.ietf.org\/html\/rfc2616#section-10","title":"An error occurred","detail":"email: This email address is invalid and canGÇÖt receive emails because its domain lacks a valid MX or A DNS record.","violations":[{"propertyPath":"email","message":"This email address is invalid and canGÇÖt receive emails because its domain lacks a valid MX or A DNS record.","code":null}]}
+
+Testing with payload: {"email":"test_vari2@example.com","firstName":"Var Two","tags":[1902549]}
+Status: 422
+Body: {"type":"https:\/\/tools.ietf.org\/html\/rfc2616#section-10","title":"An error occurred","detail":"email: This email address is invalid and canGÇÖt receive emails because its domain lacks a valid MX or A DNS record.","violations":[{"propertyPath":"email","message":"This email address is invalid and canGÇÖt receive emails because its domain lacks a valid MX or A DNS record.","code":null}]}

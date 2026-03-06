@@ -1,0 +1,8 @@
+
+--- Running Test: Tag Name ---
+Status: 201
+Body: {"id":409481848,"email":"emmeline@coach.neomind180.com","registeredAt":"2026-03-05T11:47:55+00:00","locale":"en","sourceURL":null,"unsubscribed":false,"bounced":false,"needsConfirmation":false,"fields":[],"tags":[]}
+
+--- Running Test: Tag ID ---
+Status: 422
+Body: {"type":"https:\/\/tools.ietf.org\/html\/rfc2616#section-10","title":"An error occurred","detail":"email: This value is already used.","violations":[{"propertyPath":"email","message":"This value is already used.","code":"b8559cec-4cad-4b9a-b357-17757d34c9ed"}]}
