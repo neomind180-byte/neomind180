@@ -46,19 +46,24 @@ function RegisterForm() {
     }
 
     try {
-      const { data, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: window.location.origin + '/login',
-          data: {
-            full_name: formData.fullName,
-            subscription_tier: selectedTier, // This is sent to the DB trigger
-          },
+      const resp = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          tier: selectedTier,
+        }),
       });
 
-      if (authError) throw authError;
+      const result = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(result.error || result.message || "Registration failed");
+      }
 
       // Successful registration
       setShowSuccess(true);
