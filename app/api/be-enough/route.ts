@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const input = reflection.toLowerCase();
     let response = "";
 
-    // Socratic logic for the "beEnough" shift
+    // Socratic logic for the "BE-ENOUGH" shift
     if (input.includes("fail") || input.includes("mistake") || input.includes("wrong")) {
       response = "I notice your mind is focusing on the 'doing.' Let's shift to 'being.' If this mistake didn't define your worth, what would the observer say about your resilience in this moment?";
     } else if (input.includes("should") || input.includes("perfect")) {

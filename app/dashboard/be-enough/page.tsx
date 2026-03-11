@@ -65,7 +65,7 @@ export default function BeEnoughPage() {
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <div>
-            <h1 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">The be-Enough Shift</h1>
+            <h1 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">The BE-ENOUGH Shift</h1>
             <p className="text-[12px] font-black uppercase tracking-widest text-[#993366]">Break the Overthinking Loop</p>
           </div>
         </header>

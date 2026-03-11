@@ -21,7 +21,7 @@ export default function HistoryPage() {
         .select('*')
         .eq('user_id', user.id);
 
-      // 2. Fetch beEnough Shifts
+      // 2. Fetch BE-ENOUGH Shifts
       const { data: shifts } = await supabase
         .from('shifts')
         .select('*')

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Play, RotateCcw, Home, ChevronRight, ChevronLeft, Volume2 } from 'lucide-react';
 import { MicroReset } from '@/lib/micro-resets-data';
@@ -13,6 +13,27 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        if (isPlaying && !isCompleted && exercise.stepAudio && exercise.stepAudio[currentStep] && !isMuted) {
+            // Stop previous audio
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+
+            const newAudio = new Audio(exercise.stepAudio[currentStep]);
+            newAudio.play().catch(err => console.error("Audio playback failed:", err));
+            setAudio(newAudio);
+
+            return () => {
+                newAudio.pause();
+                newAudio.currentTime = 0;
+            };
+        }
+    }, [currentStep, isPlaying, isCompleted, isMuted, exercise.stepAudio]);
 
     const startExercise = () => {
         setIsPlaying(true);
@@ -123,8 +144,12 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
                         <span className={`text-[12px] font-black uppercase tracking-[0.3em] ${exercise.textColor} opacity-60`}>
                             Step {currentStep + 1} of {exercise.steps.length}
                         </span>
-                        <button className={`${exercise.textColor} opacity-40 hover:opacity-100 transition-opacity`}>
-                            <Volume2 className="w-5 h-5" />
+                        <button
+                            onClick={() => setIsMuted(!isMuted)}
+                            className={`${exercise.textColor} opacity-40 hover:opacity-100 transition-opacity`}
+                            title={isMuted ? "Unmute" : "Mute"}
+                        >
+                            {isMuted ? <Volume2 className="w-5 h-5 opacity-20" /> : <Volume2 className="w-5 h-5" />}
                         </button>
                     </div>
 

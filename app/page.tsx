@@ -467,10 +467,10 @@ export default function Page() {
 
                       <ul className="mt-8 grid gap-4 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
                         {(tier === 'basic'
-                          ? ['Daily check-ins', 'Micro-resets', 'Basic insights', 'Mindfulness Audio']
+                          ? ['Daily check-ins', 'Micro-resets', 'BE-ENOUGH Shift', 'Mindfulness Audio & Video']
                           : tier === 'plus'
-                            ? ['Async Coach Chat', 'Coaching Circles', 'AI Reflection (8/day)', 'Trends & insights']
-                            : ['Everything in Plus', 'Coaching Circles', 'AI Reflection (16/day)', '2x 1:1 Sessions/mo']
+                            ? ['Async Coach Chat', 'Coaching Circles', 'AI Reflection (10/day)', 'Trends & insights']
+                            : ['Everything in Plus', 'Coaching Circles', 'AI Reflection (20/day)', '2x 1:1 Sessions/mo']
                         ).map((x) => (
                           <li key={x} className="flex gap-3">
                             <span className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#0AA390]/80" />

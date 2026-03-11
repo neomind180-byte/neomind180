@@ -89,6 +89,7 @@ function ProgressSummary() {
 
 // --- MAIN DASHBOARD PAGE ---
 export default function DashboardPage() {
+  const { weeklyStreak, recentShifts, subscriptionTier } = useCheckInData();
   const [dayIndex, setDayIndex] = useState(0);
 
   useEffect(() => {
@@ -96,6 +97,9 @@ export default function DashboardPage() {
     const index = (today.getFullYear() + today.getMonth() + today.getDate()) % scriptureQuotes.length;
     setDayIndex(index);
   }, []);
+
+  const isTier2 = subscriptionTier === 'tier2' || subscriptionTier === 'tier3';
+  const isTier3 = subscriptionTier === 'tier3';
 
   return (
     <div className="space-y-10 pb-20">
@@ -217,27 +221,39 @@ export default function DashboardPage() {
             <h3 className="text-[12px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em] px-4">Direct Access</h3>
             <nav className="space-y-2">
               {[
-                { label: 'BE-ENOUGH SHIFT', href: '/dashboard/be-enough', icon: Heart, color: '#993366' },
-                { label: 'Self-Help Library', href: '/dashboard/library', icon: BookOpen, color: '#F39904' },
-                { label: 'Reflection with Neo', href: '/dashboard/reflection', icon: Zap, color: '#8E44AD' },
-                { label: '1:1 Sessions', href: '/dashboard/sessions', icon: Star, color: '#E67E22' },
-                { label: 'Insights & Analytics', href: '/dashboard/insights', icon: TrendingUp, color: '#0AA390' },
-                { label: 'Shift History', href: '/dashboard/history', icon: History, color: '#0AA390' }
-              ].map((item, idx) => (
-                <Link
-                  key={idx}
-                  href={item.href}
-                  className="flex items-center justify-between p-4 bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] shadow-sm hover:border-[var(--text-dim)] hover:bg-[var(--border)] transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-[var(--bg-input)] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                { label: 'BE-ENOUGH SHIFT', href: '/dashboard/be-enough', icon: Heart, color: '#993366', minTier: 'free' },
+                { label: 'Self-Help Library', href: '/dashboard/library', icon: BookOpen, color: '#F39904', minTier: 'free' },
+                { label: 'Reflection with Neo', href: '/dashboard/reflection', icon: Zap, color: '#8E44AD', minTier: 'tier2' },
+                { label: '1:1 Sessions', href: '/dashboard/sessions', icon: Star, color: '#E67E22', minTier: 'tier3' },
+                { label: 'Insights & Analytics', href: '/dashboard/insights', icon: TrendingUp, color: '#0AA390', minTier: 'tier2' },
+                { label: 'Shift History', href: '/dashboard/history', icon: History, color: '#0AA390', minTier: 'free' }
+              ].map((item, idx) => {
+                const isLocked = (item.minTier === 'tier2' && !isTier2) || (item.minTier === 'tier3' && !isTier3);
+                return (
+                  <Link
+                    key={idx}
+                    href={isLocked ? '/pricing' : item.href}
+                    className={`flex items-center justify-between p-4 bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] shadow-sm transition-all group ${isLocked ? 'opacity-70 grayscale-[0.5]' : 'hover:border-[var(--text-dim)] hover:bg-[var(--border)]'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 bg-[var(--bg-input)] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                        {isLocked && (
+                          <div className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-stone-200">
+                            <LucideIcons.Lock className="w-2.5 h-2.5 text-[#F39904]" />
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">{item.label}</span>
                     </div>
-                    <span className="text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">{item.label}</span>
-                  </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-[var(--text-dim)] group-hover:text-[var(--text-muted)] group-hover:translate-x-1 transition-all" />
-                </Link>
-              ))}
+                    {isLocked ? (
+                      <span className="text-[10px] font-black uppercase text-[#F39904] tracking-widest bg-amber-50 px-2 py-1 rounded-md border border-amber-100">Unlock</span>
+                    ) : (
+                      <ArrowRight className="w-3.5 h-3.5 text-[var(--text-dim)] group-hover:text-[var(--text-muted)] group-hover:translate-x-1 transition-all" />
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         </div>

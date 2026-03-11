@@ -31,7 +31,7 @@ const navItems = [
   { icon: Star, label: "1:1 Sessions", href: "/dashboard/sessions", minTier: 2, color: "#E67E22" },
 
   // Secondary/Analytics (Level 0)
-  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 0, color: "#0AA390" },
+  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 1, color: "#0AA390" },
   { icon: History, label: "Shift History", href: "/dashboard/history", minTier: 0, color: "#0AA390" },
 ];
 

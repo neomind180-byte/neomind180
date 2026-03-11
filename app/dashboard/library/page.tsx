@@ -27,6 +27,7 @@ type LibraryItem = {
   locked: boolean;
   min_tier: 'free' | 'tier2' | 'tier3';
   content_url?: string;
+  thumbnail_url?: string;
 };
 
 export default function LibraryPage() {
@@ -38,6 +39,9 @@ export default function LibraryPage() {
   // Audio Playback State
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Video Modal State
+  const [selectedVideo, setSelectedVideo] = useState<LibraryItem | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -121,6 +125,26 @@ export default function LibraryPage() {
     }
   };
 
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return '';
+    let videoId = '';
+
+    // Handle youtube.com/watch?v=ID
+    if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    }
+    // Handle youtu.be/ID
+    else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    }
+    // Handle youtube.com/embed/ID
+    else if (url.includes('youtube.com/embed/')) {
+      return url;
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
+  };
+
   // Filter items based on active tab
   const filteredItems = items.filter(item => {
     if (activeTab === 'read') return ['Guide', 'Article', 'Worksheet'].includes(item.type);
@@ -188,8 +212,16 @@ export default function LibraryPage() {
                 const locked = isLocked(item.min_tier);
                 return (
                   <div key={item.id} className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
-                    <div className="w-12 h-12 bg-[#00538e]/10 rounded-2xl flex items-center justify-center mb-6 text-[#00538e] group-hover:scale-110 transition-transform">
-                      <FileText className="w-6 h-6" />
+                    <div className="flex items-center gap-6 mb-6">
+                      {item.thumbnail_url ? (
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm">
+                          <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-[#00538e]/10 rounded-2xl flex items-center justify-center text-[#00538e] group-hover:scale-110 transition-transform shrink-0">
+                          <FileText className="w-6 h-6" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex justify-between items-start mb-4">
                       <span className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] bg-[var(--bg-primary)] border border-[var(--border)] px-2 py-1 rounded-md">
@@ -289,13 +321,23 @@ export default function LibraryPage() {
                 const locked = isLocked(video.min_tier);
                 return (
                   <div key={video.id} className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
-                    {/* Thumbnail Placeholder */}
-                    <div className="aspect-video bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl mb-6 flex items-center justify-center relative overflow-hidden group-hover:opacity-90 transition-opacity cursor-pointer shadow-inner">
-                      {locked ? (
-                        <Lock className="w-10 h-10 text-[#2d3548]" />
-                      ) : (
-                        <Play className="w-12 h-12 text-[#993366] fill-current drop-shadow-lg" />
-                      )}
+                    {/* Thumbnail */}
+                    <div
+                      onClick={() => !locked && setSelectedVideo(video)}
+                      className={`aspect-video bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl mb-6 flex items-center justify-center relative overflow-hidden group-hover:opacity-90 transition-opacity cursor-pointer shadow-inner ${locked ? 'cursor-not-allowed' : ''}`}
+                    >
+                      {video.thumbnail_url ? (
+                        <img src={video.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      ) : null}
+
+                      {/* Overlay */}
+                      <div className={`absolute inset-0 flex items-center justify-center ${video.thumbnail_url ? 'bg-black/20 group-hover:bg-black/40 transition-colors' : ''}`}>
+                        {locked ? (
+                          <Lock className="w-10 h-10 text-white drop-shadow-lg" />
+                        ) : (
+                          <Play className="w-12 h-12 text-white fill-current drop-shadow-xl scale-100 group-hover:scale-110 transition-transform" />
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex justify-between items-start mb-3">
@@ -313,13 +355,13 @@ export default function LibraryPage() {
 
                     <button
                       disabled={locked}
-                      onClick={() => !locked && video.content_url && window.open(video.content_url, '_blank')}
+                      onClick={() => !locked && setSelectedVideo(video)}
                       className={`w-full py-4 rounded-2xl border font-black uppercase text-[12px] tracking-widest transition-all flex items-center justify-center gap-2 ${locked
                         ? 'border-[var(--border)] text-[var(--text-dim)] cursor-not-allowed'
                         : 'border-[var(--border)] text-[#993366] hover:border-[#993366] hover:bg-[#993366] hover:text-white'
                         }`}
                     >
-                      <ExternalLink className="w-4 h-4" />
+                      <Play className="w-4 h-4 fill-current" />
                       {locked ? 'Locked' : 'Watch Now'}
                     </button>
                   </div>
@@ -331,6 +373,36 @@ export default function LibraryPage() {
         </div>
       )
       }
+
+      {/* VIDEO MODAL */}
+      {selectedVideo && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300"
+          onClick={() => setSelectedVideo(null)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
+
+          {/* Modal Content */}
+          <div
+            className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedVideo(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-white hover:text-black transition-all font-bold"
+            >
+              ✕
+            </button>
+            <iframe
+              src={getYouTubeEmbedUrl(selectedVideo.content_url || '')}
+              className="w-full h-full border-0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </div >
   );
 }

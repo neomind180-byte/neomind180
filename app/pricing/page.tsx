@@ -63,7 +63,7 @@ export default function PricingPage() {
               {[
                 "Daily Check-In Tool",
                 "Mindfulness Audio Library",
-                "beEnough Socratic Journal",
+                "BE-ENOUGH Socratic Journal",
                 "Basic Progress Tracking"
               ].map((feature, i) => (
                 <li key={i} className="flex gap-4 text-[13px] text-[var(--text-secondary)] font-bold uppercase tracking-tight">
@@ -96,7 +96,7 @@ export default function PricingPage() {
                 "Everything in Free Tier",
                 "Group Coaching Events (Circles)",
                 "Async Coach Chat (Text)",
-                "Daily AI Reflection (8 msgs/day)"
+                "Daily AI Reflection (10 msgs/day)"
               ].map((feature, i) => (
                 <li key={i} className="flex gap-4 text-[13px] text-[var(--text-secondary)] font-bold uppercase tracking-tight">
                   <Check className="w-5 h-5 text-[#00538e] shrink-0" /> {feature}
@@ -125,7 +125,7 @@ export default function PricingPage() {
                 "Everything in Coaching Access",
                 "2 × 1:1 Sessions per Month",
                 "Priority Coach Support",
-                "Extended AI Reflection (16 msgs/day)"
+                "Extended AI Reflection (20 msgs/day)"
               ].map((feature, i) => (
                 <li key={i} className="flex gap-4 text-[13px] text-[var(--text-secondary)] font-bold uppercase tracking-tight">
                   <Check className="w-5 h-5 text-[#0AA390] shrink-0" /> {feature}

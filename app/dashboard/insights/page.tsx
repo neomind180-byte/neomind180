@@ -180,6 +180,27 @@ export default function InsightsPage() {
 
             {/* SECTION 4: ADVANCED INSIGHTS */}
             <section className={`bg-[var(--bg-card)] p-12 rounded-[3rem] border border-[var(--border)] shadow-sm text-center space-y-8 relative overflow-hidden group ${isLocked ? '' : 'border-[#0AA390]/30'}`}>
+                {isLocked && (
+                    <div className="absolute inset-0 bg-[var(--bg-card)]/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-8 space-y-6">
+                        <div className="w-20 h-20 bg-[var(--bg-primary)] rounded-[2rem] flex items-center justify-center border border-[var(--border)] shadow-xl">
+                            <Lock className="w-10 h-10 text-[#F39904]" />
+                        </div>
+                        <div className="max-w-md">
+                            <h2 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tight mb-4">
+                                Deep Insights Locked
+                            </h2>
+                            <p className="text-base text-[var(--text-muted)] font-medium italic mb-8">
+                                Upgrade to Coaching Access to unlock your 30-day journey analysis, pattern detection, and progress tracking.
+                            </p>
+                            <Link href="/pricing">
+                                <button className="px-12 py-5 bg-[#00538e] text-white rounded-[1.5rem] font-bold uppercase text-[12px] tracking-[0.2em] shadow-xl hover:shadow-2xl shadow-[#00538e]/20 transition-all hover:-translate-y-1">
+                                    Compare Plans
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                     {isLocked ? <Lock className="w-32 h-32" /> : <Sparkles className="w-32 h-32 text-[#0AA390]" />}
                 </div>
@@ -202,16 +223,6 @@ export default function InsightsPage() {
                         <LockedFeature icon={TrendingUp} text="Progress Tracking" subtext={isLocked ? "Weekly/monthly growth" : "Real-time growth analysis"} />
                         <LockedFeature icon={AlertTriangle} text="Trigger Alerts" subtext={isLocked ? "Know when you're spiraling" : "Proactive trigger detection"} />
                     </div>
-
-                    {isLocked && (
-                        <div className="pt-8">
-                            <Link href="/pricing">
-                                <button className="px-12 py-5 bg-[#00538e] text-white rounded-[1.5rem] font-bold uppercase text-[12px] tracking-[0.2em] shadow-xl hover:shadow-2xl shadow-[#00538e]/20 transition-all hover:-translate-y-1">
-                                    Upgrade to Unlock
-                                </button>
-                            </Link>
-                        </div>
-                    )}
                 </div>
             </section>
         </div >
