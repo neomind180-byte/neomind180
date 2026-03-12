@@ -13,7 +13,9 @@ import {
   Lock,
   Video,
   ExternalLink,
-  Volume2
+  Volume2,
+  Upload,
+  Loader2
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -42,6 +44,39 @@ export default function LibraryPage() {
 
   // Video Modal State
   const [selectedVideo, setSelectedVideo] = useState<LibraryItem | null>(null);
+
+  // Doc Modal State
+  const [selectedDoc, setSelectedDoc] = useState<LibraryItem | null>(null);
+
+  // Upload State
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminClickCount, setAdminClickCount] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+
+  const handleAdminToggle = () => {
+    setAdminClickCount(prev => {
+      const next = prev + 1;
+      if (next === 5) {
+        setIsAdmin(!isAdmin);
+        return 0;
+      }
+      return next;
+    });
+  };
+
+  async function fetchItems() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('library_items')
+      .select('*')
+      .order('title');
+
+    if (data) {
+      setItems(data as LibraryItem[]);
+    }
+    setLoading(false);
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -87,6 +122,36 @@ export default function LibraryPage() {
     if (minTier === 'tier2' && (userTier === 'free')) return true;
     if (minTier === 'tier3' && (userTier === 'free' || userTier === 'tier2')) return true;
     return false;
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadMessage("Uploading to Vercel Blob...");
+
+    try {
+      const response = await fetch(`/api/upload/audio?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        body: file,
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const blob = await response.json();
+      setUploadMessage("Upload complete!");
+
+      // Copy URL to clipboard for convenience
+      await navigator.clipboard.writeText(blob.url);
+      alert(`Audio uploaded! URL copied to clipboard:\n\n${blob.url}\n\nPaste this in Supabase content_url.`);
+    } catch (error) {
+      console.error(error);
+      setUploadMessage("Upload failed.");
+    } finally {
+      setIsUploading(false);
+      setTimeout(() => setUploadMessage(null), 3000);
+    }
   };
 
   const togglePlay = (item: LibraryItem) => {
@@ -145,6 +210,28 @@ export default function LibraryPage() {
     return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
   };
 
+  const getGoogleDriveEmbedUrl = (url: string) => {
+    if (!url) return '';
+    if (!url.includes('drive.google.com')) return url;
+
+    // Replace /view, /edit with /preview for embedding
+    let cleanUrl = url.split('?')[0]; // Remove query params
+    if (cleanUrl.endsWith('/')) cleanUrl = cleanUrl.slice(0, -1);
+
+    if (cleanUrl.endsWith('/view') || cleanUrl.endsWith('/edit')) {
+      return cleanUrl.replace(/\/view$|\/edit$/, '/preview');
+    }
+
+    // Handle sharing links that don't end in /view
+    if (cleanUrl.includes('/d/')) {
+      const parts = cleanUrl.split('/d/');
+      const fileId = parts[1].split('/')[0];
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+
+    return url;
+  };
+
   // Filter items based on active tab
   const filteredItems = items.filter(item => {
     if (activeTab === 'read') return ['Guide', 'Article', 'Worksheet'].includes(item.type);
@@ -158,9 +245,10 @@ export default function LibraryPage() {
 
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
+        <div onClick={handleAdminToggle} className="cursor-default select-none">
           <h1 className="text-4xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
             Self-Help Library
+            {isAdmin && <span className="text-[10px] ml-2 text-red-500 font-black">ADMIN MODE</span>}
           </h1>
           <p className="text-base text-[var(--text-muted)] font-medium mt-2 max-w-lg italic">
             Curated tools to help you rethink, rewire, and renew at your own pace.
@@ -237,14 +325,14 @@ export default function LibraryPage() {
                     </p>
                     <button
                       disabled={locked}
-                      onClick={() => !locked && item.content_url && window.open(item.content_url, '_blank')}
+                      onClick={() => !locked && item.content_url && setSelectedDoc(item)}
                       className={`w-full mt-8 py-4 rounded-2xl border font-black uppercase text-[12px] tracking-widest transition-all flex items-center justify-center gap-2 ${locked
                         ? 'border-[var(--border)] text-[var(--text-dim)] cursor-not-allowed'
                         : 'border-[var(--border)] text-[#00538e] hover:border-[#00538e] hover:bg-[#00538e] hover:text-white'
                         }`}
                     >
                       {item.type === 'Worksheet' ? <Download className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
-                      {locked ? 'Locked' : (item.type === 'Worksheet' ? 'Download' : 'Read Now')}
+                      {locked ? 'Locked' : (item.type === 'Worksheet' ? 'Open Worksheet' : 'Read Now')}
                     </button>
                   </div>
                 );
@@ -255,6 +343,37 @@ export default function LibraryPage() {
           {/* --- LISTEN TAB --- */}
           {activeTab === 'listen' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+              {/* ADMIN UPLOAD SECTION */}
+              {isAdmin && (
+                <div className="bg-white/50 border-2 border-dashed border-[#0AA390]/30 rounded-[2.5rem] p-8 text-center space-y-4">
+                  <div className="w-12 h-12 bg-[#0AA390]/10 rounded-full flex items-center justify-center mx-auto text-[#0AA390]">
+                    {isUploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Upload className="w-6 h-6" />}
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold text-slate-800">Upload Audio to Vercel Blob</h4>
+                    <p className="text-xs text-slate-500 mt-1 uppercase font-black tracking-widest">
+                      {uploadMessage || "Select an MP3 to get a permanent URL for Supabase"}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="audio-upload"
+                    disabled={isUploading}
+                  />
+                  <label
+                    htmlFor="audio-upload"
+                    className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all cursor-pointer ${isUploading ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#0AA390] text-white hover:bg-[#0AA390]/90 shadow-lg shadow-[#0AA390]/20'
+                      }`}
+                  >
+                    {isUploading ? "Uploading..." : "Select Audio File"}
+                  </label>
+                </div>
+              )}
+
               {filteredItems.map((track) => {
                 const locked = isLocked(track.min_tier);
                 const isPlaying = playingTrackId === track.id;
@@ -377,7 +496,7 @@ export default function LibraryPage() {
       {/* VIDEO MODAL */}
       {selectedVideo && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300"
+          className="fixed inset-0 z-[2000] flex items-center justify-center p-6 md:p-16 animate-in fade-in duration-300"
           onClick={() => setSelectedVideo(null)}
         >
           {/* Backdrop */}
@@ -399,6 +518,41 @@ export default function LibraryPage() {
               className="w-full h-full border-0"
               allow="autoplay; encrypted-media"
               allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+
+      {/* DOCUMENT MODAL */}
+      {selectedDoc && (
+        <div
+          className="fixed inset-0 z-[2000] flex items-center justify-center p-6 md:p-16 animate-in fade-in duration-300"
+          onClick={() => setSelectedDoc(null)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
+
+          {/* Modal Content */}
+          <div
+            className="relative w-full max-w-5xl h-[90vh] bg-white rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/10 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">{selectedDoc.title}</h3>
+                <p className="text-[10px] uppercase font-black tracking-widest text-[#00538e] mt-1">{selectedDoc.type}</p>
+              </div>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="w-10 h-10 bg-slate-200 text-slate-600 rounded-full flex items-center justify-center hover:bg-[#00538e] hover:text-white transition-all font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              src={getGoogleDriveEmbedUrl(selectedDoc.content_url || '')}
+              className="w-full flex-1 border-0"
+              allow="autoplay"
             />
           </div>
         </div>

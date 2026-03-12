@@ -12,6 +12,7 @@
     "@calcom/embed-react": "^1.5.3",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.94.0",
+    "@vercel/blob": "^2.3.1",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
