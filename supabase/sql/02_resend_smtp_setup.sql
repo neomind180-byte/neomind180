@@ -39,7 +39,7 @@ CREATE TRIGGER on_coach_reply_metadata
 --    - Events: Update
 --    - Filter: coach_reply IS NOT NULL AND coach_reply != OLD.coach_reply
 --    - HTTP Method: POST
---    - URL: https://neomind180.vercel.app/api/notify-user
+--    - URL: https://app.neomind180.com/api/notify-user
 --    - Headers: 
 --        - Content-Type: application/json
 --        - Authorization: Bearer [YOUR_NOTIFY_AUTH_TOKEN]

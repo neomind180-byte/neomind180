@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-const SMTP_HOST = 'smtp.resend.com';
-const SMTP_PORT = 465;
-const SMTP_USER = 'resend';
-const SMTP_PASSWORD = process.env.RESEND_API_KEY;
-const FROM_EMAIL = 'coach_emmeline@coach.neomind180-neurocoaching.com';
-const DASHBOARD_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://neomind180-neurocoaching.com';
+const SMTP_HOST = process.env.SMTP_HOST || 'pro.eu.turbo-smtp.com';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+const FROM_EMAIL = process.env.SMTP_FROM_EMAIL || 'noreply@neomind180.com';
+const DASHBOARD_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.neomind180.com';
 
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,

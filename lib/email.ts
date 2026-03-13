@@ -4,8 +4,9 @@ const SMTP_HOST = process.env.SMTP_HOST || 'pro.eu.turbo-smtp.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
-const FROM_EMAIL = process.env.SMTP_FROM_EMAIL || 'noreply@coach.neomind180.com';
-const COACH_EMAIL = process.env.COACH_EMAIL || 'emmeline@coach.neomind180.com';
+const FROM_EMAIL = process.env.SMTP_FROM_EMAIL || 'noreply@neomind180.com';
+const COACH_EMAIL = process.env.COACH_EMAIL || 'coach@neomind180.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.neomind180.com';
 
 const transporter = nodemailer.createTransport({
   host: SMTP_HOST,
@@ -32,7 +33,7 @@ export async function notifyCoachOfMessage(record: any) {
         <p><strong>Message:</strong></p>
         <p style="white-space: pre-wrap;">${record.message}</p>
         <hr>
-        <p><em><a href="https://neomind180.vercel.app/dashboard/coach-admin" style="color: #00538e; font-weight: bold; text-decoration: none;">Reply to this message through your coach dashboard.</a></em></p>
+        <p><em><a href="${APP_URL}/dashboard/coach-admin" style="color: #00538e; font-weight: bold; text-decoration: none;">Reply to this message through your coach dashboard.</a></em></p>
       `
     });
 

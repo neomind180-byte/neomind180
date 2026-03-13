@@ -12,8 +12,8 @@ Update your environment variables in the Vercel Dashboard and your local `.env.l
 | `SMTP_PORT` | `465` | SSL Port |
 | `SMTP_USER` | `[your-consumer-key]` | Provided by TurboSMTP |
 | `SMTP_PASSWORD` | `[your-consumer-secret]` | Provided by TurboSMTP |
-| `SMTP_FROM_EMAIL` | `noreply@coach.neomind180.com` | Verified subdomain sender |
-| `COACH_EMAIL` | `emmeline@coach.neomind180.com` | New coach email |
+| `SMTP_FROM_EMAIL` | `noreply@neomind180.com` | Verified subdomain sender |
+| `COACH_EMAIL` | `coach@neomind180.com` | New coach email |
 
 ### Cleanup (Vercel)
 - **Delete** `RESEND_API_KEY` once migration is verified.
@@ -28,7 +28,7 @@ To ensure Auth emails (password reset, etc.) use TurboSMTP:
 2. Scroll to **SMTP Settings**.
 3. Enable **SMTP Service**.
 4. Configure as follows:
-   - **Sender Email**: `noreply@coach.neomind180.com`
+   - **Sender Email**: `noreply@neomind180.com`
    - **Sender Name**: `NeoMind180`
    - **Host**: `pro.eu.turbo-smtp.com`
    - **Port**: `465`
@@ -49,7 +49,7 @@ Instead of the frontend calling `/api/notify-coach`, we will use Supabase Webhoo
    - **Table**: `coach_messages`
    - **Events**: `INSERT`
    - **Type**: `HTTP Request`
-   - **URL**: `https://neomind180.vercel.app/api/webhooks/notify-coach`
+   - **URL**: `https://app.neomind180.com/api/webhooks/notify-coach`
    - **Method**: `POST`
    - **HTTP Headers**:
      - `Content-Type`: `application/json`

@@ -24,7 +24,7 @@ BEGIN
     BEGIN
       PERFORM
         net.http_post(
-          url := 'https://neomind180.vercel.app/api/sync-to-systeme',
+          url := 'https://app.neomind180.com/api/sync-to-systeme',
           headers := jsonb_build_object(
             'Content-Type', 'application/json',
             'x-webhook-secret', 'YOUR_WEBHOOK_SECRET' -- Match this to SUPABASE_WEBHOOK_SECRET
