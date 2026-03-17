@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 
 type Plan = 'monthly' | 'yearly';
@@ -8,28 +9,16 @@ type Currency = 'USD' | 'ZAR';
 
 const PRICING = {
   USD: {
-    monthly: {
-      basic: { name: 'Basic Self-Help', price: 0, blurb: 'Start free. Upgrade when you’re ready.' },
-      plus: { name: 'Plus', price: 19, blurb: 'More sessions, more support, more momentum.' },
-      premium: { name: 'Premium', price: 79, blurb: 'Maximum depth with the full toolkit.' },
-    },
-    yearly: {
-      basic: { name: 'Basic Self-Help', price: 0, blurb: 'Still free. Still useful.' },
-      plus: { name: 'Plus', price: 19 * 10, blurb: '2 months free (paid yearly).' },
-      premium: { name: 'Premium', price: 79 * 10, blurb: '2 months free (paid yearly).' },
-    },
+    free: { name: 'Clarity Foundation', price: 0, blurb: 'Essential tools for daily grounding.', period: '' },
+    starter: { name: 'Clarity Starter', price: 19, blurb: 'Group support and AI coaching.', period: '/yr' },
+    builder: { name: 'Confidence Builder', price: 15, blurb: 'Accelerate your transformation.', period: '/mo' },
+    catalyst: { name: 'Compassion Catalyst', price: 79, blurb: 'Profound, lasting transformation.', period: '/mo' },
   },
   ZAR: {
-    monthly: {
-      basic: { name: 'Basic Self-Help', price: 0, blurb: 'Start free. Upgrade when you’re ready.' },
-      plus: { name: 'Plus', price: 299, blurb: 'More sessions, more support, more momentum.' },
-      premium: { name: 'Premium', price: 499, blurb: 'Maximum depth with the full toolkit.' },
-    },
-    yearly: {
-      basic: { name: 'Basic Self-Help', price: 0, blurb: 'Still free. Still useful.' },
-      plus: { name: 'Plus', price: 299 * 10, blurb: '2 months free (paid yearly).' },
-      premium: { name: 'Premium', price: 499 * 10, blurb: '2 months free (paid yearly).' },
-    },
+    free: { name: 'Clarity Foundation', price: 0, blurb: 'Essential tools for daily grounding.', period: '' },
+    starter: { name: 'Clarity Starter', price: 350, blurb: 'Group support and AI coaching.', period: '/yr' },
+    builder: { name: 'Confidence Builder', price: 250, blurb: 'Accelerate your transformation.', period: '/mo' },
+    catalyst: { name: 'Compassion Catalyst', price: 1400, blurb: 'Profound, lasting transformation.', period: '/mo' },
   },
 } as const;
 
@@ -48,21 +37,21 @@ export default function Page() {
   const [pricingOpen, setPricingOpen] = useState(false);
   const [plan, setPlan] = useState<Plan>('monthly');
   const [currency, setCurrency] = useState<Currency>('ZAR');
-  const [selectedTier, setSelectedTier] = useState<'basic' | 'plus' | 'premium'>('plus');
+  const [selectedTier, setSelectedTier] = useState<keyof typeof PRICING['USD']>('starter');
   const [toast, setToast] = useState<string | null>(null);
 
   const pricingRef = useRef<HTMLDivElement | null>(null);
   const heroImageRef = useRef<HTMLDivElement | null>(null);
 
-  const tiers = useMemo(() => PRICING[currency][plan], [currency, plan]);
+  const tiers = useMemo(() => PRICING[currency], [currency]);
 
   useEffect(() => {
     const p = (localStorage.getItem('neomind_plan') as Plan | null) ?? 'monthly';
     const c = (localStorage.getItem('neomind_currency') as Currency | null) ?? 'ZAR';
-    const t = (localStorage.getItem('neomind_tier') as 'basic' | 'plus' | 'premium' | null) ?? 'plus';
+    const t = (localStorage.getItem('neomind_tier') as keyof typeof PRICING['USD'] | null) ?? 'starter';
     if (p === 'monthly' || p === 'yearly') setPlan(p);
     if (c === 'USD' || c === 'ZAR') setCurrency(c);
-    if (t === 'basic' || t === 'plus' || t === 'premium') setSelectedTier(t);
+    if (t in PRICING['USD']) setSelectedTier(t);
   }, []);
 
   useEffect(() => {
@@ -374,7 +363,7 @@ export default function Page() {
       {/* Pricing Modal */}
       {pricingOpen && (
         <div
-          className="fixed inset-0 z-[100] grid place-items-center bg-black/80 px-4 py-8 backdrop-blur-md overflow-y-auto"
+          className="fixed inset-0 z-[100] grid place-items-center bg-black/80 px-6 py-12 backdrop-blur-md overflow-y-auto"
           role="dialog"
           aria-modal="true"
           onMouseDown={(e) => {
@@ -384,7 +373,7 @@ export default function Page() {
           <div
             ref={pricingRef as any}
             tabIndex={-1}
-            className="w-full max-w-[980px] rounded-[3rem] border border-[var(--border)] bg-[var(--bg-card)] p-10 shadow-3xl outline-none my-auto"
+            className="w-full max-w-[1120px] rounded-[3rem] border border-[var(--border)] bg-[var(--bg-card)] p-12 shadow-3xl outline-none my-auto"
           >
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div>
@@ -428,60 +417,70 @@ export default function Page() {
                 >
                   Close
                 </button>
-              </div>
             </div>
+          </div>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {(['basic', 'plus', 'premium'] as const).map((tier) => {
-                const t = tiers[tier];
+            <div className="mt-12 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+              {(['free', 'starter', 'builder', 'catalyst'] as const).map((tier) => {
+                const t = PRICING[currency][tier];
                 const isPicked = selectedTier === tier;
-                const featured = tier === 'plus';
+                const featured = tier === 'builder';
+                const starterT = tier === 'starter';
                 return (
                   <button
                     key={tier}
                     onClick={() => setSelectedTier(tier)}
                     className={cn(
-                      'text-left rounded-[2.5rem] border p-8 transition-all flex flex-col',
+                      'text-left rounded-[2.5rem] border p-8 transition-all flex flex-col group',
                       isPicked ? 'border-[#00538e] bg-[#00538e]/5 shadow-xl ring-2 ring-[#00538e]/20' : 'border-[var(--border)] bg-[var(--bg-input)] hover:border-[var(--text-dim)]',
                       featured && 'relative overflow-hidden'
                     )}
                   >
                     <div className="relative flex-1">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="text-[12px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">{t.name}</div>
-                        {featured && (
-                          <span className="rounded-full bg-[#00538e] px-3 py-1 text-[10px] font-black uppercase text-white tracking-widest">
-                            Recommended
-                          </span>
-                        )}
+                      <div className="flex flex-col gap-3 mb-6">
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">{t.name}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {featured && (
+                            <span className="rounded-full bg-[#0AA390] px-3 py-1.5 text-[9px] font-black uppercase text-white tracking-widest shadow-lg shadow-[#0AA390]/20">
+                              Most Popular
+                            </span>
+                          )}
+                          {starterT && (
+                            <span className="rounded-full bg-[#00538e] px-3 py-1.5 text-[9px] font-black uppercase text-white tracking-widest shadow-lg shadow-[#00538e]/20">
+                              Best Value
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-4xl font-black text-[var(--text-primary)] tracking-tighter">
+                      <div className="text-3xl font-black text-[var(--text-primary)] tracking-tighter">
                         {formatPrice(t.price, currency)}
                         {t.price !== 0 && (
                           <span className="ml-2 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                            /{plan === 'monthly' ? 'mo' : 'yr'}
+                            {t.period}
                           </span>
                         )}
                       </div>
-                      <div className="mt-4 text-xs text-[var(--text-secondary)] font-medium leading-relaxed italic">{t.blurb}</div>
+                      <div className="mt-4 text-[11px] text-[var(--text-secondary)] font-medium leading-relaxed italic">{t.blurb}</div>
 
-                      <ul className="mt-8 grid gap-4 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
-                        {(tier === 'basic'
-                          ? ['Daily check-ins', 'Micro-resets', 'BE-ENOUGH Shift', 'Mindfulness Audio & Video']
-                          : tier === 'plus'
-                            ? ['Async Coach Chat', 'Coaching Circles', 'AI Reflection (10/day)', 'Trends & insights']
-                            : ['Everything in Plus', 'Coaching Circles', 'AI Reflection (20/day)', '2x 1:1 Sessions/mo']
+                      <ul className="mt-8 grid gap-4 text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
+                        {(tier === 'free'
+                          ? ['Daily check-ins', 'Micro-resets', 'Socratic Journal', 'Progress Tracking']
+                          : tier === 'starter'
+                            ? ['Group Circles', 'Async Coach Chat', 'AI Reflection (30/day)', 'Annual Plan']
+                            : tier === 'builder'
+                            ? ['Unlimited AI Reflections', 'Advanced Insights', 'Exclusive Events', 'Priority Support']
+                            : ['2x 1:1 Sessions/mo', 'Personalized Roadmap', 'Direct Coach Access', 'Everything Builder']
                         ).map((x) => (
                           <li key={x} className="flex gap-3">
-                            <span className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#0AA390]/80" />
+                            <span className={cn('mt-1 h-2 w-2 flex-shrink-0 rounded-full', featured ? 'bg-[#0AA390]' : 'bg-[#00538e]')} />
                             <span>{x}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                     <div className="mt-8 pt-6 border-t border-[var(--border)]">
-                      <div className={cn('inline-flex items-center gap-3 text-[12px] font-black uppercase tracking-widest', isPicked ? 'text-[#0AA390]' : 'text-[var(--text-dim)]')}>
-                        <span className={cn('h-3 w-3 rounded-full', isPicked ? 'bg-[#0AA390] shadow-glow' : 'bg-[var(--border)]')} />
+                      <div className={cn('inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-widest', isPicked ? 'text-[#0AA390]' : 'text-[var(--text-dim)] group-hover:text-[var(--text-primary)] transition-colors')}>
+                        <span className={cn('h-2.5 w-2.5 rounded-full transition-all', isPicked ? 'bg-[#0AA390] shadow-glow' : 'bg-[var(--border)] group-hover:scale-125')} />
                         {isPicked ? 'Tier Selected' : 'Select Plan'}
                       </div>
                     </div>
@@ -498,9 +497,9 @@ export default function Page() {
                 <button className="secondaryBtn !py-4 !px-10" onClick={() => setPricingOpen(false)}>
                   Keep Browsing
                 </button>
-                <button className="ctaBtn !py-4 !px-10" onClick={beginJourney}>
+                <Link href={`/register?tier=${selectedTier}`} className="ctaBtn !py-4 !px-10">
                   Begin Journey
-                </button>
+                </Link>
               </div>
             </div>
           </div>

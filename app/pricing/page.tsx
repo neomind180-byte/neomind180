@@ -2,33 +2,75 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Check, ArrowLeft } from 'lucide-react';
+import { Check, ArrowLeft, HelpCircle, Info, Sparkles } from 'lucide-react';
+import { PRICING_PLANS } from '@/lib/pricing-config';
+
+const FAQ_ITEMS = [
+  {
+    q: "What's the difference between AI reflections in each tier?",
+    a: "All tiers include AI-powered coaching reflections that remember your journey. Free users get 10/day to experience the value, Clarity Starter gets 30/day for consistent growth, and Confidence Builder+ get unlimited access for intensive transformation work. The AI learns from your conversations and provides increasingly personalized guidance."
+  },
+  {
+    q: "Does the AI remember my previous conversations?",
+    a: "Yes! Your AI coach maintains context from all your previous reflections, tracking your growth patterns, recurring themes, and transformation milestones. This creates a truly personalized coaching experience that deepens over time."
+  },
+  {
+    q: "Why is Clarity Starter annual-only?",
+    a: "Annual commitment helps you stay accountable to your transformation journey while giving you the best value - just $1.58/month. Plus, you can cancel anytime with our 30-day guarantee."
+  },
+  {
+    q: "Can I upgrade or downgrade anytime?",
+    a: "Absolutely! You can upgrade immediately to access more features. Downgrades take effect at your next billing cycle, and we'll prorate any differences."
+  },
+  {
+    q: "What makes NeoMind180 different from ChatGPT or other AI tools?",
+    a: "While general AI tools are powerful, NeoMind180 provides structured coaching frameworks, personalized progress tracking with memory of your entire journey, community support, and integration with mindfulness tools - all designed specifically for mindset transformation. It's the difference between a blank notebook and a guided journal with a coach who knows your story."
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "We use PayFast, South Africa's leading payment gateway. You can pay with credit cards, debit cards, instant EFT, or other local payment methods. All transactions are secure and encrypted."
+  }
+];
+
+const COMPARISON_FEATURES = [
+  { name: "Daily Check-In", tiers: [true, true, true, true] },
+  { name: "Audio Library", tiers: [true, true, true, true] },
+  { name: "Socratic Journal", tiers: [true, true, true, true] },
+  { name: "Progress Tracking", tiers: [true, true, true, true] },
+  { name: "AI Reflections", tiers: ["10/day", "30/day", "Unlimited", "Unlimited"] },
+  { name: "Group Circles", tiers: [false, true, true, true] },
+  { name: "Async Coach Chat", tiers: [false, true, true, true] },
+  { name: "1:1 Sessions", tiers: [false, false, false, "2/month"] },
+  { name: "Priority Support", tiers: [false, "Community", "Priority", "Direct"] },
+];
 
 export default function PricingPage() {
   const [currency, setCurrency] = useState<'USD' | 'ZAR'>('USD');
+  const [hoveredTier, setHoveredTier] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] py-12 px-6 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
 
         {/* Header */}
-        <div className="text-center mb-16 space-y-4">
-          <Link href="/" className="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-[#00538e] transition-colors font-black uppercase text-[12px] tracking-[0.2em] mb-4">
-            <ArrowLeft className="w-4 h-4" /> Back to Home
+        <div className="text-center mb-16 space-y-6">
+          <Link href="/" className="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-[#00538e] transition-colors font-black uppercase text-[12px] tracking-[0.2em] mb-4 group">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Home
           </Link>
-          <h1 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
-            Choose Your Support
+          <h1 className="text-4xl md:text-6xl font-black text-[var(--text-primary)] uppercase tracking-tighter leading-none">
+            Choose Your Path to <br />
+            <span className="text-[#0AA390]">Clarity, Confidence, and Compassion</span>
           </h1>
-          <p className="text-[var(--text-muted)] max-w-xl mx-auto text-lg font-medium italic">
-            From self-guided clarity to deep 1:1 coaching. Upgrade or downgrade anytime.
+          <p className="text-[var(--text-muted)] max-w-2xl mx-auto text-lg md:text-xl font-medium italic">
+            Flexible plans designed for every stage of your mindset journey. Cancel anytime.
           </p>
 
           {/* Currency Toggle */}
-          <div className="flex justify-center pt-4">
-            <div className="bg-[var(--bg-input)] p-1.5 rounded-full inline-flex items-center border border-[var(--border)]">
+          <div className="flex justify-center pt-8">
+            <div className="bg-[var(--bg-card)] p-1.5 rounded-full inline-flex items-center border border-[var(--border)] shadow-xl">
               <button
                 onClick={() => setCurrency('USD')}
-                className={`px-8 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${currency === 'USD'
+                className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${currency === 'USD'
                   ? 'bg-[#00538e] text-white shadow-lg'
                   : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
                   }`}
@@ -37,7 +79,7 @@ export default function PricingPage() {
               </button>
               <button
                 onClick={() => setCurrency('ZAR')}
-                className={`px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${currency === 'ZAR'
+                className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${currency === 'ZAR'
                   ? 'bg-[#00538e] text-white shadow-lg'
                   : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
                   }`}
@@ -48,96 +90,141 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 items-start">
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-24">
+          {PRICING_PLANS.map((plan) => (
+            <div
+              key={plan.id}
+              onMouseEnter={() => setHoveredTier(plan.id)}
+              onMouseLeave={() => setHoveredTier(null)}
+              className={`relative bg-[var(--bg-card)] p-8 rounded-[3.5rem] border transition-all duration-500 flex flex-col ${
+                plan.badgeType === 'accent' 
+                  ? 'border-[#0AA390] shadow-2xl scale-105 z-10' 
+                  : plan.badgeType === 'primary' 
+                  ? 'border-[#00538e] shadow-xl' 
+                  : 'border-[var(--border)] shadow-lg'
+              } ${hoveredTier === plan.id ? '-translate-y-2' : ''}`}
+            >
+              {plan.badge && (
+                <div className={`absolute top-0 right-0 px-6 py-2.5 rounded-bl-3xl rounded-tr-[3.4rem] text-[10px] font-black uppercase tracking-[0.2em] text-white ${
+                  plan.badgeType === 'accent' ? 'bg-[#0AA390] animate-pulse' : 'bg-[#00538e]'
+                }`}>
+                  {plan.badge}
+                </div>
+              )}
 
-          {/* Tier 1: Free */}
-          <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-[var(--border)] shadow-xl shadow-[var(--shadow-color)] hover:-translate-y-1 transition-all">
-            <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Basic Self-Help</h3>
-            <div className="my-8">
-              <span className="text-5xl font-black text-[#00538e]">Free</span>
-            </div>
-            <p className="text-base text-[var(--text-secondary)] font-medium mb-10 min-h-[40px] italic">
-              Essential tools for daily grounding and self-observation.
-            </p>
-            <ul className="space-y-5 mb-10">
-              {[
-                "Daily Check-In Tool",
-                "Mindfulness Audio Library",
-                "BE-ENOUGH Socratic Journal",
-                "Basic Progress Tracking"
-              ].map((feature, i) => (
-                <li key={i} className="flex gap-4 text-[13px] text-[var(--text-secondary)] font-bold uppercase tracking-tight">
-                  <Check className="w-5 h-5 text-[#0AA390] shrink-0" /> {feature}
-                </li>
-              ))}
-            </ul>
-            <Link href="/register?tier=free" className="block w-full py-5 rounded-2xl border-2 border-[#00538e] text-[#00538e] font-black uppercase text-[12px] tracking-[0.2em] text-center hover:bg-[#00538e] hover:text-white transition-all">
-              Start Free
-            </Link>
-          </div>
+              <div className="mb-6">
+                <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight mb-2">{plan.title}</h3>
+                <p className="text-[12px] text-[var(--text-muted)] font-medium italic leading-relaxed min-h-[40px]">{plan.tagline}</p>
+              </div>
 
-          {/* Tier 2: Coaching Access ($19) */}
-          <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] border-2 border-[#00538e] shadow-2xl relative transform md:-translate-y-6">
-            <div className="absolute top-0 right-0 bg-[#00538e] text-white text-[11px] font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-bl-3xl rounded-tr-[2.9rem]">
-              Most Popular
-            </div>
-            <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Coaching Access</h3>
-            <div className="my-8 flex items-baseline gap-2">
-              <span className="text-5xl font-black text-[#00538e]">
-                {currency === 'USD' ? '$19' : 'R350'}
-              </span>
-              <span className="text-[var(--text-muted)] font-black uppercase text-[12px] tracking-widest">/month</span>
-            </div>
-            <p className="text-base text-[var(--text-secondary)] font-medium mb-10 min-h-[40px] italic">
-              Group support and AI coaching to keep you moving forward.
-            </p>
-            <ul className="space-y-5 mb-10">
-              {[
-                "Everything in Free Tier",
-                "Group Coaching Events (Circles)",
-                "Async Coach Chat (Text)",
-                "Daily AI Reflection (10 msgs/day)"
-              ].map((feature, i) => (
-                <li key={i} className="flex gap-4 text-[13px] text-[var(--text-secondary)] font-bold uppercase tracking-tight">
-                  <Check className="w-5 h-5 text-[#00538e] shrink-0" /> {feature}
-                </li>
-              ))}
-            </ul>
-            <Link href="/register?tier=tier2" className="block w-full py-5 rounded-2xl bg-[#00538e] text-white font-black uppercase text-[12px] tracking-[0.2em] text-center hover:shadow-2xl shadow-[#00538e]/40 transition-all hover:-translate-y-0.5">
-              Join Coaching Access
-            </Link>
-          </div>
+              <div className="mb-8 flex items-baseline gap-1">
+                <span className="text-4xl font-black text-[var(--text-primary)]">
+                  {currency === 'USD' ? '$' : 'R'}{plan.price[currency].amount}
+                </span>
+                {plan.price[currency].period && (
+                  <span className="text-[var(--text-dim)] font-black uppercase text-[10px] tracking-widest">
+                    /{plan.price[currency].period.toLowerCase()}
+                  </span>
+                )}
+              </div>
 
-          {/* Tier 3: Deep Coaching ($79) */}
-          <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-[var(--border)] shadow-xl shadow-[var(--shadow-color)] hover:-translate-y-1 transition-all">
-            <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Deep Coaching</h3>
-            <div className="my-8 flex items-baseline gap-2">
-              <span className="text-5xl font-black text-[#00538e]">
-                {currency === 'USD' ? '$79' : 'R1400'}
-              </span>
-              <span className="text-[var(--text-muted)] font-black uppercase text-[12px] tracking-widest">/month</span>
-            </div>
-            <p className="text-base text-[var(--text-secondary)] font-medium mb-10 min-h-[40px] italic">
-              High-touch 1:1 guidance for profound transformation.
-            </p>
-            <ul className="space-y-5 mb-10">
-              {[
-                "Everything in Coaching Access",
-                "2 × 1:1 Sessions per Month",
-                "Priority Coach Support",
-                "Extended AI Reflection (20 msgs/day)"
-              ].map((feature, i) => (
-                <li key={i} className="flex gap-4 text-[13px] text-[var(--text-secondary)] font-bold uppercase tracking-tight">
-                  <Check className="w-5 h-5 text-[#0AA390] shrink-0" /> {feature}
-                </li>
-              ))}
-            </ul>
-            <Link href="/register?tier=tier3" className="block w-full py-5 rounded-2xl border-2 border-[var(--border)] text-[var(--text-dim)] font-black uppercase text-[12px] tracking-[0.2em] text-center hover:border-[#00538e] hover:text-[#00538e] transition-all">
-              Apply for Deep Coaching
-            </Link>
-          </div>
+              {plan.highlight && (
+                <div className="mb-8 p-4 bg-[#0AA390]/10 rounded-2xl border border-[#0AA390]/20">
+                  <p className="text-[11px] font-bold text-[#0AA390] italic flex items-center gap-2">
+                    <Sparkles className="w-3 h-3" /> {plan.highlight}
+                  </p>
+                </div>
+              )}
 
+              <ul className="space-y-4 mb-10 flex-grow">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex gap-3 text-[12px] text-[var(--text-secondary)] font-bold uppercase tracking-tight leading-tight">
+                    <Check className={`w-4 h-4 shrink-0 ${plan.badgeType === 'accent' ? 'text-[#0AA390]' : 'text-[#00538e]'}`} />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="space-y-4">
+                <Link
+                  href={`/register?tier=${plan.id}`}
+                  className={`block w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-center transition-all ${
+                    plan.badgeType === 'accent'
+                      ? 'bg-[#0AA390] text-white shadow-xl shadow-[#0AA390]/20'
+                      : plan.id === 'free'
+                      ? 'border-2 border-[var(--border)] text-[var(--text-muted)] hover:border-[#00538e] hover:text-[#00538e]'
+                      : 'bg-[#00538e] text-white shadow-xl shadow-[#00538e]/20'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+                {plan.note && (
+                  <p className="text-[10px] text-[var(--text-muted)] text-center italic font-medium">{plan.note}</p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
+
+        {/* Feature Comparison Table */}
+        <div className="mb-24 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <h2 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter text-center mb-12">Compare Features</h2>
+          <div className="overflow-x-auto rounded-[3rem] border border-[var(--border)] bg-[var(--bg-card)] shadow-2xl">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[var(--bg-input)]/50">
+                  <th className="p-8 text-left text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)] border-b border-[var(--border)]">Feature</th>
+                  {PRICING_PLANS.map(plan => (
+                    <th key={plan.id} className="p-8 text-center text-[12px] font-black uppercase tracking-widest text-[var(--text-primary)] border-b border-[var(--border)]">
+                      {plan.title.split(' ')[1]}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON_FEATURES.map((feature, idx) => (
+                  <tr key={idx} className="hover:bg-[var(--bg-input)]/30 transition-colors">
+                    <td className="p-8 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight border-b border-[var(--border)]">{feature.name}</td>
+                    {feature.tiers.map((status, i) => (
+                      <td key={i} className="p-8 text-center border-b border-[var(--border)]">
+                        {typeof status === 'string' ? (
+                          <span className="text-[11px] font-black uppercase tracking-widest text-[#00538e]">{status}</span>
+                        ) : status ? (
+                          <Check className="w-5 h-5 text-[#0AA390] mx-auto" />
+                        ) : (
+                          <span className="text-[var(--text-dim)] text-[20px]">—</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 justify-center mb-12">
+            <HelpCircle className="w-8 h-8 text-[#00538e]" />
+            <h2 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Frequently Asked Questions</h2>
+          </div>
+          <div className="grid gap-6">
+            {FAQ_ITEMS.map((item, i) => (
+              <div key={i} className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] hover:border-[#00538e]/30 transition-all group">
+                <div className="flex gap-4">
+                  <Info className="w-5 h-5 text-[#0AA390] shrink-0 mt-1 group-hover:rotate-12 transition-transform" />
+                  <div>
+                    <h3 className="text-lg font-black text-[var(--text-primary)] uppercase tracking-tight mb-3">{item.q}</h3>
+                    <p className="text-[14px] text-[var(--text-muted)] font-medium leading-relaxed italic">{item.a}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
