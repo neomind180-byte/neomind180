@@ -4,7 +4,7 @@ import { addToSystemeIO } from '@/lib/systemeio';
 
 export async function POST(request: Request) {
     try {
-        const { email, password, fullName, tier } = await request.json();
+        const { email, password, fullName, phone, tier } = await request.json();
 
         if (!email || !password || !fullName) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
                 emailRedirectTo: `${new URL(request.url).origin}/login`,
                 data: {
                     full_name: fullName,
+                    phone: phone || '',
                     subscription_tier: tier || 'free',
                 },
             },
@@ -34,6 +35,16 @@ export async function POST(request: Request) {
         if (authError) {
             console.error('❌ Supabase Auth Error:', authError.message);
             return NextResponse.json({ error: authError.message }, { status: authError.status || 500 });
+        }
+
+        // 2b. Manually ensure profile is updated (fallback in case trigger is slow or limited)
+        if (authData.user) {
+            await supabase.from('profiles').upsert({
+                id: authData.user.id,
+                full_name: fullName,
+                phone: phone || '',
+                subscription_tier: tier || 'free'
+            });
         }
 
         // 3. Immediately Sync to Systeme.io (Don't wait for confirmation)

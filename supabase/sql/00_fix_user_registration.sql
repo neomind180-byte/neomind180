@@ -45,10 +45,11 @@ CREATE POLICY "Enable insert for authenticated users only"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, subscription_tier)
+  INSERT INTO public.profiles (id, full_name, phone, subscription_tier)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'phone', ''),
     COALESCE(NEW.raw_user_meta_data->>'subscription_tier', 'free')
   );
   RETURN NEW;

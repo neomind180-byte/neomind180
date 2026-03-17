@@ -17,6 +17,7 @@ function RegisterForm() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   });
@@ -55,6 +56,7 @@ function RegisterForm() {
           email: formData.email,
           password: formData.password,
           fullName: formData.fullName,
+          phone: formData.phone,
           tier: selectedTier,
         }),
       });
@@ -163,6 +165,19 @@ function RegisterForm() {
             placeholder="email@example.com"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-base font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
+          />
+        </div>
+
+        {/* Phone Number */}
+        <div className="space-y-1">
+          <label className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">Phone Number</label>
+          <input
+            type="tel"
+            required
+            placeholder="+1 (555) 000-0000"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-base font-medium text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
           />
         </div>
