@@ -311,6 +311,21 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        <div className="flex justify-start px-4">
+          <button
+            onClick={() => handleSave(profile)}
+            disabled={saving}
+            className="flex items-center gap-3 px-8 py-4 bg-[#00538e] text-white rounded-2xl font-black uppercase text-[12px] tracking-widest hover:bg-[#004272] shadow-xl shadow-[#00538e]/20 transition-all disabled:opacity-70 group"
+          >
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            )}
+            Save Profile Changes
+          </button>
+        </div>
+
         <div className="pt-8 border-t border-[var(--border)] flex items-center justify-between">
           <div className="space-y-1">
             <h3 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">Appearance Mode</h3>
