@@ -239,9 +239,10 @@ export default function Page() {
               <div className="absolute bottom-10 left-10 right-10">
                 <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Ready to transform?</h2>
                 <p className="mt-1 text-xs text-white/70 font-medium">Start free on the Basic plan today.</p>
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex flex-wrap gap-3">
                   <a href="/register" className="ctaBtn !py-3 !px-8">Begin</a>
                   <button onClick={openPricing} className="secondaryBtn !bg-white/10 !backdrop-blur-md !border-white/20 !text-white !py-3 !px-8">Pricing</button>
+                  <Link href="/faq" className="secondaryBtn !bg-white/10 !backdrop-blur-md !border-white/20 !text-white !py-3 !px-8">FAQ</Link>
                 </div>
               </div>
             </div>
