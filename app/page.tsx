@@ -468,8 +468,8 @@ export default function Page() {
                           : tier === 'starter'
                             ? ['Group Circles', 'Async Coach Chat', 'AI Sessions (30/day)', 'Annual Plan']
                             : tier === 'builder'
-                            ? ['Deep Journey Sessions', 'Advanced Insights', 'Exclusive Events', 'Priority Support']
-                            : ['2x 1:1 Sessions/mo', 'Personalized Roadmap', 'Direct Coach Access', 'Deep Journey Sessions']
+                            ? ['Deep Journey AI Sessions', 'Advanced Insights', 'Exclusive Events', 'Priority Support']
+                            : ['2 × 1:1 COACHING SESSIONS PER MONTH', 'Personalized Roadmap', 'Direct Coach Access', 'Deep Journey AI Sessions']
                         ).map((x) => (
                           <li key={x} className="flex gap-3">
                             <span className={cn('mt-1 h-2 w-2 flex-shrink-0 rounded-full', featured ? 'bg-[#0AA390]' : 'bg-[#00538e]')} />

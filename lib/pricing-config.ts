@@ -63,14 +63,14 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Confidence Builder',
     badge: 'MOST POPULAR',
     badgeType: 'accent',
-    tagline: 'Accelerate your transformation with community and deep journey sessions.',
+    tagline: 'Accelerate your transformation with community and deep journey AI sessions.',
     price: {
       USD: { amount: '15', period: 'MONTH' },
       ZAR: { amount: '250', period: 'MONTH' },
     },
     features: [
       'Everything in Clarity Starter',
-      'Deep Journey Sessions (High Intensity)',
+      'Deep Journey AI Sessions (High Intensity)',
       'Advanced progress insights',
       'Priority coach response time',
       'Exclusive community events'
@@ -91,7 +91,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Everything in Confidence Builder',
       '2 × 1:1 Coaching Sessions per Month',
       'Priority Coach Support',
-      'Priority Deep Journey Sessions',
+      'Priority Deep Journey AI Sessions',
       'Personalized transformation roadmap',
       'Direct access to your coach'
     ],

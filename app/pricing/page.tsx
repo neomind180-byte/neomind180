@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabaseClient';
 const FAQ_ITEMS = [
   {
     q: "What's the difference between AI reflections in each tier?",
-    a: "All tiers include AI-powered coaching reflections that remember your journey. Free users get 10 sessions/day to experience the value, Clarity Starter gets 30/day for consistent growth, and Confidence Builder+ get intensive Deep Journey Sessions. The AI learns from your conversations and provides increasingly personalized guidance."
+    a: "All tiers include AI-powered coaching reflections that remember your journey. Free users get 10 sessions/day to experience the value, Clarity Starter gets 30/day for consistent growth, and Confidence Builder+ get intensive Deep Journey AI Sessions. The AI learns from your conversations and provides increasingly personalized guidance."
   },
   {
     q: "Does the AI remember my previous conversations?",
@@ -38,7 +38,7 @@ const COMPARISON_FEATURES = [
   { name: "Audio Library", tiers: [true, true, true, true] },
   { name: "Socratic Journal", tiers: [true, true, true, true] },
   { name: "Progress Tracking", tiers: [true, true, true, true] },
-  { name: "AI Sessions", tiers: ["10/day", "30/day", "Deep Journey", "Deep Journey"] },
+  { name: "AI Sessions", tiers: ["10/day", "30/day", "Deep Journey AI", "Deep Journey AI"] },
   { name: "Group Circles", tiers: [false, true, true, true] },
   { name: "Async Coach Chat", tiers: [false, true, true, true] },
   { name: "1:1 Sessions", tiers: [false, false, false, "2/month"] },
@@ -147,7 +147,7 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <ul className="space-y-4 mb-10 flex-grow">
+              <ul className="space-y-4 mb-20 flex-grow">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex gap-3 text-[12px] text-[var(--text-secondary)] font-bold uppercase tracking-tight leading-tight">
                     <Check className={`w-4 h-4 shrink-0 ${plan.badgeType === 'accent' ? 'text-[#0AA390]' : 'text-[#00538e]'}`} />
