@@ -90,7 +90,7 @@ export default function FAQPage() {
             We're here to help you find the clarity you deserve.
           </p>
           <a 
-            href="mailto:support@neomind180.com" 
+            href="mailto:coach@neomind180.com" 
             className="ctaBtn inline-flex items-center gap-3 px-10"
           >
             Contact Support
