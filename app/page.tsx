@@ -204,6 +204,9 @@ export default function Page() {
               <button onClick={openPricing} className="secondaryBtn">
                 View Pricing
               </button>
+              <Link href="/faq" className="secondaryBtn">
+                Read FAQ
+              </Link>
             </div>
 
             <p className="mt-4 text-xs text-white/55">
