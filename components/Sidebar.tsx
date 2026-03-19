@@ -12,8 +12,9 @@ import {
 // define tier levels for easy comparison
 const TIER_LEVELS = {
   'free': 0,
-  'tier2': 1,
-  'tier3': 2
+  'starter': 1,
+  'builder': 2,
+  'catalyst': 3
 };
 
 const navItems = [
@@ -21,17 +22,17 @@ const navItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard", minTier: 0, color: "#00538e" },
   { icon: Heart, label: "BE-ENOUGH SHIFT", href: "/dashboard/be-enough", minTier: 0, color: "#993366" },
   { icon: BookOpen, label: "Self-Help Library", href: "/dashboard/library", minTier: 0, color: "#F39904" },
+  { icon: Zap, label: "Reflection with Neo", href: "/dashboard/reflection", minTier: 0, color: "#8E44AD" },
 
   // Tier 2 Features (Level 1)
   { icon: MessageSquare, label: "Ask-the-Coach", href: "/dashboard/coach", minTier: 1, color: "#4A90E2" },
-  { icon: Zap, label: "Reflection with Neo", href: "/dashboard/reflection", minTier: 1, color: "#8E44AD" },
   { icon: Users, label: "Deep-Dive Circles", href: "/dashboard/circles", minTier: 1, color: "#27AE60" },
 
-  // Tier 3 Features (Level 2)
-  { icon: Star, label: "1:1 Sessions", href: "/dashboard/sessions", minTier: 2, color: "#E67E22" },
+  // Tier 3 Features (Level 2+)
+  { icon: Star, label: "1:1 Sessions", href: "/dashboard/sessions", minTier: 3, color: "#E67E22" },
 
   // Secondary/Analytics (Level 0)
-  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 1, color: "#0AA390" },
+  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 2, color: "#0AA390" },
   { icon: History, label: "Shift History", href: "/dashboard/history", minTier: 0, color: "#0AA390" },
 ];
 

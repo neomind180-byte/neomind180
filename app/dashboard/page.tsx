@@ -98,8 +98,9 @@ export default function DashboardPage() {
     setDayIndex(index);
   }, []);
 
-  const isTier2 = subscriptionTier === 'tier2' || subscriptionTier === 'tier3';
-  const isTier3 = subscriptionTier === 'tier3';
+  const isStarter = subscriptionTier !== 'free'; 
+  const isBuilder = subscriptionTier === 'builder' || subscriptionTier === 'catalyst';
+  const isCatalyst = subscriptionTier === 'catalyst';
 
   return (
     <div className="space-y-10 pb-20">
@@ -223,12 +224,14 @@ export default function DashboardPage() {
               {[
                 { label: 'BE-ENOUGH SHIFT', href: '/dashboard/be-enough', icon: Heart, color: '#993366', minTier: 'free' },
                 { label: 'Self-Help Library', href: '/dashboard/library', icon: BookOpen, color: '#F39904', minTier: 'free' },
-                { label: 'Reflection with Neo', href: '/dashboard/reflection', icon: Zap, color: '#8E44AD', minTier: 'tier2' },
-                { label: '1:1 Sessions', href: '/dashboard/sessions', icon: Star, color: '#E67E22', minTier: 'tier3' },
-                { label: 'Insights & Analytics', href: '/dashboard/insights', icon: TrendingUp, color: '#0AA390', minTier: 'tier2' },
+                { label: 'Reflection with Neo', href: '/dashboard/reflection', icon: Zap, color: '#8E44AD', minTier: 'free' },
+                { label: '1:1 Sessions', href: '/dashboard/sessions', icon: Star, color: '#E67E22', minTier: 'catalyst' },
+                { label: 'Insights & Analytics', href: '/dashboard/insights', icon: TrendingUp, color: '#0AA390', minTier: 'builder' },
                 { label: 'Shift History', href: '/dashboard/history', icon: History, color: '#0AA390', minTier: 'free' }
               ].map((item, idx) => {
-                const isLocked = (item.minTier === 'tier2' && !isTier2) || (item.minTier === 'tier3' && !isTier3);
+                const isLocked = (item.minTier === 'starter' && subscriptionTier === 'free') || 
+                                 (item.minTier === 'builder' && (subscriptionTier === 'free' || subscriptionTier === 'starter')) ||
+                                 (item.minTier === 'catalyst' && (subscriptionTier !== 'catalyst'));
                 return (
                   <Link
                     key={idx}

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, ArrowLeft, HelpCircle, Info, Sparkles } from 'lucide-react';
 import { PRICING_PLANS } from '@/lib/pricing-config';
+import { supabase } from '@/lib/supabaseClient';
 
 const FAQ_ITEMS = [
   {
@@ -47,6 +48,15 @@ const COMPARISON_FEATURES = [
 export default function PricingPage() {
   const [currency, setCurrency] = useState<'USD' | 'ZAR'>('USD');
   const [hoveredTier, setHoveredTier] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    }
+    checkAuth();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] py-12 px-6 transition-colors duration-300">
@@ -54,8 +64,8 @@ export default function PricingPage() {
 
         {/* Header */}
         <div className="text-center mb-16 space-y-6">
-          <Link href="/" className="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-[#00538e] transition-colors font-black uppercase text-[12px] tracking-[0.2em] mb-4 group">
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Home
+          <Link href={isLoggedIn ? "/dashboard" : "/"} className="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-[#00538e] transition-colors font-black uppercase text-[12px] tracking-[0.2em] mb-4 group">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> {isLoggedIn ? 'Back to Dashboard' : 'Back to Home'}
           </Link>
           <h1 className="text-4xl md:text-6xl font-black text-[var(--text-primary)] uppercase tracking-tighter leading-none">
             Choose Your Path to <br />

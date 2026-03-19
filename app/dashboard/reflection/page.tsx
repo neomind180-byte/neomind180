@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Send, Zap, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 // --- CONFIGURATION ---
 const MAX_MESSAGES = {
-  free: 0,
-  tier2: 10,
-  tier3: 20
+  free: 10,
+  starter: 30,
+  builder: 1000,
+  catalyst: 1000
 };
 
 export default function ReflectionPage() {
@@ -19,31 +21,52 @@ export default function ReflectionPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [userTier, setUserTier] = useState<string>('free');
   const [reflectionId, setReflectionId] = useState<string | null>(null);
+  const [todayUsage, setTodayUsage] = useState(0);
 
   useEffect(() => {
-    async function getTier() {
+    async function initData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data } = await supabase
+        // 1. Get Tier
+        const { data: profile } = await supabase
           .from('profiles')
           .select('subscription_tier')
           .eq('id', user.id)
           .single();
+        if (profile) setUserTier(profile.subscription_tier);
 
-        if (data) setUserTier(data.subscription_tier);
+        // 2. Get Today's Usage (excluding current session)
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const { data: dailyRefs } = await supabase
+          .from('reflections')
+          .select('messages')
+          .eq('user_id', user.id)
+          .gte('created_at', startOfDay.toISOString());
+
+        if (dailyRefs) {
+          let count = 0;
+          dailyRefs.forEach(ref => {
+            const userMsgs = (ref.messages as any[] || []).filter(m => m.role === 'user').length;
+            count += userMsgs;
+          });
+          setTodayUsage(count);
+        }
       }
     }
-    getTier();
+    initData();
   }, []);
 
-  // Calculate current usage
-  const userMessageCount = messages.filter(m => m.role === 'user').length;
-  const limit = MAX_MESSAGES[userTier as keyof typeof MAX_MESSAGES];
-  const isLimitReached = userMessageCount >= limit;
+  // Calculate usage
+  const sessionUserCount = messages.filter(m => m.role === 'user').length;
+  const totalDailyCount = todayUsage + sessionUserCount;
+  const limit = MAX_MESSAGES[userTier as keyof typeof MAX_MESSAGES] || 10;
+  const isLimitReached = totalDailyCount >= limit;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLimitReached) return;
+    if (!input.trim() || (isLimitReached && limit < 1000)) return;
 
     const userMsg = { role: 'user', content: input };
     const updatedMessagesWithUser = [...messages, userMsg];
@@ -99,6 +122,15 @@ export default function ReflectionPage() {
     }
   };
 
+  const profilePlanName = (tier: string) => {
+    switch (tier) {
+      case 'starter': return 'Clarity Starter';
+      case 'builder': return 'Confidence Builder';
+      case 'catalyst': return 'Compassion Catalyst';
+      default: return 'Clarity Foundation';
+    }
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] bg-[var(--bg-primary)]">
       {/* Header with Limit Counter */}
@@ -106,11 +138,11 @@ export default function ReflectionPage() {
         <div className="flex items-center gap-3">
           <Zap className="w-5 h-5 text-[#0AA390]" />
           <span className="text-[14px] font-black uppercase tracking-widest text-[var(--text-muted)]">
-            {userTier === 'tier2' ? 'Coaching Access' : 'Deep Coaching'}
+            {profilePlanName(userTier)}
           </span>
         </div>
         <div className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)]">
-          {userMessageCount}/{limit} messages per session
+          {limit >= 1000 ? 'Unlimited Access' : `Today: ${totalDailyCount}/${limit} reflections`}
         </div>
       </div>
 
@@ -131,7 +163,7 @@ export default function ReflectionPage() {
 
       {/* Input Area or Limit Reached Message */}
       <div className="p-8 bg-[var(--bg-card)] rounded-b-[2.5rem] border border-[var(--border)] border-t-0">
-        {!isLimitReached ? (
+        {!isLimitReached || limit >= 1000 ? (
           <form onSubmit={handleSend} className="relative">
             <input
               type="text"
@@ -153,15 +185,15 @@ export default function ReflectionPage() {
             <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto border border-red-500/20">
               <Lock className="w-6 h-6 text-[#993366]" />
             </div>
-            <h3 className="text-base font-black text-[var(--text-primary)] uppercase tracking-tight">Session Limit Reached</h3>
+            <h3 className="text-base font-black text-[var(--text-primary)] uppercase tracking-tight">Daily Limit Reached</h3>
             <p className="text-[14px] text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">
-              You've hit your {limit}-message limit for this session.
-              {userTier === 'tier2' && " Practice your observations and return later for more."}
+              You've hit your {limit} reflections limit for today.
+              {limit < 1000 && " Practice your observations and return tomorrow for more."}
             </p>
-            {userTier === 'tier2' && (
-              <button className="text-[12px] font-black uppercase tracking-[0.2em] text-[#00538e] hover:text-[#0AA390] transition-colors mt-2">
-                Upgrade to Tier 3
-              </button>
+            {limit < 1000 && (
+              <Link href="/pricing" className="inline-block text-[12px] font-black uppercase tracking-[0.2em] text-[#00538e] hover:text-[#0AA390] transition-colors mt-2">
+                Upgrade for More Access →
+              </Link>
             )}
           </div>
         )}

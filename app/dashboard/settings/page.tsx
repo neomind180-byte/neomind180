@@ -15,19 +15,19 @@ const coachModes = [
     id: 'Gentle Observer',
     name: 'The Gentle Observer',
     desc: 'Soft, validating, and slow-paced.',
-    tier: 'Basic Self-Help'
+    tier: 'Clarity Foundation'
   },
   {
     id: 'Insightful Mirror',
     name: 'The Insightful Mirror',
     desc: 'Reflective; helps see patterns.',
-    tier: 'Coaching Access'
+    tier: 'Clarity Starter'
   },
   {
     id: 'Grounded Guide',
     name: 'The Grounded Guide',
     desc: 'Practical, concrete, and action-oriented.',
-    tier: 'Coaching Access'
+    tier: 'Clarity Starter'
   }
 ];
 
@@ -220,7 +220,7 @@ export default function SettingsPage() {
 
   if (loading) return <div className="p-10 text-center text-[var(--text-dim)] font-black uppercase tracking-widest text-[12px] animate-pulse">Loading Settings...</div>;
 
-  const userPlan = profile.subscription_tier === 'free' ? 'Basic Self-Help' : 'Coaching Access';
+  const userPlan = profile.subscription_tier === 'free' ? 'Clarity Foundation' : profile.subscription_tier === 'starter' ? 'Clarity Starter' : profile.subscription_tier === 'builder' ? 'Confidence Builder' : 'Compassion Catalyst';
 
   return (
     <div className="max-w-3xl mx-auto p-6 md:p-12 space-y-12 animate-in fade-in duration-700">
@@ -352,7 +352,7 @@ export default function SettingsPage() {
 
         <div className="space-y-4">
           {coachModes.map((mode) => {
-            const isLocked = mode.tier !== 'Basic Self-Help' && userPlan === 'Basic Self-Help';
+            const isLocked = mode.tier !== 'Clarity Foundation' && userPlan === 'Clarity Foundation';
             const isActive = profile.preferred_coach_mode === mode.id;
 
             return (
@@ -396,7 +396,7 @@ export default function SettingsPage() {
             <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Subscription Management</h2>
             <div className="flex items-center gap-4">
               <div className="px-6 py-2 bg-[#00538e]/10 text-[#00538e] rounded-full text-xs font-black uppercase tracking-[0.2em]">
-                Current Tier: {profile.subscription_tier === 'tier3' ? 'Deep Coach' : profile.subscription_tier === 'tier2' ? 'Coaching' : 'Basic Free'}
+                Current Tier: {userPlan}
               </div>
               <Link
                 href="/pricing"
@@ -415,17 +415,17 @@ export default function SettingsPage() {
             <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Developer Mode (Dev Only)</h3>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            {['free', 'tier2', 'tier3'].map((tier) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {['free', 'starter', 'builder', 'catalyst'].map((tier) => (
               <button
                 key={tier}
                 onClick={() => handleSave({ subscription_tier: tier })}
-                className={`py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest border transition-all ${profile.subscription_tier === tier
+                className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${profile.subscription_tier === tier
                   ? 'border-[#00538e] bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20'
                   : 'border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-dim)] hover:border-[var(--text-dim)] hover:text-[var(--text-muted)]'
                   }`}
               >
-                {tier === 'tier2' ? 'Coaching' : tier === 'tier3' ? 'Deep Coach' : 'Basic Free'}
+                {tier === 'free' ? 'Foundation' : tier === 'starter' ? 'Starter' : tier === 'builder' ? 'Builder' : 'Catalyst'}
               </button>
             ))}
           </div>
@@ -433,10 +433,10 @@ export default function SettingsPage() {
       </section>
 
       {/* --- DOWNGRADE SECTION (Visible only if paid) --- */}
-      {(profile.subscription_tier === 'tier2' || profile.subscription_tier === 'tier3') && (
+      {profile.subscription_tier !== 'free' && (
         <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-4">
           <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Downgrade Plan</h2>
-          <p className="text-[12px] text-[var(--text-muted)] italic">Switch back to the free Basic Self-Help plan. You'll lose access to coaching, AI reflections, and community circles.</p>
+          <p className="text-[12px] text-[var(--text-muted)] italic">Switch back to the free Clarity Foundation plan. You'll lose access to coaching, AI reflections, and community circles.</p>
           <button
             onClick={() => setShowDowngradeModal(true)}
             className="px-8 py-3 rounded-2xl border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-dim)] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center gap-2 mt-4"
