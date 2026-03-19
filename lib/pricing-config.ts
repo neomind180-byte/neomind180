@@ -28,8 +28,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     },
     features: [
       'Daily Check-In Tool',
-      'Mindfulness Audio Library',
-      'Be-Enough Socratic Journal',
+      'Self-Help Library',
       'Basic Progress Tracking',
       'AI Reflection (10 sessions/day)'
     ],
@@ -50,7 +49,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       'Everything in Clarity Foundation',
       'Group Coaching Events (Circles)',
-      'Async Coach Chat (Text)',
+      'Async Coach Chat with Emmeline',
       'AI Reflection (30 sessions/day)',
       'Priority community support'
     ],
@@ -93,7 +92,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Priority Coach Support',
       'Priority Deep Journey AI Sessions',
       'Personalized transformation roadmap',
-      'Direct access to your coach'
+      'Direct access to Coach Emmeline'
     ],
     cta: 'Transform with Compassion',
     note: 'Premium tier. Limited spots available for personalized attention.',

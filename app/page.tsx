@@ -131,6 +131,9 @@ export default function Page() {
             <button onClick={openPricing} className="navLink text-[var(--text-secondary)]">
               Pricing
             </button>
+            <Link href="/faq" className="navLink text-[var(--text-secondary)]">
+              FAQ
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -167,6 +170,7 @@ export default function Page() {
                 The Journey
               </button>
               <button onClick={() => { setMobileOpen(false); openPricing(); }} className="drawerLink">Pricing</button>
+              <Link href="/faq" className="drawerLink">FAQ</Link>
               <a href="/login" className="drawerLink">Log In</a>
             </div>
           </div>
@@ -190,7 +194,7 @@ export default function Page() {
             </h1>
 
             <p className="mt-4 max-w-[60ch] text-[19px] leading-relaxed text-[var(--text-secondary)] font-medium">
-              Move from overthinking to clarity. AI-powered coaching that helps you become a calm, confident observer of your thoughts.
+              Move from overthinking to clarity. Master your mind with our unique blend of powerful AI insights and the dedicated human guidance of Coach Emmeline.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -206,18 +210,7 @@ export default function Page() {
               Mindset coaching for clarity, not therapy. Seek professional help for mental health concerns.
             </p>
 
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              {[
-                { k: 'Daily', v: 'check-ins' },
-                { k: 'AI powered', v: 'coaching sessions' },
-                { k: '3', v: 'coaching styles' },
-              ].map((x) => (
-                <div key={x.k} className="statCard">
-                  <div className="text-sm text-white/65">{x.k}</div>
-                  <div className="mt-1 text-lg font-semibold">{x.v}</div>
-                </div>
-              ))}
-            </div>
+            {/* Removed Stat Cards */}
 
             {/* Journey Section */}
             <div className="mt-10">
@@ -311,8 +304,9 @@ export default function Page() {
                     'Deep-dive AI sessions',
                     'Daily mindset check-ins',
                     'Guided micro-resets',
-                    'In-app Chat with Coach',
+                    'Personal Chat with Coach Emmeline — A Human Connection',
                     'Group coaching circles',
+                    'Self-Help Library',
                   ].map((t) => (
                     <li key={t} className="flex gap-3 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
                       <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[#0AA390]" />

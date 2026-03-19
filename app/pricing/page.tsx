@@ -35,12 +35,11 @@ const FAQ_ITEMS = [
 
 const COMPARISON_FEATURES = [
   { name: "Daily Check-In", tiers: [true, true, true, true] },
-  { name: "Audio Library", tiers: [true, true, true, true] },
-  { name: "Socratic Journal", tiers: [true, true, true, true] },
+  { name: "Self-Help Library", tiers: [true, true, true, true] },
   { name: "Progress Tracking", tiers: [true, true, true, true] },
   { name: "AI Sessions", tiers: ["10/day", "30/day", "Deep Journey AI", "Deep Journey AI"] },
   { name: "Group Circles", tiers: [false, true, true, true] },
-  { name: "Async Coach Chat", tiers: [false, true, true, true] },
+  { name: "Async Coach Chat", tiers: [false, "Emmeline", "Emmeline", "Emmeline"] },
   { name: "1:1 Sessions", tiers: [false, false, false, "2/month"] },
   { name: "Priority Support", tiers: [false, "Community", "Priority", "Direct"] },
 ];
