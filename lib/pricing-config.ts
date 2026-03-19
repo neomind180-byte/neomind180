@@ -31,7 +31,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Mindfulness Audio Library',
       'Be-Enough Socratic Journal',
       'Basic Progress Tracking',
-      'Daily AI Reflection (10 messages/day)'
+      'AI Reflection (10 sessions/day)'
     ],
     cta: 'Start Your Journey',
     aiLimit: 10,
@@ -51,7 +51,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Everything in Clarity Foundation',
       'Group Coaching Events (Circles)',
       'Async Coach Chat (Text)',
-      'Daily AI Reflection (30 messages/day)',
+      'AI Reflection (30 sessions/day)',
       'Priority community support'
     ],
     cta: 'Commit to Clarity',
@@ -63,14 +63,14 @@ export const PRICING_PLANS: PricingPlan[] = [
     title: 'Confidence Builder',
     badge: 'MOST POPULAR',
     badgeType: 'accent',
-    tagline: 'Accelerate your transformation with community and unlimited AI coaching.',
+    tagline: 'Accelerate your transformation with community and deep journey sessions.',
     price: {
       USD: { amount: '15', period: 'MONTH' },
       ZAR: { amount: '250', period: 'MONTH' },
     },
     features: [
       'Everything in Clarity Starter',
-      'Unlimited AI Reflections (daily limit removed)',
+      'Deep Journey Sessions (High Intensity)',
       'Advanced progress insights',
       'Priority coach response time',
       'Exclusive community events'
@@ -91,7 +91,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Everything in Confidence Builder',
       '2 × 1:1 Coaching Sessions per Month',
       'Priority Coach Support',
-      'Unlimited AI Reflections (100+ messages/day)',
+      'Priority Deep Journey Sessions',
       'Personalized transformation roadmap',
       'Direct access to your coach'
     ],

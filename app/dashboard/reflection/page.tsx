@@ -142,7 +142,7 @@ export default function ReflectionPage() {
           </span>
         </div>
         <div className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)]">
-          {limit >= 1000 ? 'Unlimited Access' : `Today: ${totalDailyCount}/${limit} reflections`}
+          {limit >= 1000 ? 'Deep Journey Access' : `Today: ${totalDailyCount}/${limit} sessions`}
         </div>
       </div>
 

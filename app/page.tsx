@@ -464,12 +464,12 @@ export default function Page() {
 
                       <ul className="mt-8 grid gap-4 text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
                         {(tier === 'free'
-                          ? ['Daily check-ins', 'Micro-resets', 'Socratic Journal', 'Progress Tracking']
+                          ? ['Daily check-ins', 'Micro-resets', 'Socratic Journal', 'AI Sessions (10/day)']
                           : tier === 'starter'
-                            ? ['Group Circles', 'Async Coach Chat', 'AI Reflection (30/day)', 'Annual Plan']
+                            ? ['Group Circles', 'Async Coach Chat', 'AI Sessions (30/day)', 'Annual Plan']
                             : tier === 'builder'
-                            ? ['Unlimited AI Reflections', 'Advanced Insights', 'Exclusive Events', 'Priority Support']
-                            : ['2x 1:1 Sessions/mo', 'Personalized Roadmap', 'Direct Coach Access', 'Everything Builder']
+                            ? ['Deep Journey Sessions', 'Advanced Insights', 'Exclusive Events', 'Priority Support']
+                            : ['2x 1:1 Sessions/mo', 'Personalized Roadmap', 'Direct Coach Access', 'Deep Journey Sessions']
                         ).map((x) => (
                           <li key={x} className="flex gap-3">
                             <span className={cn('mt-1 h-2 w-2 flex-shrink-0 rounded-full', featured ? 'bg-[#0AA390]' : 'bg-[#00538e]')} />
