@@ -84,7 +84,9 @@ export async function POST(req: Request) {
       custom_str1: user.id,
       custom_str2: planId,
       custom_str3: billingPeriod,
-      subscription_type: '1' // Allow tokenization
+      subscription_type: '1', // Allow tokenization
+      frequency: billingPeriod === 'YEAR' ? '6' : '3', // 6 = Annually, 3 = Monthly
+      cycles: '0' // 0 = Infinite
     };
 
     const signature = generatePayFastSignature(pfData, config.passphrase);
