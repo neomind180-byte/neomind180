@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, Part } from "@google/generative-ai";
-import { supabase } from '@/lib/supabaseClient';
+import { supabase as publicSupabase } from '@/lib/supabaseClient';
+import { 
+  getRecentReflections, 
+  getDailyReflectionCount, 
+  getUserSubscriptionTier 
+} from '@/lib/db/reflections';
+import { 
+  formatAIHistoryContext, 
+  getTierLimit 
+} from '@/lib/ai/gemini-context';
 
 const PERSONAS: Record<string, string> = {
   'Gentle Observer': `
@@ -166,39 +175,74 @@ const PERSONAS: Record<string, string> = {
 
 export async function POST(req: Request) {
   try {
+    const authHeader = req.headers.get('authorization');
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });
+    }
+
+    const { data: { user }, error: authError } = await publicSupabase.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+    }
+
     const { message, history } = await req.json();
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
         role: 'neo',
-        content: "I'm pausing for a moment to find clarity. (Error: GEMINI_API_KEY is missing. Please add it to your environment variables.)"
+        content: "I'm pausing for a moment to find clarity. (Error: GEMINI_API_KEY is missing.)"
       }, { status: 500 });
     }
 
-    // 0. Fetch user's coach preference
-    let preferredMode = 'Gentle Observer';
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
+    // 1. Fetch user's profile and tier
+    const profile = await getUserSubscriptionTier(user.id);
+    const preferredMode = await (async () => {
+      const { data } = await publicSupabase
         .from('profiles')
         .select('preferred_coach_mode')
         .eq('id', user.id)
         .single();
-      if (data?.preferred_coach_mode) {
-        preferredMode = data.preferred_coach_mode;
-      }
+      return data?.preferred_coach_mode || 'Gentle Observer';
+    })();
+
+    // 2. Check Daily Limit
+    const dailyCount = await getDailyReflectionCount(user.id);
+    const limit = getTierLimit(profile);
+    const sessionUserCount = (history || []).filter((msg: any) => msg.role === 'user').length;
+    const totalToday = dailyCount + sessionUserCount + 1; // +1 for current message
+
+    if (totalToday > limit && limit < 1000) {
+      return NextResponse.json({
+        role: 'neo',
+        content: "I've noticed we've done a lot of deep work today. Let's pause here and return tomorrow once your reflections have had time to settle.",
+        limitReached: true
+      }, { status: 429 });
     }
+
+    // 3. AI Memory Context
+    const recentReflections = await getRecentReflections(user.id, 5);
+    const historyContext = formatAIHistoryContext(recentReflections);
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // 1. Initialize the model with the persona
+    // 4. Initialize model with Persona + Memory
+    const personaInstruction = PERSONAS[preferredMode] || PERSONAS['Gentle Observer'];
+    const fullSystemInstruction = `
+${personaInstruction}
+
+---
+${historyContext}
+    `.trim();
+
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
-      systemInstruction: PERSONAS[preferredMode] || PERSONAS['Gentle Observer']
+      model: "gemini-2.0-flash-lite", // Re-updating model string to correct latest or desired version
+      systemInstruction: fullSystemInstruction
     });
 
-    // 2. Format history for Gemini
+    // 5. Format current session history for Gemini
     const rawHistory = history || [];
     const firstUserIndex = rawHistory.findIndex((msg: any) => msg.role !== 'neo');
 
@@ -209,7 +253,7 @@ export async function POST(req: Request) {
         parts: [{ text: msg.content || "" }] as Part[],
       }));
 
-    // 3. Start chat and get response
+    // 6. Start chat and get response
     const chat = model.startChat({
       history: formattedHistory,
     });
@@ -224,15 +268,10 @@ export async function POST(req: Request) {
     });
 
   } catch (error: any) {
-    console.error("Gemini Error:", error);
-
-    let errorMessage = error.message || "Unknown error";
-    if (errorMessage.includes("403")) errorMessage = "Access Denied (Invalid API Key or Geo-restriction)";
-    if (errorMessage.includes("404")) errorMessage = "Model not found";
-
+    console.error("Gemini/Reflection Error:", error);
     return NextResponse.json({
       role: 'neo',
-      content: `I'm pausing for a moment to find clarity. (Error: ${errorMessage})`,
+      content: "I'm pausing for a moment to find clarity. Please try again in a few moments.",
       error: error.message
     }, { status: 500 });
   }

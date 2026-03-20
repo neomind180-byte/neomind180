@@ -75,13 +75,26 @@ export default function ReflectionPage() {
     setIsTyping(true);
 
     try {
-      // 1. Call AI API
+      // 1. Get Auth Token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      // 2. Call AI API
       const res = await fetch('/api/reflection', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ message: input, history: messages }),
       });
       const data = await res.json();
+
+      if (res.status === 429 || data.limitReached) {
+        alert(data.content);
+        return;
+      }
+
       const finalMessages = [...updatedMessagesWithUser, data];
       setMessages(finalMessages);
 

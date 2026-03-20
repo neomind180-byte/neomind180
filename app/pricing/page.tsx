@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Check, ArrowLeft, HelpCircle, Info, Sparkles } from 'lucide-react';
 import { PRICING_PLANS } from '@/lib/pricing-config';
 import { supabase } from '@/lib/supabaseClient';
@@ -48,6 +49,57 @@ export default function PricingPage() {
   const [currency, setCurrency] = useState<'USD' | 'ZAR'>('USD');
   const [hoveredTier, setHoveredTier] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handleAction(plan: any) {
+    if (plan.id === 'free') {
+      router.push(isLoggedIn ? "/dashboard" : "/register?tier=free");
+      return;
+    }
+
+    if (!isLoggedIn) {
+      router.push(`/register?tier=${plan.id}`);
+      return;
+    }
+
+    try {
+      setLoadingPlanId(plan.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        alert('Your session has expired. Please log in again.');
+        router.push('/login');
+        return;
+      }
+
+      const res = await fetch('/api/payfast/checkout', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          planId: plan.id,
+          billingPeriod: plan.price[currency].period,
+          currency: currency
+        })
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('Failed to initiate checkout. Please try again.');
+    } finally {
+      setLoadingPlanId(null);
+    }
+  }
 
   useEffect(() => {
     async function checkAuth() {
@@ -156,9 +208,10 @@ export default function PricingPage() {
               </ul>
 
               <div className="space-y-4">
-                <Link
-                  href={`/register?tier=${plan.id}`}
-                  className={`block w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-center transition-all ${
+                <button
+                  disabled={loadingPlanId !== null}
+                  onClick={() => handleAction(plan)}
+                  className={`block w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     plan.badgeType === 'accent'
                       ? 'bg-[#0AA390] text-white shadow-xl shadow-[#0AA390]/20'
                       : plan.id === 'free'
@@ -166,8 +219,8 @@ export default function PricingPage() {
                       : 'bg-[#00538e] text-white shadow-xl shadow-[#00538e]/20'
                   }`}
                 >
-                  {plan.cta}
-                </Link>
+                  {loadingPlanId === plan.id ? 'Processing...' : plan.cta}
+                </button>
                 {plan.note && (
                   <p className="text-[10px] text-[var(--text-muted)] text-center italic font-medium">{plan.note}</p>
                 )}

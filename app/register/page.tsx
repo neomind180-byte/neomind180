@@ -28,9 +28,10 @@ function RegisterForm() {
 
   // Friendly names for the tiers
   const tierNames: Record<string, string> = {
-    free: 'Basic Self-Help',
-    tier2: 'Coaching Access',
-    tier3: 'Deep Coaching'
+    free: 'Clarity Foundation',
+    starter: 'Clarity Starter',
+    builder: 'Confidence Builder',
+    catalyst: 'Compassion Catalyst'
   };
 
   const [showSuccess, setShowSuccess] = useState(false);
