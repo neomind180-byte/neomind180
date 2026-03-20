@@ -21,26 +21,26 @@ export interface PayFastData {
 
 /**
  * Generates an MD5 signature for PayFast
- * @param data The data object to sign
- * @param passphrase The PayFast passphrase
- * @returns MD5 hash string
  */
 export function generatePayFastSignature(data: PayFastData, passphrase?: string): string {
-  // Sort data by key and remove signature
   const keys = Object.keys(data)
     .filter(k => k !== 'signature' && data[k] !== undefined && data[k] !== '')
     .sort();
 
-  // Create query string
-  let payload = keys
+  const payload = keys
     .map(key => `${key}=${encodeURIComponent(data[key]!).replace(/%20/g, '+')}`)
     .join('&');
 
-  if (passphrase) {
-    payload += `&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`;
+  const signatureString = passphrase 
+    ? `${payload}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
+    : payload;
+
+  // Log payload in sandbox/dev to debug signature mismatches
+  if (process.env.NODE_ENV !== 'production' || process.env.PAYFAST_IS_SANDBOX === 'true') {
+    console.log('[PayFast] Signature Payload:', signatureString);
   }
 
-  return crypto.createHash('md5').update(payload).digest('hex');
+  return crypto.createHash('md5').update(signatureString).digest('hex');
 }
 
 /**

@@ -238,7 +238,7 @@ ${historyContext}
     `.trim();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-lite", // Re-updating model string to correct latest or desired version
+      model: "gemini-1.5-flash-latest", // Using stable 1.5-flash for reliability
       systemInstruction: fullSystemInstruction
     });
 

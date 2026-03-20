@@ -29,20 +29,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
-    // Determine amount based on currency and plan
-    const amount = plan.price[currency as 'ZAR' | 'USD'].amount;
+    // Determine amount based on currency and plan - Force 2 decimal places for ZAR
+    const rawAmount = plan.price[currency as 'ZAR' | 'USD'].amount;
+    const amount = currency === 'ZAR' ? parseFloat(rawAmount).toFixed(2) : rawAmount;
     
-    if (amount === '0') {
+    if (parseFloat(amount) === 0) {
       return NextResponse.json({ error: 'Cannot checkout a free plan' }, { status: 400 });
     }
 
     // Use built-in crypto.randomUUID()
     const mPaymentId = `sub_${crypto.randomUUID().split('-')[0]}_${Date.now()}`;
 
-    // 1. Create a pending subscription in Supabase
-    // Use service role for database changes in checkout if needed, or stick to authenticated?
-    // Actually, for creating a record, the user's RLS should allow insert.
-    // However, to be safe for ITN correlation, we'll use a service client.
+    // 1. Create a pending subscription
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -67,6 +65,8 @@ export async function POST(req: Request) {
 
     // 2. Prepare PayFast Data
     const config = getPayFastConfig();
+    console.log(`[PayFast Checkout] Using Merchant ID: ${config.merchantId} (Sandbox: ${config.isSandbox})`);
+    
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     const pfData: PayFastData = {
@@ -84,6 +84,7 @@ export async function POST(req: Request) {
       custom_str1: user.id,
       custom_str2: planId,
       custom_str3: billingPeriod,
+      subscription_type: '1' // Allow tokenization
     };
 
     const signature = generatePayFastSignature(pfData, config.passphrase);

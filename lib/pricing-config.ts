@@ -1,4 +1,4 @@
-export type SubscriptionTier = 'free' | 'starter' | 'builder' | 'catalyst';
+export type SubscriptionTier = 'free' | 'starter' | 'builder' | 'catalyst' | 'tier2' | 'tier3';
 
 export interface PricingPlan {
   id: SubscriptionTier;
@@ -43,7 +43,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     tagline: 'Lock in your commitment to transformation at the best rate.',
     price: {
       USD: { amount: '19', period: 'YEAR' },
-      ZAR: { amount: '350', period: 'YEAR' },
+      ZAR: { amount: '350.00', period: 'YEAR' },
     },
     highlight: '💡 Annual commitment only - just $1.58/month when paid yearly',
     features: [
@@ -65,7 +65,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     tagline: 'Accelerate your transformation with community and deep journey AI sessions.',
     price: {
       USD: { amount: '15', period: 'MONTH' },
-      ZAR: { amount: '250', period: 'MONTH' },
+      ZAR: { amount: '250.00', period: 'MONTH' },
     },
     features: [
       'Everything in Clarity Starter',
@@ -84,7 +84,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     tagline: 'High-touch 1:1 guidance for profound, lasting transformation.',
     price: {
       USD: { amount: '79', period: 'MONTH' },
-      ZAR: { amount: '1400', period: 'MONTH' },
+      ZAR: { amount: '1400.00', period: 'MONTH' },
     },
     features: [
       'Everything in Confidence Builder',
