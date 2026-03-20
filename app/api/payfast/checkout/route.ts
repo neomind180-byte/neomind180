@@ -67,7 +67,10 @@ export async function POST(req: Request) {
     const config = getPayFastConfig();
     console.log(`[PayFast Checkout] Using Merchant ID: ${config.merchantId} (Sandbox: ${config.isSandbox})`);
     
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // Dynamically detect the protocol and host from the request headers
+    const protocol = req.headers.get('x-forwarded-proto') || 'http';
+    const host = req.headers.get('host') || 'localhost:3000';
+    const appUrl = `${protocol}://${host}`;
 
     const pfData: PayFastData = {
       merchant_id: config.merchantId,
