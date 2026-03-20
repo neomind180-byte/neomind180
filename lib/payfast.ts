@@ -20,27 +20,57 @@ export interface PayFastData {
 }
 
 /**
- * Generates an MD5 signature for PayFast
+ * Generates an MD5 signature for PayFast.
+ * IMPORTANT: Field order MUST match the PayFast documentation exactly.
+ * Documentation: https://developers.payfast.co.za/docs#step_2_signature
  */
-export function generatePayFastSignature(data: PayFastData, passphrase?: string): string {
-  const keys = Object.keys(data)
-    .filter(k => k !== 'signature' && data[k] !== undefined && data[k] !== '')
-    .sort();
+export function generatePayFastSignature(data: any, passphrase?: string): string {
+  // Define the strict order required by PayFast
+  const orderedKeys = [
+    'merchant_id',
+    'merchant_key',
+    'return_url',
+    'cancel_url',
+    'notify_url',
+    'name_first',
+    'name_last',
+    'email_address',
+    'm_payment_id',
+    'amount',
+    'item_name',
+    'custom_str1',
+    'custom_str2',
+    'custom_str3',
+    'subscription_type',
+    'frequency',
+    'cycles'
+  ];
 
-  const payload = keys
-    .map(key => `${key}=${encodeURIComponent(data[key]!).replace(/%20/g, '+')}`)
-    .join('&');
-
-  const signatureString = passphrase 
-    ? `${payload}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
-    : payload;
-
-  // Log payload in sandbox/dev to debug signature mismatches
-  if (process.env.NODE_ENV !== 'production' || process.env.PAYFAST_IS_SANDBOX === 'true') {
-    console.log('[PayFast] Signature Payload:', signatureString);
+  // Build payload based on ordered keys, skipping empty/undefined values
+  const payloadParts: string[] = [];
+  
+  for (const key of orderedKeys) {
+    const rawValue = data[key];
+    if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
+      const value = String(rawValue).trim();
+      // Percent encode and replace %20 with +
+      const encodedValue = encodeURIComponent(value).replace(/%20/g, '+');
+      payloadParts.push(`${key}=${encodedValue}`);
+    }
   }
 
-  return crypto.createHash('md5').update(signatureString).digest('hex');
+  let finalString = payloadParts.join('&');
+  
+  if (passphrase) {
+    finalString += `&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`;
+  }
+
+  // Debug logging
+  if (process.env.NODE_ENV !== 'production' || process.env.PAYFAST_IS_SANDBOX === 'true') {
+     console.log('[PayFast] Signature String:', finalString);
+  }
+
+  return crypto.createHash('md5').update(finalString).digest('hex');
 }
 
 /**
