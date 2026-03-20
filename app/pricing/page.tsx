@@ -88,8 +88,24 @@ export default function PricingPage() {
       });
 
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (data.pfData && data.url) {
+        // Use POST form for PayFast (more reliable than GET)
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.url;
+
+        Object.entries(data.pfData).forEach(([key, value]) => {
+          if (value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value as string;
+            form.appendChild(input);
+          }
+        });
+
+        document.body.appendChild(form);
+        form.submit();
       } else {
         alert(data.error || 'Something went wrong. Please try again.');
       }

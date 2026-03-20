@@ -89,15 +89,10 @@ export async function POST(req: Request) {
     const signature = generatePayFastSignature(pfData, config.passphrase);
     pfData.signature = signature;
 
-    // 3. Construct checkout URL
-    const queryParams = new URLSearchParams();
-    Object.keys(pfData).forEach(key => {
-      if (pfData[key]) queryParams.append(key, pfData[key]!);
+    return NextResponse.json({ 
+      url: config.baseUrl,
+      pfData 
     });
-
-    const checkoutUrl = `${config.baseUrl}?${queryParams.toString()}`;
-
-    return NextResponse.json({ url: checkoutUrl });
   } catch (err: any) {
     console.error('Checkout error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

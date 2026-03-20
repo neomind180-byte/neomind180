@@ -68,21 +68,24 @@ export function validatePayFastSignature(params: any, passphrase?: string): bool
  */
 export function getPayFastConfig() {
   const isSandbox = process.env.PAYFAST_IS_SANDBOX === 'true';
+  const merchantId = process.env.PAYFAST_MERCHANT_ID || (isSandbox ? '10004002' : '');
+  const merchantKey = process.env.PAYFAST_MERCHANT_KEY || (isSandbox ? 'q1cd2rdny4a53' : '');
+  const passphrase = process.env.PAYFAST_PASSPHRASE || (isSandbox ? 'payfast' : '');
   
   if (isSandbox) {
     return {
-      merchantId: '10004002',
-      merchantKey: 'q1cd2rdny4a53',
-      passphrase: 'payfast',
+      merchantId,
+      merchantKey,
+      passphrase,
       baseUrl: 'https://sandbox.payfast.co.za/eng/process',
       isSandbox: true
     };
   }
 
   return {
-    merchantId: process.env.PAYFAST_MERCHANT_ID || '',
-    merchantKey: process.env.PAYFAST_MERCHANT_KEY || '',
-    passphrase: process.env.PAYFAST_PASSPHRASE || '',
+    merchantId,
+    merchantKey,
+    passphrase,
     baseUrl: 'https://www.payfast.co.za/eng/process',
     isSandbox: false
   };
