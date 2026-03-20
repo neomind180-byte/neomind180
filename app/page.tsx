@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 type Plan = 'monthly' | 'yearly';
 type Currency = 'USD' | 'ZAR';
@@ -39,6 +41,9 @@ export default function Page() {
   const [currency, setCurrency] = useState<Currency>('ZAR');
   const [selectedTier, setSelectedTier] = useState<keyof typeof PRICING['USD']>('starter');
   const [toast, setToast] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const pricingRef = useRef<HTMLDivElement | null>(null);
   const heroImageRef = useRef<HTMLDivElement | null>(null);
@@ -52,6 +57,10 @@ export default function Page() {
     if (p === 'monthly' || p === 'yearly') setPlan(p);
     if (c === 'USD' || c === 'ZAR') setCurrency(c);
     if (t in PRICING['USD']) setSelectedTier(t);
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
   }, []);
 
   useEffect(() => {
@@ -86,10 +95,61 @@ export default function Page() {
     setTimeout(() => pricingRef.current?.focus(), 50);
   };
 
-  const beginJourney = () => {
-    localStorage.setItem('neomind_checkout', JSON.stringify({ plan, currency, tier: selectedTier, ts: Date.now() }));
-    showToast(`Selected ${tiers[selectedTier].name} (${plan}).`);
-    setPricingOpen(false);
+  const beginJourney = async () => {
+    if (!user) {
+      router.push(`/register?tier=${selectedTier}`);
+      return;
+    }
+
+    if (selectedTier === 'free') {
+      router.push('/dashboard');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch('/api/payfast/checkout', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          planId: selectedTier, 
+          billingPeriod: plan === 'yearly' ? 'YEAR' : 'MONTH',
+          currency: currency
+        }),
+      });
+
+      const data = await res.json();
+      if (data.pfData && data.url) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.url;
+
+        Object.entries(data.pfData).forEach(([key, value]) => {
+          if (value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value as string;
+            form.appendChild(input);
+          }
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        showToast(data.error || 'Checkout failed');
+      }
+    } catch (err) {
+      showToast('Connection error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -492,12 +552,25 @@ export default function Page() {
                 Secure checkout via PayFast. Cancel anytime.
               </div>
               <div className="flex gap-4">
-                <button className="secondaryBtn !py-4 !px-10" onClick={() => setPricingOpen(false)}>
+                <button 
+                  className="secondaryBtn !py-4 !px-10 disabled:opacity-50" 
+                  onClick={() => setPricingOpen(false)}
+                  disabled={loading}
+                >
                   Keep Browsing
                 </button>
-                <Link href={`/register?tier=${selectedTier}`} className="ctaBtn !py-4 !px-10">
-                  Begin Journey
-                </Link>
+                <button 
+                  onClick={beginJourney} 
+                  className="ctaBtn !py-4 !px-10 disabled:opacity-50 flex items-center justify-center min-w-[200px]"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                      Processing...
+                    </span>
+                  ) : user ? 'Proceed to Payment' : 'Begin Journey'}
+                </button>
               </div>
             </div>
           </div>
