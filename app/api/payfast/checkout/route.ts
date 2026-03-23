@@ -112,7 +112,7 @@ export async function POST(req: Request) {
       email_address: user.email!,
       m_payment_id: mPaymentId,
       amount: amount,
-      item_name: `NeoMind180: ${plan.title}${customStr4 ? ' (Voucher Applied)' : ''}`,
+      item_name: `NeoMind180: ${plan.title}`,
       custom_str1: user.id,
       custom_str2: planId,
       custom_str3: billingPeriod,

@@ -36,7 +36,11 @@ export function generatePayFastSignature(data: any, passphrase?: string, isItn =
 
     for (const key of keys) {
       const value = String(data[key]).trim();
-      const encodedValue = encodeURIComponent(value).replace(/%20/g, '+');
+      // PHP urlencode exact match
+      const encodedValue = encodeURIComponent(value)
+        .replace(/%20/g, '+')
+        .replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+        .replace(/~/g, '%7E');
       payloadParts.push(`${key}=${encodedValue}`);
     }
   } else {
@@ -52,7 +56,11 @@ export function generatePayFastSignature(data: any, passphrase?: string, isItn =
       const rawValue = data[key];
       if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
         const value = String(rawValue).trim();
-        const encodedValue = encodeURIComponent(value).replace(/%20/g, '+');
+        // PHP urlencode exact match
+        const encodedValue = encodeURIComponent(value)
+          .replace(/%20/g, '+')
+          .replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+          .replace(/~/g, '%7E');
         payloadParts.push(`${key}=${encodedValue}`);
       }
     }
