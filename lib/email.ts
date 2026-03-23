@@ -44,3 +44,29 @@ export async function notifyCoachOfMessage(record: any) {
     return { success: false, error };
   }
 }
+
+export async function notifyCoachOfCancellation(userEmail: string, userName: string, planName: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180 Billing" <${FROM_EMAIL}>`,
+      to: COACH_EMAIL,
+      subject: `URGENT: Subscription Cancellation Request - ${userName}`,
+      text: `User ${userName} (${userEmail}) has requested to cancel their ${planName} subscription.\n\nPlease log in to your PayFast merchant dashboard and manually cancel their recurring token/subscription to prevent future billing.`,
+      html: `
+        <h2 style="color: #d9534f;">Subscription Cancellation Required</h2>
+        <p>A user has downgraded their account to the Free tier, but their <strong>PayFast recurring billing must be cancelled manually</strong>.</p>
+        <p><strong>User:</strong> ${userName}</p>
+        <p><strong>Email:</strong> ${userEmail}</p>
+        <p><strong>Plan Cancelled:</strong> ${planName}</p>
+        <hr>
+        <p><em>Please log into your <a href="https://www.payfast.co.za">PayFast Merchant Dashboard</a>, locate this user's subscription, and cancel it immediately.</em></p>
+      `
+    });
+
+    console.log("✅ Coach cancellation notification sent:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error notifying coach of cancellation:", error);
+    return { success: false, error };
+  }
+}

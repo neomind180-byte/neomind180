@@ -181,8 +181,22 @@ export default function SettingsPage() {
   const handleDowngrade = async () => {
     setActionLoading(true);
     try {
-      await handleSave({ subscription_tier: 'free' });
-      setMessage({ text: "You've been downgraded to the free plan. Your access will change at the end of your billing cycle.", type: 'success' });
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch('/api/payfast/cancel', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ planName: userPlan })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Failed to downgrade");
+
+      setProfile(prev => ({ ...prev, subscription_tier: 'free' }));
+      setMessage({ text: "You've been downgraded to the free plan. We have received your cancellation request.", type: 'success' });
       setShowDowngradeModal(false);
     } catch (error: any) {
       setMessage({ text: error.message || "Failed to downgrade.", type: 'error' });
