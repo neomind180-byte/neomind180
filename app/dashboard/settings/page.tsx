@@ -435,13 +435,13 @@ export default function SettingsPage() {
       {/* --- DOWNGRADE SECTION (Visible only if paid) --- */}
       {profile.subscription_tier !== 'free' && (
         <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-4">
-          <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Downgrade Plan</h2>
-          <p className="text-[12px] text-[var(--text-muted)] italic">Switch back to the free Clarity Foundation plan. You'll lose access to coaching, AI reflections, and community circles.</p>
+          <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Cancel / Downgrade Subscription</h2>
+          <p className="text-[12px] text-[var(--text-muted)] italic">Switch back to the free Clarity Foundation plan and cancel future billing. You'll lose access to premium coaching, AI reflections, and community circles.</p>
           <button
             onClick={() => setShowDowngradeModal(true)}
             className="px-8 py-3 rounded-2xl border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-dim)] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center gap-2 mt-4"
           >
-            Downgrade to Free <ChevronDown className="w-4 h-4" />
+            Cancel Subscription & Downgrade <ChevronDown className="w-4 h-4" />
           </button>
         </section>
       )}
