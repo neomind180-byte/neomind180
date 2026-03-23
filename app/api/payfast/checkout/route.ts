@@ -22,18 +22,43 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
     }
 
-    const { planId, billingPeriod, currency = 'ZAR' } = await req.json();
+    const { planId, billingPeriod, currency = 'ZAR', voucherCode } = await req.json();
 
     const plan = PRICING_PLANS.find(p => p.id === planId);
     if (!plan) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
-    // Determine amount based on currency and plan - Force 2 decimal places for ZAR
-    const rawAmount = plan.price[currency as 'ZAR' | 'USD'].amount;
+    // Determine amount based on currency and plan
+    let rawAmount = plan.price[currency as 'ZAR' | 'USD'].amount;
+    let customStr4 = ''; // For voucher ID
+
+    if (voucherCode) {
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      
+      const { data: voucher, error: vError } = await supabaseAdmin
+        .from('vouchers')
+        .select('*')
+        .eq('code', voucherCode.trim())
+        .eq('tier', planId)
+        .eq('is_redeemed', false)
+        .single();
+
+      if (!vError && voucher) {
+        rawAmount = '0.00';
+        customStr4 = voucher.id;
+      } else {
+        return NextResponse.json({ error: 'Invalid or incorrect voucher for this plan' }, { status: 400 });
+      }
+    }
+
     const amount = currency === 'ZAR' ? parseFloat(rawAmount).toFixed(2) : rawAmount;
     
-    if (parseFloat(amount) === 0) {
+    // Allow 0.00 only if a voucher was applied
+    if (parseFloat(amount) === 0 && !customStr4) {
       return NextResponse.json({ error: 'Cannot checkout a free plan' }, { status: 400 });
     }
 
@@ -83,10 +108,11 @@ export async function POST(req: Request) {
       email_address: user.email!,
       m_payment_id: mPaymentId,
       amount: amount,
-      item_name: `NeoMind180: ${plan.title}`,
+      item_name: `NeoMind180: ${plan.title}${customStr4 ? ' (Voucher Applied)' : ''}`,
       custom_str1: user.id,
       custom_str2: planId,
       custom_str3: billingPeriod,
+      custom_str4: customStr4, // Carry voucher ID to ITN
       subscription_type: '1', // Allow tokenization
       frequency: billingPeriod === 'YEAR' ? '6' : '3', // 6 = Annually, 3 = Monthly
       cycles: '0' // 0 = Infinite

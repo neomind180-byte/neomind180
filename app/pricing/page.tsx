@@ -50,7 +50,37 @@ export default function PricingPage() {
   const [hoveredTier, setHoveredTier] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+  const [voucherCode, setVoucherCode] = useState('');
+  const [isVoucherValid, setIsVoucherValid] = useState(false);
+  const [voucherTier, setVoucherTier] = useState<string | null>(null);
+  const [validatingVoucher, setValidatingVoucher] = useState(false);
   const router = useRouter();
+ 
+  async function validateVoucher() {
+    if (!voucherCode.trim()) return;
+    setValidatingVoucher(true);
+    try {
+      const res = await fetch('/api/vouchers/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: voucherCode.trim() })
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setIsVoucherValid(true);
+        setVoucherTier(data.tier);
+        alert(data.message);
+      } else {
+        alert(data.error || 'Invalid code');
+        setIsVoucherValid(false);
+        setVoucherTier(null);
+      }
+    } catch (err) {
+      alert('Error validating voucher');
+    } finally {
+      setValidatingVoucher(false);
+    }
+  }
 
   async function handleAction(plan: any) {
     if (plan.id === 'free') {
@@ -59,7 +89,7 @@ export default function PricingPage() {
     }
 
     if (!isLoggedIn) {
-      router.push(`/register?tier=${plan.id}`);
+      router.push(`/register?tier=${plan.id}${isVoucherValid && voucherTier === plan.id ? `&voucher=${voucherCode}` : ''}`);
       return;
     }
 
@@ -83,7 +113,8 @@ export default function PricingPage() {
         body: JSON.stringify({
           planId: plan.id,
           billingPeriod: plan.price[currency].period,
-          currency: currency
+          currency: currency,
+          voucherCode: isVoucherValid && voucherTier === plan.id ? voucherCode : undefined
         })
       });
 
@@ -141,9 +172,9 @@ export default function PricingPage() {
           <p className="text-[var(--text-muted)] max-w-2xl mx-auto text-lg md:text-xl font-medium italic">
             Flexible plans designed for every stage of your mindset journey. Cancel anytime.
           </p>
-
-          {/* Currency Toggle */}
-          <div className="flex justify-center pt-8">
+ 
+          {/* Currency Toggle & Voucher */}
+          <div className="flex flex-col items-center gap-8 pt-8">
             <div className="bg-[var(--bg-card)] p-1.5 rounded-full inline-flex items-center border border-[var(--border)] shadow-xl">
               <button
                 onClick={() => setCurrency('USD')}
@@ -163,6 +194,31 @@ export default function PricingPage() {
               >
                 ZAR (R)
               </button>
+            </div>
+
+            {/* Voucher Input */}
+            <div className="w-full max-w-sm">
+              <div className="relative group">
+                <input 
+                  type="text"
+                  placeholder="HAVE A PROMO CODE?"
+                  value={voucherCode}
+                  onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                  className={`w-full bg-[var(--bg-input)] border ${isVoucherValid ? 'border-[#0AA390]' : 'border-[var(--border)]'} rounded-2xl px-6 py-4 text-xs font-black tracking-widest outline-none focus:border-[#00538e] transition-all`}
+                />
+                <button 
+                  onClick={validateVoucher}
+                  disabled={validatingVoucher || !voucherCode}
+                  className="absolute right-2 top-2 bottom-2 px-6 rounded-xl bg-[var(--bg-card)] border border-[var(--border)] text-[10px] font-black uppercase tracking-widest hover:border-[#00538e] hover:text-[#00538e] transition-all disabled:opacity-30"
+                >
+                  {validatingVoucher ? '...' : 'Apply'}
+                </button>
+              </div>
+              {isVoucherValid && (
+                <p className="mt-3 text-[10px] font-bold text-[#0AA390] uppercase tracking-widest animate-pulse">
+                  ✨ {voucherTier?.toUpperCase()} PROMO APPLIED — R0.00 AT CHECKOUT
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -36,6 +36,7 @@ export async function POST(req: Request) {
     const userId = params.custom_str1;
     const planId = params.custom_str2;
     const token = params.token;
+    const voucherId = params.custom_str4; // Check for voucher
 
     // 3. Update Subscriptions table
     const { error: subError } = await supabaseAdmin
@@ -52,8 +53,9 @@ export async function POST(req: Request) {
       return new Response('Database Error', { status: 500 });
     }
 
-    // 4. If payment completed, upgrade user profile
+    // 4. If payment completed, upgrade user profile & handle voucher
     if (paymentStatus === 'COMPLETE') {
+      // Step A: Upgrade profile
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
@@ -64,6 +66,26 @@ export async function POST(req: Request) {
       if (profileError) {
         console.error('Error updating user profile:', profileError);
         return new Response('Database Error', { status: 500 });
+      }
+
+      // Step B: Mark voucher as redeemed if used
+      if (voucherId) {
+        const { error: voucherError } = await supabaseAdmin
+          .from('vouchers')
+          .update({
+            is_redeemed: true,
+            redeemed_by: userId,
+            redeemed_at: new Date().toISOString()
+          })
+          .eq('id', voucherId);
+
+        if (voucherError) {
+          console.error('Error marking voucher as redeemed:', voucherError);
+          // We don't fail the whole ITN if just the voucher mark fails, 
+          // as the user is already upgraded, but it's worth logging.
+        } else {
+          console.log(`Voucher ${voucherId} marked as redeemed for user ${userId}`);
+        }
       }
       
       console.log(`User ${userId} upgraded to ${planId}`);

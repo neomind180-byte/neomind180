@@ -43,12 +43,42 @@ export default function Page() {
   const [toast, setToast] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [voucherCode, setVoucherCode] = useState('');
+  const [isVoucherValid, setIsVoucherValid] = useState(false);
+  const [voucherTier, setVoucherTier] = useState<string | null>(null);
+  const [validatingVoucher, setValidatingVoucher] = useState(false);
   const router = useRouter();
 
   const pricingRef = useRef<HTMLDivElement | null>(null);
   const heroImageRef = useRef<HTMLDivElement | null>(null);
 
   const tiers = useMemo(() => PRICING[currency], [currency]);
+
+  async function validateVoucher() {
+    if (!voucherCode.trim()) return;
+    setValidatingVoucher(true);
+    try {
+      const res = await fetch('/api/vouchers/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: voucherCode.trim() })
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setIsVoucherValid(true);
+        setVoucherTier(data.tier);
+        showToast(data.message);
+      } else {
+        showToast(data.error || 'Invalid code');
+        setIsVoucherValid(false);
+        setVoucherTier(null);
+      }
+    } catch (err) {
+      showToast('Error validating voucher');
+    } finally {
+      setValidatingVoucher(false);
+    }
+  }
 
   useEffect(() => {
     const p = (localStorage.getItem('neomind_plan') as Plan | null) ?? 'monthly';
@@ -97,7 +127,8 @@ export default function Page() {
 
   const beginJourney = async () => {
     if (!user) {
-      router.push(`/register?tier=${selectedTier}`);
+      const voucherParam = isVoucherValid && voucherTier === selectedTier ? `&voucher=${voucherCode}` : '';
+      router.push(`/register?tier=${selectedTier}${voucherParam}`);
       return;
     }
 
@@ -120,7 +151,8 @@ export default function Page() {
         body: JSON.stringify({ 
           planId: selectedTier, 
           billingPeriod: plan === 'yearly' ? 'YEAR' : 'MONTH',
-          currency: currency
+          currency: currency,
+          voucherCode: isVoucherValid && voucherTier === selectedTier ? voucherCode : undefined
         }),
       });
 
@@ -468,6 +500,30 @@ export default function Page() {
                       </button>
                     ))}
                   </div>
+                </div>
+                {/* Voucher Input */}
+                <div className="flex flex-col items-end gap-2 w-full max-w-[300px]">
+                  <div className="relative w-full">
+                    <input 
+                      type="text"
+                      placeholder="PROMO CODE"
+                      value={voucherCode}
+                      onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                      className={`w-full bg-[var(--bg-input)] border ${isVoucherValid ? 'border-[#0AA390]' : 'border-[var(--border)]'} rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest outline-none focus:border-[#00538e] transition-all`}
+                    />
+                    <button 
+                      onClick={validateVoucher}
+                      disabled={validatingVoucher || !voucherCode}
+                      className="absolute right-1.5 top-1.5 bottom-1.5 px-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-[9px] font-black uppercase tracking-widest hover:border-[#00538e] hover:text-[#00538e] transition-all disabled:opacity-30"
+                    >
+                      {validatingVoucher ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                  {isVoucherValid && (
+                    <p className="text-[9px] font-bold text-[#0AA390] uppercase tracking-widest text-right">
+                      ✨ {voucherTier?.toUpperCase()} APPLIED — R0.00
+                    </p>
+                  )}
                 </div>
                 <button
                   className="rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-6 py-2.5 text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all"
