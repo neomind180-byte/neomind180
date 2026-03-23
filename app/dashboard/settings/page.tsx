@@ -54,6 +54,10 @@ export default function SettingsPage() {
   const [showAccountDeleteModal, setShowAccountDeleteModal] = useState<number>(0); // 0: closed, 1: warning, 2: final confirmation
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
 
+  // Secret Dev Mode lock
+  const [devModeClicks, setDevModeClicks] = useState(0);
+  const [isDevModeUnlocked, setIsDevModeUnlocked] = useState(false);
+
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -407,7 +411,16 @@ export default function SettingsPage() {
       <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-8">
         <div className="flex items-center justify-between">
           <div className="space-y-4">
-            <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Subscription Management</h2>
+            <h2 
+              className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] cursor-default select-none transition-colors"
+              onClick={() => {
+                const newClicks = devModeClicks + 1;
+                setDevModeClicks(newClicks);
+                if (newClicks >= 5) setIsDevModeUnlocked(true);
+              }}
+            >
+              Subscription Management
+            </h2>
             <div className="flex items-center gap-4">
               <div className="px-6 py-2 bg-[#00538e]/10 text-[#00538e] rounded-full text-xs font-black uppercase tracking-[0.2em]">
                 Current Tier: {userPlan}
@@ -422,28 +435,30 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* DEVELOPER MODE: Tier Switcher */}
-        <div className="pt-8 border-t border-[var(--border)]">
-          <div className="flex items-center gap-3 mb-6">
-            <ShieldAlert className="w-5 h-5 text-[#F39904]" />
-            <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Developer Mode (Dev Only)</h3>
-          </div>
+        {/* DEVELOPER MODE: Tier Switcher (Secret Unlock) */}
+        {isDevModeUnlocked && (
+          <div className="pt-8 border-t border-[var(--border)] animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <ShieldAlert className="w-5 h-5 text-[#F39904]" />
+              <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Developer Mode (Unlocked)</h3>
+            </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['free', 'starter', 'builder', 'catalyst'].map((tier) => (
-              <button
-                key={tier}
-                onClick={() => handleSave({ subscription_tier: tier })}
-                className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${profile.subscription_tier === tier
-                  ? 'border-[#00538e] bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20'
-                  : 'border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-dim)] hover:border-[var(--text-dim)] hover:text-[var(--text-muted)]'
-                  }`}
-              >
-                {tier === 'free' ? 'Foundation' : tier === 'starter' ? 'Starter' : tier === 'builder' ? 'Builder' : 'Catalyst'}
-              </button>
-            ))}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {['free', 'starter', 'builder', 'catalyst'].map((tier) => (
+                <button
+                  key={tier}
+                  onClick={() => handleSave({ subscription_tier: tier })}
+                  className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${profile.subscription_tier === tier
+                    ? 'border-[#00538e] bg-[#00538e] text-white shadow-lg shadow-[#00538e]/20'
+                    : 'border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-dim)] hover:border-[var(--text-dim)] hover:text-[var(--text-muted)]'
+                    }`}
+                >
+                  {tier === 'free' ? 'Foundation' : tier === 'starter' ? 'Starter' : tier === 'builder' ? 'Builder' : 'Catalyst'}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* --- DOWNGRADE SECTION (Visible only if paid) --- */}
