@@ -57,6 +57,10 @@ export async function POST(req: Request) {
 
     const amount = currency === 'ZAR' ? parseFloat(rawAmount).toFixed(2) : rawAmount;
     
+    // Determine the recurring amount (normal price for future billing)
+    const normalPrice = plan.price[currency as 'ZAR' | 'USD'].amount;
+    const recurringAmount = currency === 'ZAR' ? parseFloat(normalPrice).toFixed(2) : normalPrice;
+
     // Allow 0.00 only if a voucher was applied
     if (parseFloat(amount) === 0 && !customStr4) {
       return NextResponse.json({ error: 'Cannot checkout a free plan' }, { status: 400 });
@@ -103,8 +107,8 @@ export async function POST(req: Request) {
       return_url: `${appUrl}/dashboard?payment=success`,
       cancel_url: `${appUrl}/pricing?payment=cancelled`,
       notify_url: `${appUrl}/api/payfast/itn`,
-      name_first: user.user_metadata?.full_name?.split(' ')[0] || '',
-      name_last: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+      name_first: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '',
+      name_last: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
       email_address: user.email!,
       m_payment_id: mPaymentId,
       amount: amount,
@@ -114,6 +118,7 @@ export async function POST(req: Request) {
       custom_str3: billingPeriod,
       custom_str4: customStr4, // Carry voucher ID to ITN
       subscription_type: '1', // Allow tokenization
+      recurring_amount: recurringAmount, // Required for type 1/2 subscriptions
       frequency: billingPeriod === 'YEAR' ? '6' : '3', // 6 = Annually, 3 = Monthly
       cycles: '0' // 0 = Infinite
     };
