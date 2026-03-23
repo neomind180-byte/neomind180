@@ -44,7 +44,7 @@ export function generatePayFastSignature(data: any, passphrase?: string, isItn =
     const orderedKeys = [
       'merchant_id', 'merchant_key', 'return_url', 'cancel_url', 'notify_url',
       'name_first', 'name_last', 'email_address', 'm_payment_id', 'amount',
-      'item_name', 'custom_str1', 'custom_str2', 'custom_str3',
+      'item_name', 'custom_str1', 'custom_str2', 'custom_str3', 'custom_str4', 'custom_str5',
       'subscription_type', 'billing_date', 'recurring_amount', 'frequency', 'cycles'
     ];
 
