@@ -1,0 +1,85 @@
+{
+  "subs": [
+    {
+      "id": "238e5caa-8a82-4101-9872-3625c8e1fd15",
+      "user_id": "7c82d840-752b-40bc-a39b-ce0af99972e1",
+      "m_payment_id": "sub_23d7eb7e_1774291472058",
+      "pf_payment_id": null,
+      "token": null,
+      "plan_id": "builder",
+      "billing_period": "MONTH",
+      "amount": 0,
+      "currency": "ZAR",
+      "status": "PENDING",
+      "created_at": "2026-03-23T18:44:32.336601+00:00",
+      "updated_at": "2026-03-23T18:44:32.336601+00:00"
+    },
+    {
+      "id": "76966dfd-d39c-40c5-a258-429e0721979e",
+      "user_id": "7c82d840-752b-40bc-a39b-ce0af99972e1",
+      "m_payment_id": "sub_77723012_1774279987585",
+      "pf_payment_id": null,
+      "token": null,
+      "plan_id": "builder",
+      "billing_period": "MONTH",
+      "amount": 0,
+      "currency": "ZAR",
+      "status": "PENDING",
+      "created_at": "2026-03-23T15:33:07.664774+00:00",
+      "updated_at": "2026-03-23T15:33:07.664774+00:00"
+    },
+    {
+      "id": "5dadeed2-3341-40fb-a612-2d07204ed28f",
+      "user_id": "7c82d840-752b-40bc-a39b-ce0af99972e1",
+      "m_payment_id": "sub_32688dca_1774279683197",
+      "pf_payment_id": null,
+      "token": null,
+      "plan_id": "builder",
+      "billing_period": "MONTH",
+      "amount": 0,
+      "currency": "USD",
+      "status": "PENDING",
+      "created_at": "2026-03-23T15:28:03.278696+00:00",
+      "updated_at": "2026-03-23T15:28:03.278696+00:00"
+    },
+    {
+      "id": "08f68298-5843-4339-b5d8-bec51d656a4e",
+      "user_id": "7c82d840-752b-40bc-a39b-ce0af99972e1",
+      "m_payment_id": "sub_ba2084c1_1774279388325",
+      "pf_payment_id": null,
+      "token": null,
+      "plan_id": "builder",
+      "billing_period": "MONTH",
+      "amount": 0,
+      "currency": "ZAR",
+      "status": "PENDING",
+      "created_at": "2026-03-23T15:23:08.412206+00:00",
+      "updated_at": "2026-03-23T15:23:08.412206+00:00"
+    },
+    {
+      "id": "3fceab91-3ba0-4187-b1b7-c5747db61287",
+      "user_id": "7c82d840-752b-40bc-a39b-ce0af99972e1",
+      "m_payment_id": "sub_63a409fe_1774279061711",
+      "pf_payment_id": null,
+      "token": null,
+      "plan_id": "builder",
+      "billing_period": "MONTH",
+      "amount": 0,
+      "currency": "ZAR",
+      "status": "PENDING",
+      "created_at": "2026-03-23T15:17:41.953626+00:00",
+      "updated_at": "2026-03-23T15:17:41.953626+00:00"
+    }
+  ],
+  "vouchers": [
+    {
+      "id": "d16f1c55-1cd3-463c-a099-71a05aa6ab77",
+      "code": "TESTER-CONFIDENCE",
+      "tier": "builder",
+      "is_redeemed": false,
+      "redeemed_by": null,
+      "redeemed_at": null,
+      "created_at": "2026-03-23T14:58:35.525936+00:00"
+    }
+  ]
+}

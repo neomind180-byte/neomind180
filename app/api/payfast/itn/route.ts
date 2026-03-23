@@ -10,24 +10,41 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: Request) {
   try {
-    const data = await req.formData();
+    const rawBody = await req.text();
+    const parsedParams = new URLSearchParams(rawBody);
+    
     const params: Record<string, string> = {};
-    data.forEach((value, key) => {
-      params[key] = value.toString();
+    parsedParams.forEach((value, key) => {
+      params[key] = value;
     });
 
     console.log('Incoming ITN from PayFast:', params);
 
     const config = getPayFastConfig();
+    const validateUrl = config.isSandbox 
+      ? 'https://sandbox.payfast.co.za/eng/query/validate' 
+      : 'https://www.payfast.co.za/eng/query/validate';
 
-    // 1. Validate Signature
-    const isValid = validatePayFastSignature(params, config.passphrase);
-    if (!isValid) {
-      console.error('Invalid PayFast signature for ITN:', params.signature);
+    // 1. Validate ITN with PayFast Directly (Far more reliable than JS hashing)
+    const validateRes = await fetch(validateUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: rawBody
+    });
+
+    const validateResult = await validateRes.text();
+
+    if (validateResult !== 'VALID') {
+      console.error('Invalid PayFast ITN validation payload. PayFast returned:', validateResult);
+      await supabaseAdmin.from('itn_logs').insert({
+        payload: params,
+        error_message: `PayFast Validation Failed: ${validateResult}`,
+        status_code: 400
+      });
       return new Response('Invalid Signature', { status: 400 });
     }
-
-    // 2. Validate with PayFast server (Optional but recommended to prevent spoofing)
     // For this implementation, we rely on the MD5 hash and Passphrase security.
 
     const mPaymentId = params.m_payment_id;
@@ -90,6 +107,12 @@ export async function POST(req: Request) {
       
       console.log(`User ${userId} upgraded to ${planId}`);
     }
+
+    await supabaseAdmin.from('itn_logs').insert({
+      payload: params,
+      error_message: 'Success',
+      status_code: 200
+    });
 
     return new Response('ITN Processed', { status: 200 });
   } catch (err: any) {

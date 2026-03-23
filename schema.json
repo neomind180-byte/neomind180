@@ -1,0 +1,14 @@
+[
+  "id",
+  "user_id",
+  "m_payment_id",
+  "pf_payment_id",
+  "token",
+  "plan_id",
+  "billing_period",
+  "amount",
+  "currency",
+  "status",
+  "created_at",
+  "updated_at"
+]
