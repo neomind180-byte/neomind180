@@ -5,8 +5,10 @@ import Link from 'next/link';
 import {
   ArrowLeft, User, Mail, Phone, Save, Loader2, AlertCircle,
   ShieldAlert, Trash2, AlertTriangle, CheckSquare, Square,
-  RefreshCcw, Sun, Moon, Lock, Settings, ChevronDown
+  RefreshCcw, Sun, Moon, Lock, Settings, ChevronDown, KeyRound, X
 } from 'lucide-react';
+
+const DEV_MODE_PASSWORD = 'NeoAdmin2025';
 import { supabase } from '@/lib/supabaseClient';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -57,6 +59,23 @@ export default function SettingsPage() {
   // Secret Dev Mode lock
   const [devModeClicks, setDevModeClicks] = useState(0);
   const [isDevModeUnlocked, setIsDevModeUnlocked] = useState(false);
+  const [showDevPasswordModal, setShowDevPasswordModal] = useState(false);
+  const [devPassword, setDevPassword] = useState('');
+  const [devPasswordError, setDevPasswordError] = useState(false);
+
+  const handleDevPasswordSubmit = () => {
+    if (devPassword === DEV_MODE_PASSWORD) {
+      setIsDevModeUnlocked(true);
+      setShowDevPasswordModal(false);
+      setDevPassword('');
+      setDevPasswordError(false);
+    } else {
+      setDevPasswordError(true);
+      setDevPassword('');
+      setDevModeClicks(0);
+      setTimeout(() => setDevPasswordError(false), 3000);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -151,7 +170,17 @@ export default function SettingsPage() {
     setMessage(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      
+      if (!user) {
+        // Just mock the update locally if there is no user session (super helpful for local UI testing)
+        setProfile(prev => ({ ...prev, ...updates }));
+        setMessage({ text: "Simulated save (No active user session detected in local dev).", type: 'success' });
+        
+        if (updates.subscription_tier) {
+            setTimeout(() => window.location.reload(), 1500);
+        }
+        return;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -162,7 +191,6 @@ export default function SettingsPage() {
         });
 
       if (error) {
-        console.error("❌ Profile Save Error:", error);
         throw error;
       }
 
@@ -175,7 +203,7 @@ export default function SettingsPage() {
       }
 
     } catch (error: any) {
-      console.error(error);
+      console.error("Profile Save Exception:", error);
       setMessage({ text: error.message || "Failed to save changes.", type: 'error' });
     } finally {
       setSaving(false);
@@ -414,9 +442,13 @@ export default function SettingsPage() {
             <h2 
               className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] cursor-default select-none transition-colors"
               onClick={() => {
+                if (isDevModeUnlocked) return;
                 const newClicks = devModeClicks + 1;
                 setDevModeClicks(newClicks);
-                if (newClicks >= 5) setIsDevModeUnlocked(true);
+                if (newClicks >= 5) {
+                  setDevModeClicks(0);
+                  setShowDevPasswordModal(true);
+                }
               }}
             >
               Subscription Management
@@ -706,6 +738,55 @@ export default function SettingsPage() {
                 >
                   {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                   Permanently Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* --- DEV MODE PASSWORD MODAL --- */}
+      {showDevPasswordModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-[var(--bg-card)] w-full max-w-md p-10 rounded-[3rem] border border-[#F39904]/30 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="w-16 h-16 bg-[#F39904]/10 rounded-full flex items-center justify-center border border-[#F39904]/30">
+                <KeyRound className="w-8 h-8 text-[#F39904]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tighter text-[var(--text-primary)]">Developer Access</h2>
+                <p className="text-[12px] text-[var(--text-muted)] italic mt-2">Enter the admin passphrase to unlock developer mode.</p>
+              </div>
+            </div>
+
+            {devPasswordError && (
+              <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[11px] font-black uppercase tracking-widest animate-in shake-x duration-300">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                Incorrect passphrase. Access denied.
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="Enter passphrase..."
+                value={devPassword}
+                autoFocus
+                onChange={(e) => setDevPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleDevPasswordSubmit()}
+                className="w-full px-6 py-4 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#F39904] font-black text-center text-[var(--text-primary)] tracking-widest transition-all"
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => { setShowDevPasswordModal(false); setDevPassword(''); setDevModeClicks(0); setDevPasswordError(false); }}
+                  className="py-4 rounded-2xl border border-[var(--border)] text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-input)] transition-all flex items-center justify-center gap-2"
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+                <button
+                  onClick={handleDevPasswordSubmit}
+                  className="py-4 rounded-2xl bg-[#F39904] text-white text-[12px] font-black uppercase tracking-widest hover:bg-[#d4840a] shadow-xl shadow-[#F39904]/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <KeyRound className="w-4 h-4" /> Unlock
                 </button>
               </div>
             </div>

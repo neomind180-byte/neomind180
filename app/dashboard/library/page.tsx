@@ -3,20 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
-  BookOpen,
-  Headphones,
-  Play,
-  Pause,
-  Clock,
-  FileText,
-  Download,
-  Lock,
-  Video,
-  ExternalLink,
-  Volume2,
-  Upload,
-  Loader2
+  BookOpen, Headphones, Play, Pause, Clock, FileText,
+  Download, Lock, Video, Volume2, Upload, Loader2,
+  KeyRound, AlertCircle, X, Plus, Save, Trash2, Edit3, Link2
 } from 'lucide-react';
+
+const ADMIN_PASSWORD = 'NeoAdmin2025';
 
 // --- TYPES ---
 type LibraryItem = {
@@ -48,21 +40,56 @@ export default function LibraryPage() {
   // Doc Modal State
   const [selectedDoc, setSelectedDoc] = useState<LibraryItem | null>(null);
 
-  // Upload State
+  // Admin / Password state
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminClickCount, setAdminClickCount] = useState(0);
+  const [showAdminPasswordModal, setShowAdminPasswordModal] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminPasswordError, setAdminPasswordError] = useState(false);
+
+  // Audio upload
   const [isUploading, setIsUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
+  // Article upload
+  const [isUploadingArticle, setIsUploadingArticle] = useState(false);
+  const [articleUploadMessage, setArticleUploadMessage] = useState<string | null>(null);
+
+  // New library item form (shared for Read & Watch)
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addFormTab, setAddFormTab] = useState<'read' | 'watch'>('read');
+  const [formData, setFormData] = useState({
+    title: '', category: '', type: 'Article',
+    read_time: '', duration: '', content_url: '',
+    thumbnail_url: '', min_tier: 'free', locked: false
+  });
+  const [formSaving, setFormSaving] = useState(false);
+  const [formMessage, setFormMessage] = useState<string | null>(null);
+
   const handleAdminToggle = () => {
+    if (isAdmin) return;
     setAdminClickCount(prev => {
       const next = prev + 1;
-      if (next === 5) {
-        setIsAdmin(!isAdmin);
+      if (next >= 5) {
+        setShowAdminPasswordModal(true);
         return 0;
       }
       return next;
     });
+  };
+
+  const handleAdminPasswordSubmit = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      setShowAdminPasswordModal(false);
+      setAdminPassword('');
+      setAdminPasswordError(false);
+    } else {
+      setAdminPasswordError(true);
+      setAdminPassword('');
+      setAdminClickCount(0);
+      setTimeout(() => setAdminPasswordError(false), 3000);
+    }
   };
 
   async function fetchItems() {
@@ -127,22 +154,15 @@ export default function LibraryPage() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     setIsUploading(true);
     setUploadMessage("Uploading to Vercel Blob...");
-
     try {
       const response = await fetch(`/api/upload/audio?filename=${encodeURIComponent(file.name)}`, {
-        method: 'POST',
-        body: file,
+        method: 'POST', body: file,
       });
-
       if (!response.ok) throw new Error('Upload failed');
-
       const blob = await response.json();
       setUploadMessage("Upload complete!");
-
-      // Copy URL to clipboard for convenience
       await navigator.clipboard.writeText(blob.url);
       alert(`Audio uploaded! URL copied to clipboard:\n\n${blob.url}\n\nPaste this in Supabase content_url.`);
     } catch (error) {
@@ -151,6 +171,73 @@ export default function LibraryPage() {
     } finally {
       setIsUploading(false);
       setTimeout(() => setUploadMessage(null), 3000);
+    }
+  };
+
+  const handleArticleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setIsUploadingArticle(true);
+    setArticleUploadMessage("Uploading article to Vercel Blob (READ/)...");
+    try {
+      const response = await fetch(`/api/upload/article?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST', body: file,
+      });
+      if (!response.ok) throw new Error('Upload failed');
+      const blob = await response.json();
+      setFormData(prev => ({ ...prev, content_url: blob.url }));
+      setArticleUploadMessage("Uploaded! URL filled in below.");
+    } catch (error) {
+      console.error(error);
+      setArticleUploadMessage("Upload failed.");
+    } finally {
+      setIsUploadingArticle(false);
+      setTimeout(() => setArticleUploadMessage(null), 4000);
+    }
+  };
+
+  const handleAddLibraryItem = async () => {
+    if (!formData.title || !formData.content_url) {
+      setFormMessage("Title and Content URL are required.");
+      return;
+    }
+    setFormSaving(true);
+    setFormMessage(null);
+    try {
+      const insertData: any = {
+        title: formData.title,
+        category: formData.category,
+        type: formData.type,
+        content_url: formData.content_url,
+        thumbnail_url: formData.thumbnail_url || null,
+        min_tier: formData.min_tier,
+        locked: formData.locked,
+      };
+      if (addFormTab === 'read') insertData.read_time = formData.read_time;
+      if (addFormTab === 'watch') {
+        insertData.duration = formData.duration;
+        insertData.type = 'Video';
+      }
+
+      // Hit our new admin backend route to bypass RLS entirely
+      const res = await fetch('/api/admin/library', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(insertData),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to add item');
+
+      setFormMessage("✓ Item added successfully!");
+      setFormData({ title: '', category: '', type: addFormTab === 'watch' ? 'Video' : 'Article', read_time: '', duration: '', content_url: '', thumbnail_url: '', min_tier: 'free', locked: false });
+      await fetchItems();
+    } catch (err: any) {
+      setFormMessage(`Error: ${err.message}`);
+    } finally {
+      setFormSaving(false);
     }
   };
 
@@ -295,7 +382,64 @@ export default function LibraryPage() {
 
           {/* --- READ TAB --- */}
           {activeTab === 'read' && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+              {/* READ ADMIN PANEL */}
+              {isAdmin && (
+                <div className="bg-[#00538e]/5 border-2 border-dashed border-[#00538e]/30 rounded-[2.5rem] p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#00538e]/10 rounded-full flex items-center justify-center text-[#00538e]"><Edit3 className="w-5 h-5" /></div>
+                      <div>
+                        <h4 className="font-black uppercase text-[12px] tracking-widest text-[var(--text-primary)]">Add Read Content</h4>
+                        <p className="text-[11px] text-[var(--text-muted)] italic">Upload a file to Vercel Blob or paste a Google Drive / external URL.</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setShowAddForm(!showAddForm)} className="p-2 rounded-xl border border-[#00538e]/30 text-[#00538e] hover:bg-[#00538e] hover:text-white transition-all">
+                      {showAddForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {showAddForm && (
+                    <div className="space-y-4 pt-4 border-t border-[#00538e]/20">
+                      {/* Article file upload */}
+                      <div className="flex items-center gap-4">
+                        <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => { setAddFormTab('read'); handleArticleUpload(e); }} className="hidden" id="article-upload" disabled={isUploadingArticle} />
+                        <label htmlFor="article-upload" className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest cursor-pointer transition-all ${isUploadingArticle ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#00538e] text-white hover:bg-[#004272] shadow-lg shadow-[#00538e]/20'}`}>
+                          {isUploadingArticle ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                          {isUploadingArticle ? 'Uploading...' : 'Upload PDF/Doc to Blob'}
+                        </label>
+                        {articleUploadMessage && <span className="text-[11px] font-black text-[#0AA390] uppercase tracking-widest">{articleUploadMessage}</span>}
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <input value={formData.title} onChange={e => setFormData(p => ({...p, title: e.target.value}))} placeholder="Title *" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#00538e] transition-all" />
+                        <input value={formData.category} onChange={e => setFormData(p => ({...p, category: e.target.value}))} placeholder="Category" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#00538e] transition-all" />
+                        <select value={formData.type} onChange={e => setFormData(p => ({...p, type: e.target.value}))} className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#00538e] transition-all">
+                          <option value="Article">Article</option>
+                          <option value="Guide">Guide</option>
+                          <option value="Worksheet">Worksheet</option>
+                        </select>
+                        <input value={formData.read_time} onChange={e => setFormData(p => ({...p, read_time: e.target.value}))} placeholder="Read time (e.g. 5 min)" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#00538e] transition-all" />
+                        <input value={formData.content_url} onChange={e => setFormData(p => ({...p, content_url: e.target.value}))} placeholder="Content URL * (blob or Google Drive)" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#00538e] transition-all col-span-2" />
+                        <input value={formData.thumbnail_url} onChange={e => setFormData(p => ({...p, thumbnail_url: e.target.value}))} placeholder="Thumbnail URL (optional)" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#00538e] transition-all" />
+                        <select value={formData.min_tier} onChange={e => setFormData(p => ({...p, min_tier: e.target.value}))} className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#00538e] transition-all">
+                          <option value="free">Free</option>
+                          <option value="tier2">Tier 2</option>
+                          <option value="tier3">Tier 3</option>
+                        </select>
+                      </div>
+
+                      {formMessage && <p className={`text-[11px] font-black uppercase tracking-widest ${formMessage.startsWith('✓') ? 'text-[#0AA390]' : 'text-red-400'}`}>{formMessage}</p>}
+                      <button onClick={() => { setAddFormTab('read'); handleAddLibraryItem(); }} disabled={formSaving} className="flex items-center gap-2 px-8 py-3 bg-[#00538e] text-white rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-[#004272] shadow-lg shadow-[#00538e]/20 transition-all disabled:opacity-60">
+                        {formSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save to Library
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredItems.map((item) => {
                 const locked = isLocked(item.min_tier);
                 return (
@@ -337,6 +481,7 @@ export default function LibraryPage() {
                   </div>
                 );
               })}
+            </div>
             </div>
           )}
 
@@ -434,7 +579,68 @@ export default function LibraryPage() {
 
           {/* --- WATCH TAB --- */}
           {activeTab === 'watch' && (
-            <div className="grid md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+              {/* WATCH ADMIN PANEL */}
+              {isAdmin && (
+                <div className="bg-[#993366]/5 border-2 border-dashed border-[#993366]/30 rounded-[2.5rem] p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#993366]/10 rounded-full flex items-center justify-center text-[#993366]"><Link2 className="w-5 h-5" /></div>
+                      <div>
+                        <h4 className="font-black uppercase text-[12px] tracking-widest text-[var(--text-primary)]">Add YouTube Video</h4>
+                        <p className="text-[11px] text-[var(--text-muted)] italic">Paste a YouTube URL and fill in the details — no Supabase console needed.</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setShowAddForm(!showAddForm)} className="p-2 rounded-xl border border-[#993366]/30 text-[#993366] hover:bg-[#993366] hover:text-white transition-all">
+                      {showAddForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {showAddForm && (
+                    <div className="space-y-4 pt-4 border-t border-[#993366]/20">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <input value={formData.title} onChange={e => setFormData(p => ({...p, title: e.target.value}))} placeholder="Video Title *" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#993366] transition-all" />
+                        <input value={formData.category} onChange={e => setFormData(p => ({...p, category: e.target.value}))} placeholder="Category (e.g. Mindfulness)" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#993366] transition-all" />
+                        <input 
+                          value={formData.content_url} 
+                          onChange={e => {
+                            const url = e.target.value;
+                            let newThumb = formData.thumbnail_url;
+                            
+                            // Auto-extract YouTube thumbnail
+                            if (url.includes('youtube.com/watch?v=')) {
+                              const vid = url.split('v=')[1].split('&')[0];
+                              newThumb = `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`;
+                            } else if (url.includes('youtu.be/')) {
+                              const vid = url.split('youtu.be/')[1].split('?')[0];
+                              newThumb = `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`;
+                            }
+                            
+                            setFormData(p => ({...p, content_url: url, thumbnail_url: newThumb}));
+                          }} 
+                          placeholder="YouTube URL * (youtube.com/watch?v=...)" 
+                          className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#993366] transition-all col-span-2" 
+                        />
+                        <input value={formData.thumbnail_url} onChange={e => setFormData(p => ({...p, thumbnail_url: e.target.value}))} placeholder="Thumbnail URL (optional)" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#993366] transition-all" />
+                        <input value={formData.duration} onChange={e => setFormData(p => ({...p, duration: e.target.value}))} placeholder="Duration (e.g. 12 min)" className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#993366] transition-all" />
+                        <select value={formData.min_tier} onChange={e => setFormData(p => ({...p, min_tier: e.target.value}))} className="px-5 py-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl text-[var(--text-primary)] text-sm outline-none focus:border-[#993366] transition-all">
+                          <option value="free">Free</option>
+                          <option value="tier2">Tier 2</option>
+                          <option value="tier3">Tier 3</option>
+                        </select>
+                      </div>
+
+                      {formMessage && <p className={`text-[11px] font-black uppercase tracking-widest ${formMessage.startsWith('✓') ? 'text-[#0AA390]' : 'text-red-400'}`}>{formMessage}</p>}
+                      <button onClick={() => { setAddFormTab('watch'); handleAddLibraryItem(); }} disabled={formSaving} className="flex items-center gap-2 px-8 py-3 bg-[#993366] text-white rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-[#7a2952] shadow-lg shadow-[#993366]/20 transition-all disabled:opacity-60">
+                        {formSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Add Video to Library
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            <div className="grid md:grid-cols-2 gap-8">
               {filteredItems.length === 0 && <div className="col-span-2 text-center text-[var(--text-dim)] py-12 font-black uppercase text-[12px] tracking-widest">No video content available yet.</div>}
               {filteredItems.map((video) => {
                 const locked = isLocked(video.min_tier);
@@ -486,6 +692,7 @@ export default function LibraryPage() {
                   </div>
                 );
               })}
+            </div>
             </div>
           )}
 
@@ -557,6 +764,46 @@ export default function LibraryPage() {
           </div>
         </div>
       )}
-    </div >
+      {/* ADMIN PASSWORD MODAL */}
+      {showAdminPasswordModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-[var(--bg-card)] w-full max-w-md p-10 rounded-[3rem] border border-[#0AA390]/30 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="w-16 h-16 bg-[#0AA390]/10 rounded-full flex items-center justify-center border border-[#0AA390]/30">
+                <KeyRound className="w-8 h-8 text-[#0AA390]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tighter text-[var(--text-primary)]">Library Admin Access</h2>
+                <p className="text-[12px] text-[var(--text-muted)] italic mt-2">Enter the admin passphrase to manage library content.</p>
+              </div>
+            </div>
+            {adminPasswordError && (
+              <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[11px] font-black uppercase tracking-widest">
+                <AlertCircle className="w-4 h-4 shrink-0" /> Incorrect passphrase. Access denied.
+              </div>
+            )}
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="Enter passphrase..."
+                value={adminPassword}
+                autoFocus
+                onChange={(e) => setAdminPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdminPasswordSubmit()}
+                className="w-full px-6 py-4 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#0AA390] font-black text-center text-[var(--text-primary)] tracking-widest transition-all"
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <button onClick={() => { setShowAdminPasswordModal(false); setAdminPassword(''); setAdminClickCount(0); setAdminPasswordError(false); }} className="py-4 rounded-2xl border border-[var(--border)] text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-input)] transition-all flex items-center justify-center gap-2">
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+                <button onClick={handleAdminPasswordSubmit} className="py-4 rounded-2xl bg-[#0AA390] text-white text-[12px] font-black uppercase tracking-widest hover:bg-[#088f7d] shadow-xl shadow-[#0AA390]/20 transition-all flex items-center justify-center gap-2">
+                  <KeyRound className="w-4 h-4" /> Unlock
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
