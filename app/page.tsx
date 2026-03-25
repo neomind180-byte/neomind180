@@ -520,9 +520,14 @@ export default function Page() {
                     </button>
                   </div>
                   {isVoucherValid && (
-                    <p className="text-[9px] font-bold text-[#0AA390] uppercase tracking-widest text-right">
-                      ✨ {voucherTier?.toUpperCase()} APPLIED — R0.00
-                    </p>
+                    <div className="text-right flex flex-col items-end">
+                      <p className="text-[9px] font-bold text-[#0AA390] uppercase tracking-widest drop-shadow-[0_0_10px_rgba(10,163,144,0.3)]">
+                        ✨ {voucherTier?.toUpperCase()} PROMO APPLIED — R0.00
+                      </p>
+                      <p className="mt-1 text-[8px] font-bold text-[var(--text-primary)] tracking-widest uppercase bg-[var(--bg-input)]/50 px-2 py-1 rounded inline-block border border-[var(--border)]">
+                        Select your plan & click 'Begin Journey' 
+                      </p>
+                    </div>
                   )}
                 </div>
                 <button

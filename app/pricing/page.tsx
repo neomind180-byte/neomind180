@@ -215,9 +215,14 @@ export default function PricingPage() {
                 </button>
               </div>
               {isVoucherValid && (
-                <p className="mt-3 text-[10px] font-bold text-[#0AA390] uppercase tracking-widest animate-pulse">
-                  ✨ {voucherTier?.toUpperCase()} PROMO APPLIED — R0.00 AT CHECKOUT
-                </p>
+                <div className="mt-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="text-[10px] font-black text-[#0AA390] uppercase tracking-widest animate-pulse drop-shadow-[0_0_10px_rgba(10,163,144,0.3)]">
+                    ✨ {voucherTier?.toUpperCase()} PROMO APPLIED — R0.00 AT CHECKOUT
+                  </p>
+                  <p className="text-[10px] font-bold text-[var(--text-primary)] tracking-widest bg-[var(--bg-input)]/50 py-1.5 px-3 rounded-full inline-block border border-[var(--border)]">
+                    Please click the corresponding plan button below to proceed.
+                  </p>
+                </div>
               )}
             </div>
           </div>

@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       valid: true,
       tier: voucher.tier,
-      message: `Voucher for ${voucher.tier.toUpperCase()} plan accepted!`
+      message: `Voucher for ${voucher.tier.toUpperCase()} plan accepted!\n\nPlease click the corresponding plan button below to proceed to checkout.`
     });
 
   } catch (err: any) {
