@@ -45,6 +45,33 @@ export async function notifyCoachOfMessage(record: any) {
   }
 }
 
+export async function notifyCoachOfUpgradeCancellation(userEmail: string, userName: string, oldPlan: string, newPlan: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180 Billing" <${FROM_EMAIL}>`,
+      to: COACH_EMAIL,
+      subject: `UPGRADE ALERT: Cancel Old Subscription for ${userName}`,
+      text: `User ${userName} (${userEmail}) just upgraded/switched from ${oldPlan} to the ${newPlan} plan.\n\nCRITICAL: Please log into PayFast and MANUALLY CANCEL their old ${oldPlan} recurring token to prevent them from being billed twice!`,
+      html: `
+        <h2 style="color: #F39904;">Plan Upgrade/Switch Detected</h2>
+        <p>A user just started a new subscription for the <strong>${newPlan}</strong> plan, but their old PayFast recurring billing must be cancelled manually so they aren't double-billed.</p>
+        <p><strong>User:</strong> ${userName}</p>
+        <p><strong>Email:</strong> ${userEmail}</p>
+        <p style="color: #d9534f; font-weight: bold;"><strong>OLD Plan to Cancel: ${oldPlan}</strong></p>
+        <p style="color: #0AA390; font-weight: bold;"><strong>NEW Plan Active: ${newPlan}</strong></p>
+        <hr>
+        <p><em>Please log into your <a href="https://www.payfast.co.za">PayFast Merchant Dashboard</a>, locate their old subscription, and cancel it immediately.</em></p>
+      `
+    });
+
+    console.log("✅ Coach upgrade cancellation notification sent:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error notifying coach of upgrade:", error);
+    return { success: false, error };
+  }
+}
+
 export async function notifyCoachOfCancellation(userEmail: string, userName: string, planName: string) {
   try {
     const info = await transporter.sendMail({

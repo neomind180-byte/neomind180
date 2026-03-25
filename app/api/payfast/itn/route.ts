@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validatePayFastSignature, getPayFastConfig } from '@/lib/payfast';
+import { notifyCoachOfUpgradeCancellation } from '@/lib/email';
 
 // Use service role for database changes in ITN
 const supabaseAdmin = createClient(
@@ -72,7 +73,25 @@ export async function POST(req: Request) {
 
     // 4. If payment completed, upgrade user profile & handle voucher
     if (paymentStatus === 'COMPLETE') {
-      // Step A: Upgrade profile
+      
+      // Step A: Detect Upgrade before changing
+      const { data: currentProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('subscription_tier, full_name, email')
+        .eq('id', userId)
+        .single();
+        
+      const oldTier = currentProfile?.subscription_tier;
+      const userEmail = currentProfile?.email || params.email_address;
+      const userName = currentProfile?.full_name || params.name_first || 'User';
+
+      if (oldTier && oldTier !== 'free' && oldTier !== planId) {
+        // Plan switched/upgraded! Alert coach to cancel old one.
+        console.log(`Detected switch from ${oldTier} to ${planId} for ${userName}`);
+        await notifyCoachOfUpgradeCancellation(userEmail, userName, oldTier, planId);
+      }
+
+      // Step B: Upgrade profile
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
@@ -85,7 +104,7 @@ export async function POST(req: Request) {
         return new Response('Database Error', { status: 500 });
       }
 
-      // Step B: Mark voucher as redeemed if used
+      // Step C: Mark voucher as redeemed if used
       if (voucherId) {
         const { error: voucherError } = await supabaseAdmin
           .from('vouchers')
@@ -98,8 +117,6 @@ export async function POST(req: Request) {
 
         if (voucherError) {
           console.error('Error marking voucher as redeemed:', voucherError);
-          // We don't fail the whole ITN if just the voucher mark fails, 
-          // as the user is already upgraded, but it's worth logging.
         } else {
           console.log(`Voucher ${voucherId} marked as redeemed for user ${userId}`);
         }
