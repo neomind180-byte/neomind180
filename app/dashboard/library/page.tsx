@@ -8,7 +8,7 @@ import {
   KeyRound, AlertCircle, X, Plus, Save, Trash2, Edit3, Link2
 } from 'lucide-react';
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '';
+
 
 // --- TYPES ---
 type LibraryItem = {
@@ -78,17 +78,27 @@ export default function LibraryPage() {
     });
   };
 
-  const handleAdminPasswordSubmit = () => {
-    if (adminPassword === ADMIN_PASSWORD) {
-      setIsAdmin(true);
-      setShowAdminPasswordModal(false);
-      setAdminPassword('');
-      setAdminPasswordError(false);
-    } else {
+  const handleAdminPasswordSubmit = async () => {
+    try {
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      if (res.ok) {
+        setIsAdmin(true);
+        setShowAdminPasswordModal(false);
+        setAdminPassword('');
+        setAdminPasswordError(false);
+      } else {
+        setAdminPasswordError(true);
+        setAdminPassword('');
+        setAdminClickCount(0);
+        setTimeout(() => setAdminPasswordError(false), 3000);
+      }
+    } catch {
       setAdminPasswordError(true);
       setAdminPassword('');
-      setAdminClickCount(0);
-      setTimeout(() => setAdminPasswordError(false), 3000);
     }
   };
 

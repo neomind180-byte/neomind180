@@ -8,7 +8,6 @@ import {
   RefreshCcw, Sun, Moon, Lock, Settings, ChevronDown, KeyRound, X
 } from 'lucide-react';
 
-const DEV_MODE_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '';
 import { supabase } from '@/lib/supabaseClient';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -63,17 +62,27 @@ export default function SettingsPage() {
   const [devPassword, setDevPassword] = useState('');
   const [devPasswordError, setDevPasswordError] = useState(false);
 
-  const handleDevPasswordSubmit = () => {
-    if (devPassword === DEV_MODE_PASSWORD) {
-      setIsDevModeUnlocked(true);
-      setShowDevPasswordModal(false);
-      setDevPassword('');
-      setDevPasswordError(false);
-    } else {
+  const handleDevPasswordSubmit = async () => {
+    try {
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: devPassword }),
+      });
+      if (res.ok) {
+        setIsDevModeUnlocked(true);
+        setShowDevPasswordModal(false);
+        setDevPassword('');
+        setDevPasswordError(false);
+      } else {
+        setDevPasswordError(true);
+        setDevPassword('');
+        setDevModeClicks(0);
+        setTimeout(() => setDevPasswordError(false), 3000);
+      }
+    } catch {
       setDevPasswordError(true);
       setDevPassword('');
-      setDevModeClicks(0);
-      setTimeout(() => setDevPasswordError(false), 3000);
     }
   };
 
