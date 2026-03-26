@@ -4,11 +4,18 @@ require('dotenv').config({ path: '.env.local' });
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Read credentials from env — never hardcode secrets in source files!
+const email = process.env.ADMIN_SETUP_EMAIL;
+const password = process.env.ADMIN_SETUP_PASSWORD;
+
+if (!email || !password) {
+  console.error('ERROR: ADMIN_SETUP_EMAIL and ADMIN_SETUP_PASSWORD must be set in .env.local');
+  process.exit(1);
+}
+
 const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
 async function setupAdmin() {
-  const email = 'coach@neomind180.com';
-  const password = 'NeoAdmin2025!';
 
   // 1. Create or get user in Auth
   console.log(`Setting up admin user: ${email}`);

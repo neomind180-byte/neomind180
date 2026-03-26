@@ -42,3 +42,22 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# Local utility / debug scripts (never commit these)
+setup_admin.js
+check_db.js
+check_lint.js
+debug-gemini.js
+test_email.js
+schema_check.js
+schema.json
+schema.sql
+output.json
+out.txt
+error.txt
+tmp_*.txt
+tmp_*.json
+clean_eslint.txt
+
+.vercel
+.env*.local
