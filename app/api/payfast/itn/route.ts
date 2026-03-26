@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validatePayFastSignature, getPayFastConfig } from '@/lib/payfast';
-import { notifyCoachOfUpgradeCancellation } from '@/lib/email';
+import { notifyCoachOfUpgradeCancellation, sendUpgradeConfirmationToUser } from '@/lib/email';
+import { PRICING_PLANS } from '@/lib/pricing-config';
 
 // Use service role for database changes in ITN
 const supabaseAdmin = createClient(
@@ -102,6 +103,12 @@ export async function POST(req: Request) {
       if (profileError) {
         console.error('Error updating user profile:', profileError);
         return new Response('Database Error', { status: 500 });
+      }
+
+      // Send thank-you confirmation email to the user
+      const plan = PRICING_PLANS.find(p => p.id === planId);
+      if (userEmail && plan) {
+        await sendUpgradeConfirmationToUser(userEmail, userName, plan.title, plan.tagline);
       }
 
       // Step C: Mark voucher as redeemed if used

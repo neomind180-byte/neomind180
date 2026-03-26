@@ -97,3 +97,72 @@ export async function notifyCoachOfCancellation(userEmail: string, userName: str
     return { success: false, error };
   }
 }
+
+export async function sendUpgradeConfirmationToUser(userEmail: string, userName: string, planName: string, planTagline: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180" <${FROM_EMAIL}>`,
+      to: userEmail,
+      subject: `Welcome to ${planName} — Your Transformation Continues 🎉`,
+      text: `Hi ${userName},\n\nThank you for upgrading to the ${planName} plan!\n\n${planTagline}\n\nYour new features are now active. Head to your dashboard to explore everything available to you.\n\n${APP_URL}/dashboard\n\nWith gratitude,\nCoach Emmeline\nNeoMind180`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #f9f9fb; border-radius: 16px;">
+          <div style="background: #00538e; padding: 32px; border-radius: 12px; text-align: center; margin-bottom: 32px;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -0.5px;">Welcome to ${planName}!</h1>
+          </div>
+          <p style="color: #333; font-size: 16px;">Hi <strong>${userName}</strong>,</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">Thank you for upgrading your NeoMind180 membership. Your commitment to your mindset journey is truly inspiring.</p>
+          <div style="background: #0AA390/10; border-left: 4px solid #0AA390; padding: 16px 20px; border-radius: 8px; margin: 24px 0;">
+            <p style="color: #0AA390; font-weight: bold; margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">${planName}</p>
+            <p style="color: #555; margin: 8px 0 0; font-size: 14px; font-style: italic;">${planTagline}</p>
+          </div>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">Your new features are now active and ready. Head to your dashboard to explore everything available to you on this plan.</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${APP_URL}/dashboard" style="background: #00538e; color: white; padding: 16px 32px; border-radius: 50px; text-decoration: none; font-weight: 900; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">Go to My Dashboard</a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+          <p style="color: #888; font-size: 13px; text-align: center;">With gratitude,<br><strong style="color: #00538e;">Coach Emmeline</strong><br>NeoMind180 Mindset Coaching</p>
+        </div>
+      `
+    });
+
+    console.log("✅ Upgrade confirmation sent to user:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error sending upgrade confirmation to user:", error);
+    return { success: false, error };
+  }
+}
+
+export async function sendDowngradeConfirmationToUser(userEmail: string, userName: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180" <${FROM_EMAIL}>`,
+      to: userEmail,
+      subject: `Your Cancellation Request Has Been Received`,
+      text: `Hi ${userName},\n\nWe've received your request to downgrade to the NeoMind180 Foundation (Free) plan.\n\nYour cancellation has been noted and will be processed by our team. You will continue to have access to your current plan features until your next billing date.\n\nYour free plan features remain active and available at any time.\n\nIf this was a mistake or you'd like to continue your journey with us, simply visit your dashboard and upgrade again.\n\n${APP_URL}/pricing\n\nWith gratitude,\nCoach Emmeline\nNeoMind180`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #f9f9fb; border-radius: 16px;">
+          <div style="background: #444; padding: 32px; border-radius: 12px; text-align: center; margin-bottom: 32px;">
+            <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900;">Cancellation Received</h1>
+          </div>
+          <p style="color: #333; font-size: 16px;">Hi <strong>${userName}</strong>,</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">We've received your request to downgrade to the <strong>Clarity Foundation (Free)</strong> plan. Our team will process your cancellation and ensure you aren't billed further.</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">Your free plan features remain active — your journey doesn't have to stop here.</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">If this was a mistake or you'd like to rejoin, we'd love to have you back.</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${APP_URL}/pricing" style="background: #00538e; color: white; padding: 16px 32px; border-radius: 50px; text-decoration: none; font-weight: 900; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">View Plans</a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+          <p style="color: #888; font-size: 13px; text-align: center;">With gratitude,<br><strong style="color: #00538e;">Coach Emmeline</strong><br>NeoMind180 Mindset Coaching</p>
+        </div>
+      `
+    });
+
+    console.log("✅ Downgrade confirmation sent to user:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error sending downgrade confirmation to user:", error);
+    return { success: false, error };
+  }
+}

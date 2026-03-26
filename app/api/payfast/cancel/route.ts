@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { notifyCoachOfCancellation } from '@/lib/email';
+import { notifyCoachOfCancellation, sendDowngradeConfirmationToUser } from '@/lib/email';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,6 +39,9 @@ export async function POST(req: Request) {
     // 2. Notify Coach/Admin to manually cancel in PayFast dashboard
     const userName = user.user_metadata?.full_name || user.email || 'Unknown User';
     await notifyCoachOfCancellation(user.email!, userName, planName || 'Unknown Plan');
+
+    // 3. Send confirmation to user
+    await sendDowngradeConfirmationToUser(user.email!, userName);
 
     // Return success
     return NextResponse.json({ success: true, message: 'Downgraded successfully. Cancellation email dispatched to admin.' });
