@@ -8,7 +8,7 @@ import {
   KeyRound, AlertCircle, X, Plus, Save, Trash2, Edit3, Link2
 } from 'lucide-react';
 
-const ADMIN_PASSWORD = 'NeoAdmin2025';
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '';
 
 // --- TYPES ---
 type LibraryItem = {

@@ -8,7 +8,7 @@ import {
   RefreshCcw, Sun, Moon, Lock, Settings, ChevronDown, KeyRound, X
 } from 'lucide-react';
 
-const DEV_MODE_PASSWORD = 'NeoAdmin2025';
+const DEV_MODE_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '';
 import { supabase } from '@/lib/supabaseClient';
 import { useTheme } from '@/components/ThemeProvider';
 
