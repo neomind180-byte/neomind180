@@ -166,3 +166,119 @@ export async function sendDowngradeConfirmationToUser(userEmail: string, userNam
     return { success: false, error };
   }
 }
+
+// ─── Trial Lifecycle Emails ───────────────────────────────────────────────────
+
+export async function sendTrialExpiryWarning(userEmail: string, userName: string, planName: string, daysLeft: number, expiresAt: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180" <${FROM_EMAIL}>`,
+      to: userEmail,
+      subject: `Your ${planName} Trial Expires in ${daysLeft} Day${daysLeft === 1 ? '' : 's'}`,
+      text: `Hi ${userName},\n\nJust a heads-up — your ${planName} trial expires on ${expiresAt}.\n\nTo keep all your features active, upgrade to a paid plan before then.\n\n${APP_URL}/pricing\n\nWith gratitude,\nCoach Emmeline\nNeoMind180`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #f9f9fb; border-radius: 16px;">
+          <div style="background: #F39904; padding: 32px; border-radius: 12px; text-align: center; margin-bottom: 32px;">
+            <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900;">⏳ Trial Ending Soon</h1>
+          </div>
+          <p style="color: #333; font-size: 16px;">Hi <strong>${userName}</strong>,</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">Your <strong>${planName}</strong> trial expires in <strong style="color: #d9534f;">${daysLeft} day${daysLeft === 1 ? '' : 's'}</strong> on <strong>${expiresAt}</strong>.</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">To keep all your features and continue your transformation journey without interruption, upgrade to a paid plan before your trial ends.</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${APP_URL}/pricing" style="background: #00538e; color: white; padding: 16px 32px; border-radius: 50px; text-decoration: none; font-weight: 900; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">Keep My Access →</a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+          <p style="color: #888; font-size: 13px; text-align: center;">With gratitude,<br><strong style="color: #00538e;">Coach Emmeline</strong><br>NeoMind180 Mindset Coaching</p>
+        </div>
+      `
+    });
+    console.log("✅ Trial expiry warning sent:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error sending trial expiry warning:", error);
+    return { success: false, error };
+  }
+}
+
+export async function sendTrialExpiredNotification(userEmail: string, userName: string, planName: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180" <${FROM_EMAIL}>`,
+      to: userEmail,
+      subject: `Your ${planName} Trial Has Ended`,
+      text: `Hi ${userName},\n\nYour ${planName} trial has ended and your account has been moved back to the free Foundation plan.\n\nYour progress and data are safe. To regain access to premium features, visit our pricing page.\n\n${APP_URL}/pricing\n\nWith gratitude,\nCoach Emmeline\nNeoMind180`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #f9f9fb; border-radius: 16px;">
+          <div style="background: #555; padding: 32px; border-radius: 12px; text-align: center; margin-bottom: 32px;">
+            <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 900;">Trial Ended</h1>
+          </div>
+          <p style="color: #333; font-size: 16px;">Hi <strong>${userName}</strong>,</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">Your <strong>${planName}</strong> trial has ended. Your account has been moved back to the free <strong>Clarity Foundation</strong> plan.</p>
+          <p style="color: #555; font-size: 15px; line-height: 1.6;">Your progress, journal entries, and data are all safe. You can upgrade at any time to regain full access.</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${APP_URL}/pricing" style="background: #00538e; color: white; padding: 16px 32px; border-radius: 50px; text-decoration: none; font-weight: 900; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">View Plans</a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+          <p style="color: #888; font-size: 13px; text-align: center;">With gratitude,<br><strong style="color: #00538e;">Coach Emmeline</strong><br>NeoMind180 Mindset Coaching</p>
+        </div>
+      `
+    });
+    console.log("✅ Trial expired notification sent:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error sending trial expired notification:", error);
+    return { success: false, error };
+  }
+}
+
+// ─── Coach Lifecycle Notifications ───────────────────────────────────────────
+
+export async function notifyCoachOfUserUpgrade(userEmail: string, userName: string, newPlan: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180 Billing" <${FROM_EMAIL}>`,
+      to: COACH_EMAIL,
+      subject: `New Paid Subscriber: ${userName} → ${newPlan}`,
+      text: `${userName} (${userEmail}) has just subscribed to the ${newPlan} plan via PayFast.\n\nNo action required — their access has been automatically upgraded.`,
+      html: `
+        <h2 style="color: #0AA390;">New Paid Subscriber 🎉</h2>
+        <p><strong>User:</strong> ${userName}</p>
+        <p><strong>Email:</strong> ${userEmail}</p>
+        <p><strong>New Plan:</strong> ${newPlan}</p>
+        <p style="color: #555;">Their access has been automatically upgraded. No action required.</p>
+        <hr>
+        <p><em><a href="${APP_URL}/dashboard/coach-admin" style="color: #00538e;">View in Coach Admin</a></em></p>
+      `
+    });
+    console.log("✅ Coach upgrade notification sent:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error notifying coach of upgrade:", error);
+    return { success: false, error };
+  }
+}
+
+export async function notifyCoachOfUserDowngrade(userEmail: string, userName: string, oldPlan: string, reason: string = 'User requested') {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180 Billing" <${FROM_EMAIL}>`,
+      to: COACH_EMAIL,
+      subject: `Subscriber Downgraded: ${userName}`,
+      text: `${userName} (${userEmail}) has been downgraded from ${oldPlan} to the free plan.\nReason: ${reason}\n\nPlease cancel their PayFast recurring billing if not already done.`,
+      html: `
+        <h2 style="color: #d9534f;">Subscriber Downgraded</h2>
+        <p><strong>User:</strong> ${userName}</p>
+        <p><strong>Email:</strong> ${userEmail}</p>
+        <p><strong>Previous Plan:</strong> ${oldPlan}</p>
+        <p><strong>Reason:</strong> ${reason}</p>
+        <hr>
+        <p><em>Please ensure their PayFast recurring billing is cancelled if it was a paid subscription. <a href="https://www.payfast.co.za">PayFast Dashboard</a></em></p>
+      `
+    });
+    console.log("✅ Coach downgrade notification sent:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error notifying coach of downgrade:", error);
+    return { success: false, error };
+  }
+}

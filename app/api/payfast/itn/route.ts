@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validatePayFastSignature, getPayFastConfig } from '@/lib/payfast';
-import { notifyCoachOfUpgradeCancellation, sendUpgradeConfirmationToUser } from '@/lib/email';
+import { notifyCoachOfUpgradeCancellation, sendUpgradeConfirmationToUser, notifyCoachOfUserUpgrade } from '@/lib/email';
 import { PRICING_PLANS } from '@/lib/pricing-config';
 
 // Use service role for database changes in ITN
@@ -92,11 +92,12 @@ export async function POST(req: Request) {
         await notifyCoachOfUpgradeCancellation(userEmail, userName, oldTier, planId);
       }
 
-      // Step B: Upgrade profile
+      // Step B: Upgrade profile and clear any trial expiry (converting to paid)
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
           subscription_tier: planId,
+          trial_expires_at: null  // Clear trial — this is now a paid subscription
         })
         .eq('id', userId);
 
@@ -104,6 +105,9 @@ export async function POST(req: Request) {
         console.error('Error updating user profile:', profileError);
         return new Response('Database Error', { status: 500 });
       }
+
+      // Notify coach of new paid subscriber
+      await notifyCoachOfUserUpgrade(userEmail, userName, planId);
 
       // Send thank-you confirmation email to the user
       const plan = PRICING_PLANS.find(p => p.id === planId);

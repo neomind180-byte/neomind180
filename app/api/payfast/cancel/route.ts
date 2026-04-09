@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { notifyCoachOfCancellation, sendDowngradeConfirmationToUser } from '@/lib/email';
+import { notifyCoachOfCancellation, sendDowngradeConfirmationToUser, notifyCoachOfUserDowngrade } from '@/lib/email';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     // 1. Mark subscription as cancelled in Supabase profile
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .update({ subscription_tier: 'free' })
+      .update({ subscription_tier: 'free', trial_expires_at: null })
       .eq('id', user.id);
 
     if (profileError) {
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     // 2. Notify Coach/Admin to manually cancel in PayFast dashboard
     const userName = user.user_metadata?.full_name || user.email || 'Unknown User';
     await notifyCoachOfCancellation(user.email!, userName, planName || 'Unknown Plan');
+    await notifyCoachOfUserDowngrade(user.email!, userName, planName || 'Unknown Plan', 'User requested via settings');
 
     // 3. Send confirmation to user
     await sendDowngradeConfirmationToUser(user.email!, userName);

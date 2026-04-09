@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generatePayFastSignature, getPayFastConfig, PayFastData } from '@/lib/payfast';
 import { PRICING_PLANS } from '@/lib/pricing-config';
-import { sendUpgradeConfirmationToUser } from '@/lib/email';
+import { sendUpgradeConfirmationToUser, notifyCoachOfUserUpgrade } from '@/lib/email';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -63,10 +63,16 @@ export async function POST(req: Request) {
           })
           .eq('id', voucher.id);
 
-        // 2. Upgrade user profile
+        // 2. Upgrade user profile + set 30-day trial expiry
+        const trialExpiresAt = new Date();
+        trialExpiresAt.setDate(trialExpiresAt.getDate() + 30);
+
         await supabaseAdmin
           .from('profiles')
-          .update({ subscription_tier: planId })
+          .update({ 
+            subscription_tier: planId,
+            trial_expires_at: trialExpiresAt.toISOString()
+          })
           .eq('id', user.id);
 
         // 3. Log a subscription record for audit trail
@@ -82,9 +88,10 @@ export async function POST(req: Request) {
             status: 'COMPLETE'
           });
 
-        // 4. Send thank-you email
+        // 4. Send thank-you email and notify coach of trial start
         const userName = user.user_metadata?.full_name || user.email || 'User';
         await sendUpgradeConfirmationToUser(user.email!, userName, plan.title, plan.tagline);
+        await notifyCoachOfUserUpgrade(user.email!, userName, `${plan.title} (Trial - 30 days)`);
 
         // 5. Return redirect (no PayFast needed)
         return NextResponse.json({ redirect: '/dashboard?payment=success' });
