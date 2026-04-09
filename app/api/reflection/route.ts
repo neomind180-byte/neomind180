@@ -238,7 +238,7 @@ ${historyContext}
     `.trim();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest", // Using stable 1.5-flash for reliability
+      model: "gemini-2.5-flash-lite", // Using the latest 2.5 Flash Lite for improved performance
       systemInstruction: fullSystemInstruction
     });
 
