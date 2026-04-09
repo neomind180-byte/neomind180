@@ -157,7 +157,10 @@ export default function Page() {
       });
 
       const data = await res.json();
-      if (data.pfData && data.url) {
+      if (data.redirect) {
+        // Voucher path: bypass PayFast, go directly to dashboard
+        router.push(data.redirect);
+      } else if (data.pfData && data.url) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = data.url;

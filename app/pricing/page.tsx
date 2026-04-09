@@ -119,7 +119,10 @@ export default function PricingPage() {
       });
 
       const data = await res.json();
-      if (data.pfData && data.url) {
+      if (data.redirect) {
+        // Voucher path: bypass PayFast, go directly to dashboard
+        router.push(data.redirect);
+      } else if (data.pfData && data.url) {
         // Use POST form for PayFast (more reliable than GET)
         const form = document.createElement('form');
         form.method = 'POST';

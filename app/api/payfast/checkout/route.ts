@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generatePayFastSignature, getPayFastConfig, PayFastData } from '@/lib/payfast';
 import { PRICING_PLANS } from '@/lib/pricing-config';
+import { sendUpgradeConfirmationToUser } from '@/lib/email';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -48,10 +49,49 @@ export async function POST(req: Request) {
         .single();
 
       if (!vError && voucher) {
-        rawAmount = '0.00';
-        customStr4 = voucher.id;
+        // --- VOUCHER PATH: Bypass PayFast entirely ---
+        // R0.00 PayFast transactions cause ITN failures and card rejection issues.
+        // Since the voucher is already validated, we upgrade the user directly.
+
+        // 1. Mark voucher as redeemed
+        await supabaseAdmin
+          .from('vouchers')
+          .update({
+            is_redeemed: true,
+            redeemed_by: user.id,
+            redeemed_at: new Date().toISOString()
+          })
+          .eq('id', voucher.id);
+
+        // 2. Upgrade user profile
+        await supabaseAdmin
+          .from('profiles')
+          .update({ subscription_tier: planId })
+          .eq('id', user.id);
+
+        // 3. Log a subscription record for audit trail
+        await supabaseAdmin
+          .from('subscriptions')
+          .insert({
+            user_id: user.id,
+            m_payment_id: `voucher_${voucher.id}`,
+            plan_id: planId,
+            billing_period: billingPeriod,
+            amount: 0,
+            currency: currency,
+            status: 'COMPLETE'
+          });
+
+        // 4. Send thank-you email
+        const userName = user.user_metadata?.full_name || user.email || 'User';
+        await sendUpgradeConfirmationToUser(user.email!, userName, plan.title, plan.tagline);
+
+        // 5. Return redirect (no PayFast needed)
+        return NextResponse.json({ redirect: '/dashboard?payment=success' });
+
       } else {
-        return NextResponse.json({ error: 'Invalid or incorrect voucher for this plan' }, { status: 400 });
+        console.error('[Checkout] Voucher lookup failed:', vError?.message, '| Code:', voucherCode, '| Plan:', planId);
+        return NextResponse.json({ error: 'Invalid or incorrect voucher for this plan', detail: vError?.message }, { status: 400 });
       }
     }
 
@@ -117,10 +157,15 @@ export async function POST(req: Request) {
       custom_str2: planId,
       custom_str3: billingPeriod,
       custom_str4: customStr4, // Carry voucher ID to ITN
-      subscription_type: '1', // Allow tokenization
-      recurring_amount: recurringAmount, // Required for type 1/2 subscriptions
-      frequency: billingPeriod === 'YEAR' ? '6' : '3', // 6 = Annually, 3 = Monthly
-      cycles: '0' // 0 = Infinite
+      // Only add subscription/tokenization fields for real paid plans
+      // R0.00 voucher transactions must be simple one-time payments
+      // PayFast cannot tokenize a R0.00 transaction and will reject the card later
+      ...(customStr4 ? {} : {
+        subscription_type: '1',
+        recurring_amount: recurringAmount,
+        frequency: billingPeriod === 'YEAR' ? '6' : '3', // 6 = Annually, 3 = Monthly
+        cycles: '0' // 0 = Infinite
+      })
     };
 
     const signature = generatePayFastSignature(pfData, config.passphrase);
