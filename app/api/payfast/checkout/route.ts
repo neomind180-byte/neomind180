@@ -82,6 +82,7 @@ export async function POST(req: Request) {
             user_id: user.id,
             m_payment_id: `voucher_${voucher.id}`,
             plan_id: planId,
+            plan_name: plan.title, // Human readable name
             billing_period: billingPeriod,
             amount: 0,
             currency: currency,
@@ -128,6 +129,7 @@ export async function POST(req: Request) {
         user_id: user.id,
         m_payment_id: mPaymentId,
         plan_id: planId,
+        plan_name: plan.title, // Human readable name
         billing_period: billingPeriod,
         amount: parseFloat(amount),
         currency: currency,
