@@ -144,8 +144,11 @@ export async function POST(req: Request) {
     
     // Fallbacks for missing user data to prevent crashes
     const userEmail = user.email || user.user_metadata?.email || '';
-    const userFirstName = user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || 'User';
-    const userLastName = user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '';
+    const fullName = user.user_metadata?.full_name || '';
+    const nameParts = fullName.trim().split(/\s+/);
+    
+    const userFirstName = user.user_metadata?.first_name || nameParts[0] || 'User';
+    const userLastName = user.user_metadata?.last_name || nameParts.slice(1).join(' ') || '';
 
     if (!userEmail) {
       console.error('[Checkout] User is missing email address:', user.id);
