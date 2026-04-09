@@ -141,9 +141,20 @@ export async function POST(req: Request) {
 
     // 2. Prepare PayFast Data
     const config = getPayFastConfig();
-    console.log(`[PayFast Checkout] Using Merchant ID: ${config.merchantId} (Sandbox: ${config.isSandbox})`);
     
-    // Dynamically detect the protocol and host from the request headers
+    // Fallbacks for missing user data to prevent crashes
+    const userEmail = user.email || user.user_metadata?.email || '';
+    const userFirstName = user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || 'User';
+    const userLastName = user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '';
+
+    if (!userEmail) {
+      console.error('[Checkout] User is missing email address:', user.id);
+      return NextResponse.json({ error: 'Email address is required for checkout' }, { status: 400 });
+    }
+
+    console.log(`[PayFast Checkout] Preparing payment for ${userEmail} (${planId})`);
+    
+    // Dynamically detect the protocol and host
     const protocol = req.headers.get('x-forwarded-proto') || 'http';
     const host = req.headers.get('host') || 'localhost:3000';
     const appUrl = `${protocol}://${host}`;
@@ -154,36 +165,38 @@ export async function POST(req: Request) {
       return_url: `${appUrl}/dashboard?payment=success`,
       cancel_url: `${appUrl}/pricing?payment=cancelled`,
       notify_url: `${appUrl}/api/payfast/itn`,
-      name_first: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '',
-      name_last: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
-      email_address: user.email!,
+      name_first: userFirstName,
+      name_last: userLastName,
+      email_address: userEmail,
       m_payment_id: mPaymentId,
       amount: amount,
       item_name: `NeoMind180: ${plan.title}`,
       custom_str1: user.id,
       custom_str2: planId,
       custom_str3: billingPeriod,
-      custom_str4: customStr4, // Carry voucher ID to ITN
-      // Only add subscription/tokenization fields for real paid plans
-      // R0.00 voucher transactions must be simple one-time payments
-      // PayFast cannot tokenize a R0.00 transaction and will reject the card later
+      custom_str4: customStr4,
       ...(customStr4 ? {} : {
         subscription_type: '1',
         recurring_amount: recurringAmount,
-        frequency: billingPeriod === 'YEAR' ? '6' : '3', // 6 = Annually, 3 = Monthly
-        cycles: '0' // 0 = Infinite
+        frequency: billingPeriod === 'YEAR' ? '6' : '3',
+        cycles: '0'
       })
     };
 
-    const signature = generatePayFastSignature(pfData, config.passphrase);
-    pfData.signature = signature;
+    try {
+      const signature = generatePayFastSignature(pfData, config.passphrase);
+      pfData.signature = signature;
+    } catch (sigErr: any) {
+      console.error('[Checkout] Signature generation failed:', sigErr);
+      return NextResponse.json({ error: 'Payment signature error' }, { status: 500 });
+    }
 
     return NextResponse.json({ 
       url: config.baseUrl,
       pfData 
     });
   } catch (err: any) {
-    console.error('Checkout error:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('[Checkout] CRITICAL ERROR:', err.message, err.stack);
+    return NextResponse.json({ error: 'Internal Server Error', message: err.message }, { status: 500 });
   }
 }
