@@ -103,6 +103,7 @@ export async function sendUpgradeConfirmationToUser(userEmail: string, userName:
     const info = await transporter.sendMail({
       from: `"NeoMind180" <${FROM_EMAIL}>`,
       to: userEmail,
+      bcc: COACH_EMAIL, // Also send a copy to the coach
       subject: `Welcome to ${planName} — Your Transformation Continues 🎉`,
       text: `Hi ${userName},\n\nThank you for upgrading to the ${planName} plan!\n\n${planTagline}\n\nYour new features are now active. Head to your dashboard to explore everything available to you.\n\n${APP_URL}/dashboard\n\nWith gratitude,\nCoach Emmeline\nNeoMind180`,
       html: `
