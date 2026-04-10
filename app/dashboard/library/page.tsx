@@ -57,7 +57,6 @@ export default function LibraryPage() {
 
   // New library item form (shared for Read & Watch)
   const [showAddForm, setShowAddForm] = useState(false);
-  const [addFormTab, setAddFormTab] = useState<'read' | 'watch'>('read');
   const [formData, setFormData] = useState({
     title: '', category: '', type: 'Article',
     read_time: '', duration: '', content_url: '',
@@ -206,7 +205,7 @@ export default function LibraryPage() {
     }
   };
 
-  const handleAddLibraryItem = async () => {
+  const handleAddLibraryItem = async (targetTab: 'read' | 'watch') => {
     if (!formData.title || !formData.content_url) {
       setFormMessage("Title and Content URL are required.");
       return;
@@ -223,8 +222,8 @@ export default function LibraryPage() {
         min_tier: formData.min_tier,
         locked: formData.locked,
       };
-      if (addFormTab === 'read') insertData.read_time = formData.read_time;
-      if (addFormTab === 'watch') {
+      if (targetTab === 'read') insertData.read_time = formData.read_time;
+      if (targetTab === 'watch') {
         insertData.duration = formData.duration;
         insertData.type = 'Video';
       }
@@ -242,12 +241,31 @@ export default function LibraryPage() {
       if (!res.ok) throw new Error(json.error || 'Failed to add item');
 
       setFormMessage("✓ Item added successfully!");
-      setFormData({ title: '', category: '', type: addFormTab === 'watch' ? 'Video' : 'Article', read_time: '', duration: '', content_url: '', thumbnail_url: '', min_tier: 'free', locked: false });
+      setFormData({ title: '', category: '', type: targetTab === 'watch' ? 'Video' : 'Article', read_time: '', duration: '', content_url: '', thumbnail_url: '', min_tier: 'free', locked: false });
       await fetchItems();
     } catch (err: any) {
       setFormMessage(`Error: ${err.message}`);
     } finally {
       setFormSaving(false);
+    }
+  };
+
+  const handleDeleteItem = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+
+    try {
+      const res = await fetch('/api/admin/library', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to delete item');
+
+      await fetchItems();
+    } catch (err: any) {
+      alert(`Error deleting item: ${err.message}`);
     }
   };
 
@@ -414,7 +432,7 @@ export default function LibraryPage() {
                     <div className="space-y-4 pt-4 border-t border-[#00538e]/20">
                       {/* Article file upload */}
                       <div className="flex items-center gap-4">
-                        <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => { setAddFormTab('read'); handleArticleUpload(e); }} className="hidden" id="article-upload" disabled={isUploadingArticle} />
+                        <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => { handleArticleUpload(e); }} className="hidden" id="article-upload" disabled={isUploadingArticle} />
                         <label htmlFor="article-upload" className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest cursor-pointer transition-all ${isUploadingArticle ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#00538e] text-white hover:bg-[#004272] shadow-lg shadow-[#00538e]/20'}`}>
                           {isUploadingArticle ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                           {isUploadingArticle ? 'Uploading...' : 'Upload PDF/Doc to Blob'}
@@ -441,7 +459,7 @@ export default function LibraryPage() {
                       </div>
 
                       {formMessage && <p className={`text-[11px] font-black uppercase tracking-widest ${formMessage.startsWith('✓') ? 'text-[#0AA390]' : 'text-red-400'}`}>{formMessage}</p>}
-                      <button onClick={() => { setAddFormTab('read'); handleAddLibraryItem(); }} disabled={formSaving} className="flex items-center gap-2 px-8 py-3 bg-[#00538e] text-white rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-[#004272] shadow-lg shadow-[#00538e]/20 transition-all disabled:opacity-60">
+                      <button onClick={() => { handleAddLibraryItem('read'); }} disabled={formSaving} className="flex items-center gap-2 px-8 py-3 bg-[#00538e] text-white rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-[#004272] shadow-lg shadow-[#00538e]/20 transition-all disabled:opacity-60">
                         {formSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save to Library
                       </button>
                     </div>
@@ -453,7 +471,16 @@ export default function LibraryPage() {
               {filteredItems.map((item) => {
                 const locked = isLocked(item.min_tier);
                 return (
-                  <div key={item.id} className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                  <div key={item.id} className="relative bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                    {isAdmin && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id, item.title); }}
+                        className="absolute top-6 right-6 p-2 text-red-500/50 hover:text-red-500 transition-all z-10"
+                        title="Delete Item"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                     <div className="flex items-center gap-6 mb-6">
                       {item.thumbnail_url ? (
                         <div className="w-16 h-16 rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm">
@@ -581,6 +608,16 @@ export default function LibraryPage() {
                         ))}
                       </div>
                     )}
+
+                    {isAdmin && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteItem(track.id, track.title); }}
+                        className="p-3 text-red-500/50 hover:text-red-500 transition-all ml-4 bg-red-500/5 rounded-xl border border-red-500/10 hover:border-red-500/30"
+                        title="Delete Track"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -642,7 +679,7 @@ export default function LibraryPage() {
                       </div>
 
                       {formMessage && <p className={`text-[11px] font-black uppercase tracking-widest ${formMessage.startsWith('✓') ? 'text-[#0AA390]' : 'text-red-400'}`}>{formMessage}</p>}
-                      <button onClick={() => { setAddFormTab('watch'); handleAddLibraryItem(); }} disabled={formSaving} className="flex items-center gap-2 px-8 py-3 bg-[#993366] text-white rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-[#7a2952] shadow-lg shadow-[#993366]/20 transition-all disabled:opacity-60">
+                      <button onClick={() => { handleAddLibraryItem('watch'); }} disabled={formSaving} className="flex items-center gap-2 px-8 py-3 bg-[#993366] text-white rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-[#7a2952] shadow-lg shadow-[#993366]/20 transition-all disabled:opacity-60">
                         {formSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Add Video to Library
                       </button>
                     </div>
@@ -655,7 +692,16 @@ export default function LibraryPage() {
               {filteredItems.map((video) => {
                 const locked = isLocked(video.min_tier);
                 return (
-                  <div key={video.id} className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                  <div key={video.id} className="relative bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                    {isAdmin && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteItem(video.id, video.title); }}
+                        className="absolute top-6 right-6 p-2 text-red-500/50 hover:text-red-500 transition-all z-10"
+                        title="Delete Video"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                     {/* Thumbnail */}
                     <div
                       onClick={() => !locked && setSelectedVideo(video)}

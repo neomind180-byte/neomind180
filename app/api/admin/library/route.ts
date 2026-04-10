@@ -31,3 +31,27 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+export async function DELETE(request: Request) {
+    try {
+        const { id } = await request.json();
+        
+        if (!id) {
+            return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+        }
+
+        const { error } = await supabaseAdmin
+            .from('library_items')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Supabase RLS Bypass Delete Error:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (err: any) {
+        console.error('Server Error:', err);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
