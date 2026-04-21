@@ -4,7 +4,7 @@ import { addToSystemeIO } from '@/lib/systemeio';
 
 export async function POST(request: Request) {
     try {
-        const { email, password, fullName, phone, tier } = await request.json();
+        const { email, password, fullName, phone, tier, wantsOnboarding } = await request.json();
 
         if (!email || !password || !fullName) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -47,20 +47,25 @@ export async function POST(request: Request) {
             });
         }
 
-        // 3. Immediately Sync to Systeme.io (Don't wait for confirmation)
-        // This ensures they hit the CRM even if they don't confirm immediately
-        console.log(`📡 Syncing to Systeme.io: ${email}`);
-        const systemeResult = await addToSystemeIO(email, fullName);
+        // 3. Conditionally Sync to Systeme.io based on user opt-in
+        let systemeSyncSuccess = false;
+        if (wantsOnboarding !== false) {
+            console.log(`📡 Syncing to Systeme.io: ${email}`);
+            const systemeResult = await addToSystemeIO(email, fullName);
+            systemeSyncSuccess = systemeResult.success;
 
-        if (!systemeResult.success) {
-            // We don't fail the whole registration if CRM sync fails, but we log it
-            console.warn('⚠️ Systeme.io sync failed during registration:', systemeResult.error);
+            if (!systemeResult.success) {
+                // We don't fail the whole registration if CRM sync fails, but we log it
+                console.warn('⚠️ Systeme.io sync failed during registration:', systemeResult.error);
+            }
+        } else {
+            console.log(`📡 User opted out of Systeme.io onboarding: ${email}`);
         }
 
         return NextResponse.json({
             success: true,
             user: authData.user,
-            systemeSync: systemeResult.success
+            systemeSync: systemeSyncSuccess
         });
 
     } catch (error: any) {

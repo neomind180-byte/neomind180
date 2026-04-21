@@ -26,6 +26,10 @@ function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Compliance States
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [wantsOnboarding, setWantsOnboarding] = useState(true);
+
   // Friendly names for the tiers
   const tierNames: Record<string, string> = {
     free: 'Clarity Foundation',
@@ -47,6 +51,12 @@ function RegisterForm() {
       return;
     }
 
+    if (!agreedToTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy");
+      setLoading(false);
+      return;
+    }
+
     try {
       const resp = await fetch('/api/auth/register', {
         method: 'POST',
@@ -59,6 +69,7 @@ function RegisterForm() {
           fullName: formData.fullName,
           phone: formData.phone,
           tier: selectedTier,
+          wantsOnboarding: wantsOnboarding,
         }),
       });
 
@@ -216,6 +227,39 @@ function RegisterForm() {
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             className="w-full px-6 py-4 bg-[var(--bg-input)] rounded-2xl outline-none border border-[var(--border)] focus:border-[#00538e] transition-all text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)]"
           />
+        </div>
+
+        {/* Consent Checkboxes */}
+        <div className="flex flex-col gap-3 pt-2">
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <div className="relative flex items-center justify-center mt-1">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="w-5 h-5 appearance-none border-2 border-[var(--border)] rounded-md checked:bg-[#00538e] checked:border-[#00538e] transition-all bg-[var(--bg-input)]"
+              />
+              {agreedToTerms && <CheckCircle2 className="w-4 h-4 text-white absolute pointer-events-none" />}
+            </div>
+            <span className="text-[13px] text-[var(--text-secondary)] font-medium leading-relaxed">
+              I agree to the <Link href="/privacy" target="_blank" className="text-[#00538e] font-bold hover:underline">Privacy Policy</Link> and <Link href="/privacy" target="_blank" className="text-[#00538e] font-bold hover:underline">Terms of Service</Link>. <span className="text-red-500">*</span>
+            </span>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <div className="relative flex items-center justify-center mt-1">
+              <input
+                type="checkbox"
+                checked={wantsOnboarding}
+                onChange={(e) => setWantsOnboarding(e.target.checked)}
+                className="w-5 h-5 appearance-none border-2 border-[var(--border)] rounded-md checked:bg-[#0AA390] checked:border-[#0AA390] transition-all bg-[var(--bg-input)]"
+              />
+              {wantsOnboarding && <CheckCircle2 className="w-4 h-4 text-white absolute pointer-events-none" />}
+            </div>
+            <span className="text-[13px] text-[var(--text-secondary)] font-medium leading-relaxed">
+              <strong>Optional:</strong> Send me the "Getting Started" onboarding email sequence (managed via Systeme.io).
+            </span>
+          </label>
         </div>
 
         {/* Submit Button */}
