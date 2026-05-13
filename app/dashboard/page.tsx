@@ -18,8 +18,11 @@ import {
   CheckCircle2,
   TrendingUp,
   Lightbulb,
-  Star
+  Star,
+  AlertTriangle,
+  CreditCard
 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 import Greeting from '@/components/Greeting';
 import { microResets } from '@/lib/micro-resets-data';
 import * as LucideIcons from 'lucide-react';
@@ -102,11 +105,63 @@ export default function DashboardPage() {
   const isBuilder = subscriptionTier === 'builder' || subscriptionTier === 'catalyst';
   const isCatalyst = subscriptionTier === 'catalyst';
 
+  // --- Pending Payment State ---
+  const [pendingPlan, setPendingPlan] = useState<{ plan_id: string; m_payment_id: string } | null>(null);
+
+  useEffect(() => {
+    async function checkPendingPayment() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('plan_id, m_payment_id')
+        .eq('user_id', user.id)
+        .eq('status', 'PENDING')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (data) setPendingPlan(data);
+    }
+    checkPendingPayment();
+  }, []);
+
+  const PLAN_NAMES: Record<string, string> = {
+    starter: 'Clarity Starter',
+    builder: 'Confidence Builder',
+    catalyst: 'Compassion Catalyst',
+  };
+
   return (
     <div className="space-y-10 pb-20">
       <div className="mb-4">
         <Greeting />
       </div>
+
+      {/* Pending Payment Banner */}
+      {pendingPlan && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-8 py-5 rounded-[2rem] bg-amber-500/10 border border-amber-400/30 shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-amber-400/20 rounded-xl flex items-center justify-center shrink-0 border border-amber-400/30">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-[13px] font-black uppercase tracking-widest text-[var(--text-primary)]">
+                Payment Incomplete — {PLAN_NAMES[pendingPlan.plan_id] || pendingPlan.plan_id}
+              </p>
+              <p className="text-[12px] text-[var(--text-muted)] font-medium mt-0.5">
+                Your plan upgrade is awaiting payment. Complete checkout to unlock your features.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/pricing"
+            className="flex items-center gap-2 shrink-0 px-6 py-3 bg-amber-500 text-white font-black uppercase text-[11px] tracking-[0.15em] rounded-xl shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition-all"
+          >
+            <CreditCard className="w-4 h-4" />
+            Complete Checkout
+          </a>
+        </div>
+      )}
 
       {/* Daily Insight Cards */}
       <section className="grid md:grid-cols-2 gap-6">
