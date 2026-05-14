@@ -171,12 +171,23 @@ export async function POST(req: Request) {
       email_address: userEmail,
       m_payment_id: mPaymentId,
       amount: amount,
-      item_name: `NeoMind180: ${plan.title}`,
+      item_name: `NeoMind180 ${plan.title}`,
       custom_str1: user.id,
       custom_str2: planId,
       custom_str3: billingPeriod,
-      custom_str4: customStr4,
+      ...(customStr4 ? { custom_str4: customStr4 } : {}),
     };
+
+    console.log('[PayFast] Fields being sent:', JSON.stringify({
+      merchant_id: config.merchantId,
+      amount,
+      item_name: `NeoMind180 ${plan.title}`,
+      email_address: userEmail,
+      m_payment_id: mPaymentId,
+      isSandbox: config.isSandbox,
+      baseUrl: config.baseUrl,
+      passphraseSet: !!config.passphrase,
+    }));
 
     try {
       const signature = generatePayFastSignature(pfData, config.passphrase);

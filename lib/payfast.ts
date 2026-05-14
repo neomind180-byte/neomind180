@@ -73,11 +73,10 @@ export function generatePayFastSignature(data: any, passphrase?: string, isItn =
     finalString += `&passphrase=${encodedPass}`;
   }
 
-  // Debug logging
-  if (process.env.NODE_ENV !== 'production' || process.env.PAYFAST_IS_SANDBOX === 'true') {
-     console.log(`[PayFast] Signature Mode: ${isItn ? 'ITN' : 'FORM'}`);
-     console.log('[PayFast] Signature String:', finalString);
-  }
+  // Always log signature string to help debug mismatches
+  console.log(`[PayFast] Signature Mode: ${isItn ? 'ITN' : 'FORM'}`);
+  console.log('[PayFast] Signature String:', finalString);
+  console.log('[PayFast] Signature Hash:', crypto.createHash('md5').update(finalString).digest('hex'));
 
   return crypto.createHash('md5').update(finalString).digest('hex');
 }
