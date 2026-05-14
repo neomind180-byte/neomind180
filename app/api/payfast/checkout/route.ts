@@ -104,10 +104,6 @@ export async function POST(req: Request) {
     }
 
     const amount = currency === 'ZAR' ? parseFloat(rawAmount).toFixed(2) : rawAmount;
-    
-    // Determine the recurring amount (normal price for future billing)
-    const normalPrice = plan.price[currency as 'ZAR' | 'USD'].amount;
-    const recurringAmount = currency === 'ZAR' ? parseFloat(normalPrice).toFixed(2) : normalPrice;
 
     // Allow 0.00 only if a voucher was applied
     if (parseFloat(amount) === 0 && !customStr4) {
@@ -180,12 +176,6 @@ export async function POST(req: Request) {
       custom_str2: planId,
       custom_str3: billingPeriod,
       custom_str4: customStr4,
-      ...(customStr4 ? {} : {
-        subscription_type: '1',
-        recurring_amount: recurringAmount,
-        frequency: billingPeriod === 'YEAR' ? '6' : '3',
-        cycles: '0'
-      })
     };
 
     try {
