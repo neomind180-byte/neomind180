@@ -11,16 +11,12 @@ type Currency = 'USD' | 'ZAR';
 
 const PRICING = {
   USD: {
-    free: { name: 'Clarity Foundation', price: 0, blurb: 'Essential tools for daily grounding.', period: '' },
-    starter: { name: 'Clarity Starter', price: 19, blurb: 'Group support and AI coaching.', period: '/yr' },
-    builder: { name: 'Confidence Builder', price: 15, blurb: 'Accelerate your transformation.', period: '/mo' },
-    catalyst: { name: 'Compassion Catalyst', price: 79, blurb: 'Profound, lasting transformation.', period: '/mo' },
+    free: { name: '7-Day Free Trial', price: 0, blurb: 'Full trial of all tools with 30 mins guided reflection per day.', period: '' },
+    starter: { name: 'Full Plan', price: 19, blurb: 'Direct async coach access with 60 mins Neo guided reflection per day.', period: '/mo' },
   },
   ZAR: {
-    free: { name: 'Clarity Foundation', price: 0, blurb: 'Essential tools for daily grounding.', period: '' },
-    starter: { name: 'Clarity Starter', price: 350, blurb: 'Group support and AI coaching.', period: '/yr' },
-    builder: { name: 'Confidence Builder', price: 250, blurb: 'Accelerate your transformation.', period: '/mo' },
-    catalyst: { name: 'Compassion Catalyst', price: 1400, blurb: 'Profound, lasting transformation.', period: '/mo' },
+    free: { name: '7-Day Free Trial', price: 0, blurb: 'Full trial of all tools with 30 mins guided reflection per day.', period: '' },
+    starter: { name: 'Full Plan', price: 350, blurb: 'Direct async coach access with 60 mins Neo guided reflection per day.', period: '/mo' },
   },
 } as const;
 
@@ -319,8 +315,6 @@ export default function Page() {
                 <span className="text-[var(--text-primary)]">Reflections with Neo</span>
                 <span className="text-[var(--text-dim)]">→</span>
                 <span className="text-[var(--text-primary)]">Ask the Coach</span>
-                <span className="text-[var(--text-dim)]">→</span>
-                <span className="text-[var(--text-primary)]">Deep Dive Circles</span>
               </div>
             </div>
 
@@ -336,7 +330,7 @@ export default function Page() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-10 left-10 right-10">
                 <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Ready to transform?</h2>
-                <p className="mt-1 text-xs text-white/70 font-medium">Start free on the Basic plan today.</p>
+                <p className="mt-1 text-xs text-white/70 font-medium">Start your 7-day free trial today.</p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <a href="/register" className="ctaBtn !py-3 !px-8">Begin</a>
                   <button onClick={openPricing} className="secondaryBtn !bg-white/10 !backdrop-blur-md !border-white/20 !text-white !py-3 !px-8">Pricing</button>
@@ -400,12 +394,11 @@ export default function Page() {
                 <div className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] mb-3">What you get</div>
                 <ul className="grid gap-3">
                   {[
-                    'Deep-dive AI sessions',
+                    'Guided AI reflections (Gemini 3 Flash)',
                     'Daily mindset check-ins',
                     'Guided micro-resets',
-                    'Personal Chat with Coach Emmeline — A Human Connection',
-                    'Group coaching circles',
-                    'Self-Help Library',
+                    'Direct Ask-the-Coach guidance — A Human Connection',
+                    'Complete Self-Help Library & Worksheets',
                   ].map((t) => (
                     <li key={t} className="flex gap-3 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
                       <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[#0AA390]" />
@@ -541,13 +534,21 @@ export default function Page() {
                 </button>
             </div>
           </div>
-
-            <div className="mt-12 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
-              {(['free', 'starter', 'builder', 'catalyst'] as const).map((tier) => {
+ 
+            <div className="mt-12 grid gap-8 md:grid-cols-2">
+              {(['free', 'starter'] as const).map((tier) => {
                 const t = PRICING[currency][tier];
                 const isPicked = selectedTier === tier;
-                const featured = tier === 'builder';
+                const featured = tier === 'starter';
                 const starterT = tier === 'starter';
+
+                const displayPrice = (tier === 'starter' && plan === 'yearly')
+                  ? (currency === 'ZAR' ? 3500 : 190)
+                  : t.price;
+                const displayPeriod = (tier === 'starter' && plan === 'yearly')
+                  ? '/yr'
+                  : t.period;
+
                 return (
                   <button
                     key={tier}
@@ -564,7 +565,7 @@ export default function Page() {
                         <div className="flex flex-wrap gap-2">
                           {featured && (
                             <span className="rounded-full bg-[#0AA390] px-3 py-1.5 text-[9px] font-black uppercase text-white tracking-widest shadow-lg shadow-[#0AA390]/20">
-                              Most Popular
+                              Full Access
                             </span>
                           )}
                           {starterT && (
@@ -575,10 +576,10 @@ export default function Page() {
                         </div>
                       </div>
                       <div className="text-3xl font-black text-[var(--text-primary)] tracking-tighter">
-                        {formatPrice(t.price, currency)}
-                        {t.price !== 0 && (
-                          <span className="ml-2 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                            {t.period}
+                        {formatPrice(displayPrice, currency)}
+                        {displayPrice !== 0 && (
+                           <span className="ml-2 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                            {displayPeriod}
                           </span>
                         )}
                       </div>
@@ -586,12 +587,8 @@ export default function Page() {
 
                       <ul className="mt-8 grid gap-4 text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
                         {(tier === 'free'
-                          ? ['Daily check-ins', 'Micro-resets', 'Socratic Journal', 'AI Sessions (10/day)']
-                          : tier === 'starter'
-                            ? ['Group Circles', 'Async Coach Chat', 'AI Sessions (30/day)', 'Annual Plan']
-                            : tier === 'builder'
-                            ? ['Deep Journey AI Sessions', 'Advanced Insights', 'Exclusive Events', 'Priority Support']
-                            : ['2 × 1:1 COACHING SESSIONS PER MONTH', 'Personalized Roadmap', 'Direct Coach Access', 'Deep Journey AI Sessions']
+                          ? ['7-Day Full Trial', '30 Mins Reflection / Day', 'Reflective journaling tools', 'Mindset check-ins & resets', 'Full Self-Help Library']
+                          : ['60 Mins Reflection / Day', 'Direct Ask-the-Coach Async', 'Lifetime shift logs & history', 'Mindset check-ins & resets', 'Advanced insights & analytics']
                         ).map((x) => (
                           <li key={x} className="flex gap-3">
                             <span className={cn('mt-1 h-2 w-2 flex-shrink-0 rounded-full', featured ? 'bg-[#0AA390]' : 'bg-[#00538e]')} />

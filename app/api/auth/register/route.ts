@@ -39,11 +39,16 @@ export async function POST(request: Request) {
 
         // 2b. Manually ensure profile is updated (fallback in case trigger is slow or limited)
         if (authData.user) {
+            const trialExpiresAt = (tier || 'free') === 'free'
+                ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                : null;
+
             await supabase.from('profiles').upsert({
                 id: authData.user.id,
                 full_name: fullName,
                 phone: phone || '',
-                subscription_tier: tier || 'free'
+                subscription_tier: tier || 'free',
+                trial_expires_at: trialExpiresAt
             });
         }
 

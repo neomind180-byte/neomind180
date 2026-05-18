@@ -5,34 +5,31 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/components/AuthProvider';
 import {
-  LayoutDashboard, BookOpen, MessageSquare, Zap, Users, Star, Settings, LogOut, Heart, History, Lock, User, Inbox, TrendingUp
+  LayoutDashboard, BookOpen, MessageSquare, Zap, Users, Star, Settings, LogOut, Heart, History, Lock, User, Inbox, TrendingUp, HelpCircle
 } from "lucide-react";
 
 // define tier levels for easy comparison
 const TIER_LEVELS = {
   'free': 0,
   'starter': 1,
-  'builder': 2,
-  'catalyst': 3
+  'builder': 1,
+  'catalyst': 1,
+  'tier2': 1,
+  'tier3': 1
 };
 
 const navItems = [
   // Free Features (Level 0)
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard", minTier: 0, color: "#00538e" },
-  { icon: Heart, label: "BE-ENOUGH SHIFT", href: "/dashboard/be-enough", minTier: 0, color: "#993366" },
-  { icon: BookOpen, label: "Self-Help Library", href: "/dashboard/library", minTier: 0, color: "#F39904" },
   { icon: Zap, label: "Reflection with Neo", href: "/dashboard/reflection", minTier: 0, color: "#8E44AD" },
+  { icon: HelpCircle, label: "How-To (FAQ)", href: "/dashboard/how-to", minTier: 0, color: "#0AA390" },
+  { icon: BookOpen, label: "Self-Help Library", href: "/dashboard/library", minTier: 0, color: "#F39904" },
 
-  // Tier 2 Features (Level 1)
+  // Paid Features (Level 1)
   { icon: MessageSquare, label: "Ask-the-Coach", href: "/dashboard/coach", minTier: 1, color: "#4A90E2" },
-  { icon: Users, label: "Deep-Dive Circles", href: "/dashboard/circles", minTier: 1, color: "#27AE60" },
-
-  // Tier 3 Features (Level 2+)
-  { icon: Star, label: "1:1 Sessions", href: "/dashboard/sessions", minTier: 3, color: "#E67E22" },
-
-  // Secondary/Analytics (Level 0)
-  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 2, color: "#0AA390" },
+  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 1, color: "#0AA390" },
   { icon: History, label: "Shift History", href: "/dashboard/history", minTier: 0, color: "#0AA390" },
 ];
 
@@ -43,26 +40,10 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const [userTier, setUserTier] = useState<string>('free'); // Default to free while loading
-  const [isCoach, setIsCoach] = useState(false);
+  const { user, profile } = useAuth();
   const COACH_ID = 'c1cadec4-45d9-4e98-aac6-b3b8112356e9';
-
-  useEffect(() => {
-    async function getUserData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setIsCoach(user.id === COACH_ID);
-        const { data } = await supabase
-          .from('profiles')
-          .select('subscription_tier')
-          .eq('id', user.id)
-          .single();
-
-        if (data) setUserTier(data.subscription_tier);
-      }
-    }
-    getUserData();
-  }, []);
+  const isCoach = user?.id === COACH_ID;
+  const userTier = profile?.subscription_tier || 'free';
 
   // Close sidebar on navigation (mobile only)
   useEffect(() => {

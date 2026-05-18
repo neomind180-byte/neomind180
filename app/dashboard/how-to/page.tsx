@@ -44,11 +44,11 @@ export default function HowToPage() {
             <div>
               <h2 className="text-xl font-black uppercase tracking-tighter text-[var(--text-primary)] mb-2">2. Reflections with Neo</h2>
               <p className="text-[14px] leading-relaxed text-[var(--text-secondary)] font-medium mb-4">
-                Neo is your secure, private AI Socratic guide. Neo does not give advice; instead, it asks the exact right questions to help you uncover your own blind spots.
+                Neo is your secure, private AI reflection guide. Neo does not give advice; instead, it asks the exact right questions to help you uncover your own blind spots.
               </p>
               <div className="bg-[var(--bg-input)] rounded-xl p-4 border border-[var(--border)]">
                 <strong className="text-[12px] uppercase tracking-widest text-[var(--text-primary)] block mb-1">How to use it:</strong>
-                <span className="text-[13px] text-[var(--text-muted)]">Navigate to "Neo Chat" (the sparkle icon in the sidebar). Select your preferred Coach Mode in Settings (Gentle Observer, Insightful Mirror, or Grounded Guide). Start typing whatever is on your mind.</span>
+                <span className="text-[13px] text-[var(--text-muted)]">Navigate to "Neo Chat" (the message icon in the sidebar). Simply start typing whatever is on your mind—Neo will guide you through powerful reflective questioning to help you find clarity.</span>
               </div>
             </div>
           </div>
@@ -80,13 +80,13 @@ export default function HowToPage() {
               <Users className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tighter text-[var(--text-primary)] mb-2">4. Deep Dive Circles & Coach Inbox</h2>
+              <h2 className="text-xl font-black uppercase tracking-tighter text-[var(--text-primary)] mb-2">4. Ask the Coach</h2>
               <p className="text-[14px] leading-relaxed text-[var(--text-secondary)] font-medium mb-4">
-                Join intimate group coaching sessions or message Coach Emmeline directly for personalized guidance.
+                Directly message Coach Emmeline for personalized, human guidance to support your transformation.
               </p>
               <div className="bg-[var(--bg-input)] rounded-xl p-4 border border-[var(--border)] text-[13px] text-[var(--text-muted)]">
                 <strong className="text-[12px] uppercase tracking-widest text-[var(--text-primary)] block mb-1">How to use it:</strong>
-                Reserve your spot in upcoming <strong>Circles</strong> from the sidebar. For 1-on-1 text support, use the <strong>Ask Coach</strong> tab. Note: Availability depends on your subscription tier.
+                Use the <strong>Ask Coach</strong> tab in the sidebar to send structured messages and receive custom perspectives directly from Coach Emmeline. Note: Available on the Full Plan.
               </div>
             </div>
           </div>

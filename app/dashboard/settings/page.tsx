@@ -11,27 +11,6 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 import { useTheme } from '@/components/ThemeProvider';
 
-const coachModes = [
-  {
-    id: 'Gentle Observer',
-    name: 'The Gentle Observer',
-    desc: 'Soft, validating, and slow-paced.',
-    tier: 'Clarity Foundation'
-  },
-  {
-    id: 'Insightful Mirror',
-    name: 'The Insightful Mirror',
-    desc: 'Reflective; helps see patterns.',
-    tier: 'Clarity Starter'
-  },
-  {
-    id: 'Grounded Guide',
-    name: 'The Grounded Guide',
-    desc: 'Practical, concrete, and action-oriented.',
-    tier: 'Clarity Starter'
-  }
-];
-
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
@@ -42,8 +21,7 @@ export default function SettingsPage() {
     full_name: '',
     email: '',
     phone: '',
-    subscription_tier: 'free',
-    preferred_coach_mode: 'Gentle Observer'
+    subscription_tier: 'free'
   });
 
   // Chat History Management
@@ -101,8 +79,7 @@ export default function SettingsPage() {
             full_name: data.full_name || '',
             email: user.email || '',
             phone: data.phone || '',
-            subscription_tier: data.subscription_tier || 'free',
-            preferred_coach_mode: data.preferred_coach_mode || 'Gentle Observer'
+            subscription_tier: data.subscription_tier || 'free'
           });
         }
       }
@@ -275,7 +252,7 @@ export default function SettingsPage() {
 
   if (loading) return <div className="p-10 text-center text-[var(--text-dim)] font-black uppercase tracking-widest text-[12px] animate-pulse">Loading Settings...</div>;
 
-  const userPlan = profile.subscription_tier === 'free' ? 'Clarity Foundation' : profile.subscription_tier === 'starter' ? 'Clarity Starter' : profile.subscription_tier === 'builder' ? 'Confidence Builder' : 'Compassion Catalyst';
+  const userPlan = profile.subscription_tier === 'free' ? '7-Day Free Trial' : 'Full Plan';
 
   return (
     <div className="max-w-3xl mx-auto p-6 md:p-12 space-y-12 animate-in fade-in duration-700">
@@ -398,52 +375,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* --- COACH MODE SECTION --- */}
-      <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-10">
-        <div className="flex items-center gap-3">
-          <ShieldAlert className="w-6 h-6 text-[#0AA390]" />
-          <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Coach Preferences</h2>
-        </div>
-
-        <div className="space-y-4">
-          {coachModes.map((mode) => {
-            const isLocked = mode.tier !== 'Clarity Foundation' && userPlan === 'Clarity Foundation';
-            const isActive = profile.preferred_coach_mode === mode.id;
-
-            return (
-              <div
-                key={mode.id}
-                className={`p-8 rounded-3xl border transition-all relative overflow-visible ${isLocked ? 'bg-[var(--bg-input)]/50 border-[var(--border)] opacity-60 cursor-not-allowed' :
-                  isActive ? 'border-[#00538e] bg-[var(--bg-input)] shadow-xl' : 'border-[var(--border)] bg-[var(--bg-input)]/30 hover:border-[var(--text-dim)] cursor-pointer'
-                  }`}
-                onClick={() => !isLocked && handleSave({ preferred_coach_mode: mode.id })}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className={`font-black uppercase text-sm tracking-tight mb-1 ${isActive ? 'text-[#0AA390]' : 'text-[var(--text-primary)]'}`}>{mode.name}</h3>
-                    <p className="text-[13px] text-[var(--text-muted)] italic">"{mode.desc}"</p>
-                  </div>
-                  {isLocked ? (
-                    <div className="group relative">
-                      <Lock className="w-5 h-5 text-[var(--text-dim)]" />
-                      <div className="absolute right-0 bottom-full mb-4 hidden group-hover:block w-72 p-6 bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-primary)] text-[12px] rounded-2xl shadow-2xl z-50">
-                        <p className="mb-4 font-black uppercase tracking-widest">Expansion Required</p>
-                        <p className="mb-6 text-[var(--text-muted)] italic">Upgrade to {mode.tier} to unlock deeper guidance.</p>
-                        <Link href="/pricing" className="block w-full py-3 bg-[#00538e] text-white text-center rounded-xl font-bold uppercase tracking-widest hover:shadow-lg transition-all text-[12px]">Explore Plans</Link>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isActive ? 'border-[#0AA390] bg-[#0AA390]/10' : 'border-[var(--border)]'}`}>
-                      {isActive && <div className="w-2 h-2 bg-[#0AA390] rounded-full shadow-[0_0_10px_#0AA390]" />}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       {/* --- SUBSCRIPTION & DEV SECTION --- */}
       <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-8">
         <div className="flex items-center justify-between">
@@ -484,8 +415,8 @@ export default function SettingsPage() {
               <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)]">Developer Mode (Unlocked)</h3>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {['free', 'starter', 'builder', 'catalyst'].map((tier) => (
+            <div className="grid grid-cols-2 gap-4">
+              {['free', 'starter'].map((tier) => (
                 <button
                   key={tier}
                   onClick={() => handleSave({ subscription_tier: tier })}
@@ -494,7 +425,7 @@ export default function SettingsPage() {
                     : 'border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-dim)] hover:border-[var(--text-dim)] hover:text-[var(--text-muted)]'
                     }`}
                 >
-                  {tier === 'free' ? 'Foundation' : tier === 'starter' ? 'Starter' : tier === 'builder' ? 'Builder' : 'Catalyst'}
+                  {tier === 'free' ? 'Free Trial' : 'Full Plan'}
                 </button>
               ))}
             </div>
@@ -623,23 +554,21 @@ export default function SettingsPage() {
             <div className="text-center space-y-4">
               <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Downgrade to Free Plan?</h2>
               <div className="text-sm text-[var(--text-secondary)] text-left space-y-4 leading-relaxed font-medium bg-[var(--bg-input)]/30 p-6 rounded-2xl italic border border-[var(--border)]">
-                <p>You're about to downgrade from <span className="text-[#00538e] font-black">{profile.subscription_tier === 'tier3' ? 'Deep Coach' : 'Coaching Access'}</span> to the free Basic Self-Help plan.</p>
+                <p>You're about to cancel your subscription to the <span className="text-[#00538e] font-black">Full Plan</span>.</p>
                 <div className="space-y-2">
                   <p className="font-bold text-red-400 not-italic uppercase tracking-widest text-[10px]">What you'll lose:</p>
                   <ul className="list-disc list-inside text-[12px] space-y-1 ml-2">
-                    <li>Access to Ask-the-Coach (async text coaching)</li>
-                    <li>Weekly AI Reflection sessions</li>
-                    <li>Deep-Dive Circles (live group sessions)</li>
-                    {profile.subscription_tier === 'tier3' && <li>1:1 coaching sessions</li>}
-                    <li>Advanced insights and trends</li>
+                    <li>Extended daily Neo AI reflection time (60 mins down to 30 mins)</li>
+                    <li>Access to Ask-the-Coach (direct async messaging with Coach Emmeline)</li>
+                    <li>Advanced progress insights and analytics</li>
                   </ul>
                 </div>
                 <div className="space-y-2">
                   <p className="font-bold text-[#0AA390] not-italic uppercase tracking-widest text-[10px]">What you'll keep:</p>
                   <ul className="list-disc list-inside text-[12px] space-y-1 ml-2">
-                    <li>All self-help content (journaling, mindfulness tools)</li>
-                    <li>Basic daily check-ins and tracking</li>
-                    <li>Your historical data and progress</li>
+                    <li>Daily check-in tool and self-observation tracker</li>
+                    <li>Full access to self-help library and worksheets</li>
+                    <li>Your historical data and mindset shift records</li>
                   </ul>
                 </div>
                 <p className="mt-4 text-[11px]">Your current billing cycle will continue until the end of your current period, then you'll be moved to the free plan.</p>

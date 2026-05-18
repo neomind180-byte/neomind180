@@ -20,82 +20,42 @@ export interface PricingPlan {
 export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'free',
-    title: 'Clarity Foundation',
-    tagline: 'Essential tools for daily grounding and self-observation.',
+    title: '7-Day Free Trial',
+    tagline: 'Experience daily grounding, self-observation, and guided AI reflections.',
     price: {
       USD: { amount: '0', period: '' },
       ZAR: { amount: '0', period: '' },
     },
     features: [
       'Daily Check-In Tool',
-      'Self-Help Library',
-      'Basic Progress Tracking',
-      'AI Reflection (10 sessions/day)'
+      'Self-Help Library & Guides',
+      'Basic Progress Tracking & Shifts',
+      'Neo AI Reflection (30 minutes/day)'
     ],
-    cta: 'Start Your Journey',
-    aiLimit: 10,
+    cta: 'Start Your 7-Day Trial',
+    aiLimit: 30, // 30 minutes daily limit
   },
   {
-    id: 'starter',
-    title: 'Clarity Starter',
-    badge: 'BEST VALUE',
+    id: 'starter', // Keeping starter ID to map cleanly to DB subscription tier constraints
+    title: 'Full Plan',
+    badge: 'MOST POWERFUL',
     badgeType: 'primary',
-    tagline: 'Lock in your commitment to transformation at the best rate.',
+    tagline: 'Deepen your transformation with extended reflection time and direct coach guidance.',
     price: {
-      USD: { amount: '19', period: 'YEAR' },
-      ZAR: { amount: '350.00', period: 'YEAR' },
+      USD: { amount: '19', period: 'MONTH' },
+      ZAR: { amount: '350.00', period: 'MONTH' },
     },
-    highlight: '💡 Annual commitment only - just $1.58/month when paid yearly',
+    highlight: '💡 Complete coaching system: Advanced Insights + Async Coach Chat',
     features: [
-      'Everything in Clarity Foundation',
-      'Group Coaching Events (Circles)',
-      'Async Coach Chat with Emmeline',
-      'AI Reflection (30 sessions/day)',
-      'Priority community support'
-    ],
-    cta: 'Commit to Clarity',
-    note: 'Billed annually. Cancel anytime with 30-day satisfaction guarantee.',
-    aiLimit: 30,
-  },
-  {
-    id: 'builder',
-    title: 'Confidence Builder',
-    badge: 'MOST POPULAR',
-    badgeType: 'accent',
-    tagline: 'Accelerate your transformation with community and deep journey AI sessions.',
-    price: {
-      USD: { amount: '15', period: 'MONTH' },
-      ZAR: { amount: '250.00', period: 'MONTH' },
-    },
-    features: [
-      'Everything in Clarity Starter',
-      'Deep Journey AI Sessions (High Intensity)',
-      'Advanced progress insights',
+      'Everything in the Free Trial',
+      'Neo AI Reflection (60 minutes/day)',
+      'Ask-the-Coach: Direct Async Chat with Coach Emmeline',
+      'Advanced Progress Insights & Shift Analytics',
       'Priority coach response time',
-      'Exclusive community events'
+      'Lifetime access to self-help worksheets & library updates'
     ],
-    cta: 'Build Confidence',
-    note: 'Billed monthly. Upgrade or cancel anytime.',
-    aiLimit: 'unlimited',
-  },
-  {
-    id: 'catalyst',
-    title: 'Compassion Catalyst',
-    tagline: 'High-touch 1:1 guidance for profound, lasting transformation.',
-    price: {
-      USD: { amount: '79', period: 'MONTH' },
-      ZAR: { amount: '1400.00', period: 'MONTH' },
-    },
-    features: [
-      'Everything in Confidence Builder',
-      '2 × 1:1 Coaching Sessions per Month',
-      'Priority Coach Support',
-      'Priority Deep Journey AI Sessions',
-      'Personalized transformation roadmap',
-      'Direct access to Coach Emmeline'
-    ],
-    cta: 'Transform with Compassion',
-    note: 'Premium tier. Limited spots available for personalized attention.',
-    aiLimit: 'unlimited',
-  },
+    cta: 'Unlock the Full Plan',
+    note: 'Billed monthly. Cancel anytime.',
+    aiLimit: 60, // 60 minutes daily limit
+  }
 ];

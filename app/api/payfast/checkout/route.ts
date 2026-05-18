@@ -32,6 +32,9 @@ export async function POST(req: Request) {
 
     // Determine amount based on currency and plan
     let rawAmount = plan.price[currency as 'ZAR' | 'USD'].amount;
+    if (planId === 'starter' && billingPeriod === 'YEAR') {
+      rawAmount = currency === 'ZAR' ? '3500.00' : '190.00';
+    }
     let customStr4 = ''; // For voucher ID
 
     if (voucherCode) {

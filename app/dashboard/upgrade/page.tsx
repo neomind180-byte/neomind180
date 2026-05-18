@@ -16,7 +16,7 @@ export default function FeatureLockedPage() {
       </h1>
 
       <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-12 text-base font-medium italic">
-        This tool requires a higher coaching tier. Upgrade to access direct support, AI reflections, or 1:1 sessions.
+        This tool is exclusive to the Full Plan. Subscribe to unlock direct coach support, advanced insights, and extended AI reflection time.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">

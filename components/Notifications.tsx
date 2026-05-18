@@ -48,17 +48,6 @@ export default function Notifications() {
                 .order("created_at", { ascending: false })
                 .limit(3);
 
-            // 3. Check for circle invites (paid users only)
-            let circleInvites: any[] = [];
-            if (isPaid) {
-                const { data: invites } = await supabase
-                    .from("circle_invites")
-                    .select("id, title, session_date, created_at")
-                    .order("created_at", { ascending: false })
-                    .limit(3);
-                circleInvites = invites || [];
-            }
-
             const allNotifications = [
                 ...(messages || []).map((m) => ({
                     id: m.id,
@@ -75,14 +64,6 @@ export default function Notifications() {
                     description: `New ${l.type}: ${l.title}`,
                     href: "/dashboard/library",
                     timestamp: l.created_at,
-                })),
-                ...circleInvites.map((c) => ({
-                    id: c.id,
-                    type: "circle",
-                    title: "Circle Invite!",
-                    description: c.title + (c.session_date ? ` — ${new Date(c.session_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : ''),
-                    href: "/dashboard/circles",
-                    timestamp: c.created_at,
                 })),
             ].sort(
                 (a, b) =>

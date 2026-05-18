@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider } from "@/components/AuthProvider";
 import { CookieBanner } from "@/components/CookieBanner";
 import "./globals.css";
 
@@ -38,10 +39,12 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} antialiased`}
       >
-        <ThemeProvider>
-          {children}
-          <CookieBanner />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            {children}
+            <CookieBanner />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

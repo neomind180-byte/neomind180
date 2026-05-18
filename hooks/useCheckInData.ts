@@ -1,29 +1,29 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/components/AuthProvider';
 
 export function useCheckInData() {
+  const { user, profile } = useAuth();
   const [weeklyStreak, setWeeklyStreak] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [recentShifts, setRecentShifts] = useState<any[]>([]);
+  const [checkedInToday, setCheckedInToday] = useState(false);
+  const [todayCheckIn, setTodayCheckIn] = useState<any>(null);
 
   const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
       }
+      setLoading(true);
 
       // Fetch Profile for Tier
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_tier')
-        .eq('id', user.id)
-        .single();
-      if (profile) setSubscriptionTier(profile.subscription_tier);
+      if (profile) {
+        setSubscriptionTier(profile.subscription_tier);
+      }
 
       // Fetch last 14 days to be safe
       const { data, error } = await supabase
@@ -39,6 +39,13 @@ export function useCheckInData() {
         // Calculate streak for current week (Mon-Sun)
         const streak = [0, 0, 0, 0, 0, 0, 0];
         const now = new Date();
+        const todayStr = now.toDateString();
+
+        const foundToday = data.find(ci => new Date(ci.created_at).toDateString() === todayStr);
+        if (foundToday) {
+          setCheckedInToday(true);
+          setTodayCheckIn(foundToday);
+        }
 
         data.forEach(checkIn => {
           const date = new Date(checkIn.created_at);
@@ -51,7 +58,7 @@ export function useCheckInData() {
       setLoading(false);
     }
     fetchData();
-  }, []);
+  }, [user, profile]);
 
-  return { weeklyStreak, recentShifts, subscriptionTier, loading };
+  return { weeklyStreak, recentShifts, subscriptionTier, checkedInToday, todayCheckIn, loading };
 }

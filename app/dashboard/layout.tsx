@@ -1,13 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Link from 'next/link';
 import { Settings, LogOut, Menu, X } from 'lucide-react';
 import Notifications from '@/components/Notifications';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/components/AuthProvider';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -22,13 +22,28 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, loading, signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
-  };
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--bg-primary)]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#0AA390]/30 border-t-[#0AA390] rounded-full animate-spin"></div>
+          <span className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)] animate-pulse">Aligning Sanctuary...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] overflow-hidden font-sans relative">
@@ -78,7 +93,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="h-8 w-[1px] bg-[var(--header-accent)]/20 hidden md:block" />
 
               <button
-                onClick={handleSignOut}
+                onClick={signOut}
                 className="hidden md:flex items-center gap-2 px-4 py-2 text-[var(--header-accent)]/80 hover:text-[var(--header-accent)] font-black uppercase text-[12px] tracking-widest transition-colors group"
               >
                 <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />

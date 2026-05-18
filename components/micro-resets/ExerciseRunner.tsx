@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Play, RotateCcw, Home, ChevronRight, ChevronLeft, Volume2 } from 'lucide-react';
 import { MicroReset } from '@/lib/micro-resets-data';
+import { supabase } from '@/lib/supabaseClient';
 
 interface ExerciseRunnerProps {
     exercise: MicroReset;
@@ -34,6 +35,49 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
             };
         }
     }, [currentStep, isPlaying, isCompleted, isMuted, exercise.stepAudio]);
+
+    useEffect(() => {
+        if (isCompleted) {
+            async function updateMicroResetsInProfile() {
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) return;
+
+                    // Fetch current count to increment correctly
+                    const { data: profile, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('micro_resets_today')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (profileError) {
+                        console.error('Error fetching profile for micro resets:', profileError);
+                        return;
+                    }
+
+                    const currentCount = profile?.micro_resets_today || 0;
+
+                    // Increment in supabase profiles table
+                    const { error: updateError } = await supabase
+                        .from('profiles')
+                        .update({ 
+                            micro_resets_today: currentCount + 1,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', user.id);
+
+                    if (updateError) {
+                        console.error('Error updating micro_resets_today in profile:', updateError);
+                    } else {
+                        console.log('Successfully updated micro resets count in profile table.');
+                    }
+                } catch (err) {
+                    console.error('Failed to sync micro resets count to profile:', err);
+                }
+            }
+            updateMicroResetsInProfile();
+        }
+    }, [isCompleted]);
 
     const startExercise = () => {
         setIsPlaying(true);

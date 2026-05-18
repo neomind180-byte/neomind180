@@ -9,40 +9,34 @@ import { supabase } from '@/lib/supabaseClient';
 
 const FAQ_ITEMS = [
   {
-    q: "What's the difference between AI reflections in each tier?",
-    a: "All tiers include AI-powered coaching reflections that remember your journey. Free users get 10 sessions/day to experience the value, Clarity Starter gets 30/day for consistent growth, and Confidence Builder+ get intensive Deep Journey AI Sessions. The AI learns from your conversations and provides increasingly personalized guidance."
+    q: "How does the 7-Day Free Trial work?",
+    a: "You get full, unrestricted access to daily check-ins, self-help guides, progress tracking, and 30 minutes of guided AI reflection with Neo every single day. No credit card is required to start."
+  },
+  {
+    q: "What do I get in the Full Plan?",
+    a: "The Full Plan unlocks the complete transformation toolkit. This includes 60 minutes of daily Neo AI reflections, direct Ask-the-Coach async messaging with Coach Emmeline, advanced progress insights, and lifetime self-help library updates."
   },
   {
     q: "Does the AI remember my previous conversations?",
-    a: "Yes! Your AI coach maintains context from all your previous reflections, tracking your growth patterns, recurring themes, and transformation milestones. This creates a truly personalized coaching experience that deepens over time."
+    a: "Yes! Neo maintains context from all your previous reflections, recognizing recurring patterns, mindset growth, and life shifts. This ensures a personalized, continuous coaching relation over time."
   },
   {
-    q: "Why is Clarity Starter annual-only?",
-    a: "Annual commitment helps you stay accountable to your transformation journey while giving you the best value - just $1.58/month. Plus, you can cancel anytime with our 30-day guarantee."
-  },
-  {
-    q: "Can I upgrade or downgrade anytime?",
-    a: "Absolutely! You can upgrade immediately to access more features. Downgrades take effect at your next billing cycle, and we'll prorate any differences."
-  },
-  {
-    q: "What makes NeoMind180 different from ChatGPT or other AI tools?",
-    a: "While general AI tools are powerful, NeoMind180 provides structured coaching frameworks, personalized progress tracking with memory of your entire journey, community support, and integration with mindfulness tools - all designed specifically for mindset transformation. It's the difference between a blank notebook and a guided journal with a coach who knows your story."
+    q: "Can I cancel my subscription anytime?",
+    a: "Absolutely. The Full Plan is billed monthly with no lock-ins. You can cancel, upgrade, or downgrade directly from your account settings at any time."
   },
   {
     q: "What payment methods do you accept?",
-    a: "We use PayFast, South Africa's leading payment gateway. You can pay with credit cards, debit cards, instant EFT, or other local payment methods. All transactions are secure and encrypted."
+    a: "We use PayFast, South Africa's most trusted, highly secure payment gateway. We accept all major credit cards, debit cards, instant EFTs, and local banking options."
   }
 ];
 
 const COMPARISON_FEATURES = [
-  { name: "Daily Check-In", tiers: [true, true, true, true] },
-  { name: "Self-Help Library", tiers: [true, true, true, true] },
-  { name: "Progress Tracking", tiers: [true, true, true, true] },
-  { name: "AI Sessions", tiers: ["10/day", "30/day", "Deep Journey AI", "Deep Journey AI"] },
-  { name: "Group Circles", tiers: [false, true, true, true] },
-  { name: "Async Coach Chat", tiers: [false, "Emmeline", "Emmeline", "Emmeline"] },
-  { name: "1:1 Sessions", tiers: [false, false, false, "2/month"] },
-  { name: "Priority Support", tiers: [false, "Community", "Priority", "Direct"] },
+  { name: "Daily Check-In", tiers: [true, true] },
+  { name: "Self-Help Library & Worksheets", tiers: [true, true] },
+  { name: "Basic Shift Tracking", tiers: [true, true] },
+  { name: "Neo AI Daily Reflection Time", tiers: ["30 mins / day", "60 mins / day"] },
+  { name: "Ask-the-Coach Async Messaging", tiers: [false, "Coach Emmeline"] },
+  { name: "Advanced Analytics & Insights", tiers: [false, true] },
 ];
 
 export default function PricingPage() {
@@ -120,10 +114,8 @@ export default function PricingPage() {
 
       const data = await res.json();
       if (data.redirect) {
-        // Voucher path: bypass PayFast, go directly to dashboard
         router.push(data.redirect);
       } else if (data.pfData && data.url) {
-        // Use POST form for PayFast (more reliable than GET)
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = data.url;
@@ -169,11 +161,11 @@ export default function PricingPage() {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> {isLoggedIn ? 'Back to Dashboard' : 'Back to Home'}
           </Link>
           <h1 className="text-4xl md:text-6xl font-black text-[var(--text-primary)] uppercase tracking-tighter leading-none">
-            Choose Your Path to <br />
-            <span className="text-[#0AA390]">Clarity, Confidence, and Compassion</span>
+            Transform Your Perspective <br />
+            <span className="text-[#0AA390]">With Structured AI & Expert Coaching</span>
           </h1>
           <p className="text-[var(--text-muted)] max-w-2xl mx-auto text-lg md:text-xl font-medium italic">
-            Flexible plans designed for every stage of your mindset journey. Cancel anytime.
+            Simple, honest plans tailored to your transformation. Cancel anytime.
           </p>
  
           {/* Currency Toggle & Voucher */}
@@ -220,7 +212,7 @@ export default function PricingPage() {
               {isVoucherValid && (
                 <div className="mt-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-300">
                   <p className="text-[10px] font-black text-[#0AA390] uppercase tracking-widest animate-pulse drop-shadow-[0_0_10px_rgba(10,163,144,0.3)]">
-                    ✨ {voucherTier?.toUpperCase()} PROMO APPLIED — R0.00 AT CHECKOUT
+                    ✨ PROMO APPLIED — R0.00 AT CHECKOUT
                   </p>
                   <p className="text-[10px] font-bold text-[var(--text-primary)] tracking-widest bg-[var(--bg-input)]/50 py-1.5 px-3 rounded-full inline-block border border-[var(--border)]">
                     Please click the corresponding plan button below to proceed.
@@ -232,24 +224,20 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-8 mb-24">
           {PRICING_PLANS.map((plan) => (
             <div
               key={plan.id}
               onMouseEnter={() => setHoveredTier(plan.id)}
               onMouseLeave={() => setHoveredTier(null)}
               className={`relative bg-[var(--bg-card)] p-8 rounded-[3.5rem] border transition-all duration-500 flex flex-col ${
-                plan.badgeType === 'accent' 
-                  ? 'border-[#0AA390] shadow-2xl scale-105 z-10' 
-                  : plan.badgeType === 'primary' 
-                  ? 'border-[#00538e] shadow-xl' 
+                plan.badgeType === 'primary' 
+                  ? 'border-[#00538e] shadow-2xl scale-105 z-10' 
                   : 'border-[var(--border)] shadow-lg'
               } ${hoveredTier === plan.id ? '-translate-y-2' : ''}`}
             >
               {plan.badge && (
-                <div className={`absolute top-0 right-0 px-6 py-2.5 rounded-bl-3xl rounded-tr-[3.4rem] text-[10px] font-black uppercase tracking-[0.2em] text-white ${
-                  plan.badgeType === 'accent' ? 'bg-[#0AA390] animate-pulse' : 'bg-[#00538e]'
-                }`}>
+                <div className="absolute top-0 right-0 px-6 py-2.5 rounded-bl-3xl rounded-tr-[3.4rem] text-[10px] font-black uppercase tracking-[0.2em] text-white bg-[#00538e]">
                   {plan.badge}
                 </div>
               )}
@@ -271,8 +259,8 @@ export default function PricingPage() {
               </div>
 
               {plan.highlight && (
-                <div className="mb-8 p-4 bg-[#0AA390]/10 rounded-2xl border border-[#0AA390]/20">
-                  <p className="text-[11px] font-bold text-[#0AA390] italic flex items-center gap-2">
+                <div className="mb-8 p-4 bg-[#00538e]/10 rounded-2xl border border-[#00538e]/20">
+                  <p className="text-[11px] font-bold text-[#00538e] italic flex items-center gap-2">
                     <Sparkles className="w-3 h-3" /> {plan.highlight}
                   </p>
                 </div>
@@ -281,7 +269,7 @@ export default function PricingPage() {
               <ul className="space-y-4 mb-20 flex-grow">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex gap-3 text-[12px] text-[var(--text-secondary)] font-bold uppercase tracking-tight leading-tight">
-                    <Check className={`w-4 h-4 shrink-0 ${plan.badgeType === 'accent' ? 'text-[#0AA390]' : 'text-[#00538e]'}`} />
+                    <Check className="w-4 h-4 shrink-0 text-[#0AA390]" />
                     {feature}
                   </li>
                 ))}
@@ -292,9 +280,7 @@ export default function PricingPage() {
                   disabled={loadingPlanId !== null}
                   onClick={() => handleAction(plan)}
                   className={`block w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                    plan.badgeType === 'accent'
-                      ? 'bg-[#0AA390] text-white shadow-xl shadow-[#0AA390]/20'
-                      : plan.id === 'free'
+                    plan.id === 'free'
                       ? 'border-2 border-[var(--border)] text-[var(--text-muted)] hover:border-[#00538e] hover:text-[#00538e]'
                       : 'bg-[#00538e] text-white shadow-xl shadow-[#00538e]/20'
                   }`}
@@ -310,8 +296,8 @@ export default function PricingPage() {
         </div>
 
         {/* Feature Comparison Table */}
-        <div className="mb-24 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <h2 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter text-center mb-12">Compare Features</h2>
+        <div className="mb-24 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <h2 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter text-center mb-12">Compare Plans</h2>
           <div className="overflow-x-auto rounded-[3rem] border border-[var(--border)] bg-[var(--bg-card)] shadow-2xl">
             <table className="w-full border-collapse">
               <thead>
@@ -319,7 +305,7 @@ export default function PricingPage() {
                   <th className="p-8 text-left text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)] border-b border-[var(--border)]">Feature</th>
                   {PRICING_PLANS.map(plan => (
                     <th key={plan.id} className="p-8 text-center text-[12px] font-black uppercase tracking-widest text-[var(--text-primary)] border-b border-[var(--border)]">
-                      {plan.title.split(' ')[1]}
+                      {plan.title}
                     </th>
                   ))}
                 </tr>

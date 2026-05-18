@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/components/AuthProvider';
 
 type Theme = 'dark' | 'light';
 
@@ -16,42 +17,23 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+    const { profile, user } = useAuth();
     const [theme, setTheme] = useState<Theme>('dark');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const loadInitialTheme = async () => {
-            try {
-                // 1. Check localStorage first (fastest)
-                const stored = localStorage.getItem('theme') as Theme | null;
-                if (stored) setTheme(stored);
-
-                // 2. Check Supabase if logged in
-                const { data: { user } } = await supabase.auth.getUser();
-
-                // Only attempt to fetch profile if we have a user AND the API seems configured
-                const hasApiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'placeholder-key';
-
-                if (user && hasApiKey) {
-                    const { data, error } = await supabase
-                        .from('profiles')
-                        .select('theme')
-                        .eq('id', user.id)
-                        .single();
-
-                    if (!error && data?.theme) {
-                        setTheme(data.theme as Theme);
-                    }
-                }
-            } catch (err) {
-                console.error('⚠️ Theme Provider Error:', err);
-            } finally {
-                setMounted(true);
-            }
-        };
-
-        loadInitialTheme();
+        // 1. Check localStorage first (fastest)
+        const stored = localStorage.getItem('theme') as Theme | null;
+        if (stored) setTheme(stored);
+        setMounted(true);
     }, []);
+
+    useEffect(() => {
+        // 2. Sync theme when user profile theme changes
+        if (profile?.theme) {
+            setTheme(profile.theme as Theme);
+        }
+    }, [profile]);
 
     useEffect(() => {
         if (mounted) {
@@ -65,7 +47,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setTheme(newTheme);
 
         // Sync with Supabase if logged in
-        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
             await supabase
                 .from('profiles')

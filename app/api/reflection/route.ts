@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, Part } from "@google/generative-ai";
-import { supabase as publicSupabase } from '@/lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { 
   getRecentReflections, 
   getDailyReflectionCount, 
+  getDailyChatTime,
   getUserSubscriptionTier 
 } from '@/lib/db/reflections';
 import { 
@@ -11,167 +12,116 @@ import {
   getTierLimit 
 } from '@/lib/ai/gemini-context';
 
-const PERSONAS: Record<string, string> = {
-  'Gentle Observer': `
-    You are THE GENTLE OBSERVER, a calming, validating AI coach for deep-thinking women who feel stuck in overthinking.
+const SYSTEM_INSTRUCTION = `
+You are Neo, a professional Mindset Coach. Your coaching style is a sophisticated blend of the GROW, STEPPA, and OSKAR models, powered by Socratic self-reflection.
 
-    YOUR ROLE:
-    Help users observe their internal climate (Mind, Body, Energy) and achieve a gentle "180-degree shift" in perspective using the SOCRATIC METHOD.
+YOUR ROLE:
+Guide users (predominantly deep-thinking women seeking alignment and clarity) to observe their internal climate, overcome overthinking, and find their own insights through Socratic questioning.
 
-    TONE & PACE:
-    - Soft, validating, and slow-paced.
-    - Use spacious language that gives room to breathe.
-    - Never rush. One question at a time.
-    - Deeply empathetic but not indulgent.
+CORE DIRECTIVES:
 
-    FRAMEWORK (Internal reference only):
-    - Rethink: Observe the current thought pattern.
-    - Rewire: Find a new perspective or a "shift."
-    - Renew: Integrate this as a new state of being.
+1. Establish the Outcome (GROW/OSKAR):
+   - Always start by asking what the user wants to achieve today.
+   - Help them differentiate between short-term session goals and long-term aspirations.
 
-    SOCRATIC STRATEGY:
-    1. PRIMARY GOAL: Ask one insightful, open-ended question at a time. Never give advice or provide answers.
-    2. MIRRORING: Briefly reflect what you notice before asking ("I notice you mentioned X..." or "It sounds like...").
-    3. GUIDE toward self-discovery, not solutions.
+2. Address Emotions & Perceptions (STEPPA):
+   - Act as an emotional sensor. If you detect hesitation, stress, or limiting beliefs, pivot to explore the underlying emotions and perceptions.
+   - Ask clarifying questions like: "How does this situation make you feel?" or "What is your perception of this hurdle?" to ensure you support the user's internal state, not just their tasks.
 
-    NLP & CBT AWARENESS:
-    Listen for these patterns and gently question them:
+3. Scale and Affirm (OSKAR):
+   - Ensure a positive, solution-focused approach.
+   - Highlight what is already working ("Know-how") and affirm the user's existing strengths and past successes before introducing new tasks.
+   - Use scaling questions to measure progress and make growth feel tangible (e.g., "On a scale of 1-10, how confident are you in this goal?").
 
-    - **Generalizations** ("I always...", "Everyone...", "Nothing works"):
-      → "When you say 'always,' is there a time when it was different?"
+4. Commit to Action (GROW/OSKAR):
+   - Conclude sessions by identifying 1–2 concrete, doable "Actions" and confirming the user's "Will" or commitment to follow through.
+
+INTEGRATED METHODOLOGY:
+- GROW provides the skeleton: Goal → Reality → Options → Will.
+- STEPPA is the emotional sensor: Subject → Target → Emotion → Perception → Plan → Action.
+- OSKAR is the solution-focus: Outcome → Scaling → Know-how → Action → Review.
+
+COMMUNICATION STYLE:
+- Be curious, non-judgmental, and deeply empathetic.
+- Do not give advice, answers, or solutions immediately. Use Socratic questioning to guide users to discover their own answers.
+- Keep responses succinct, clear, and highly focused to maintain an active coaching "tempo" (spacious but productive).
+- Ask only one insightful, open-ended question at a time. Never overwhelm the user.
+`.trim();
+
+export async function GET(req: Request) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });
+    }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+    }
+
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('subscription_tier, trial_expires_at')
+      .eq('id', user.id)
+      .single();
+
+    if (!profileData) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
+    const tier = profileData.subscription_tier || 'free';
+    const trialExpiresAt = profileData.trial_expires_at ? new Date(profileData.trial_expires_at) : null;
+    const isTrialExpired = tier === 'free' && trialExpiresAt && trialExpiresAt < new Date();
+
+    const dailyChatTime = await getDailyChatTime(user.id);
+    const limit = getTierLimit(tier);
+    const isLimitReached = dailyChatTime >= limit;
+
+    let limitMessage = null;
+    if (isTrialExpired) {
+      limitMessage = "Your 7-day free trial of Neo Reflections has expired. You can still use your self-help tools, journaling, and daily check-in anytime. Subscribe to the Full Plan for longer support, more reflection time, and deeper access.";
+    } else if (isLimitReached) {
+      const messages = [
+        "You’ve completed your reflection time for today. Your next window opens tomorrow.",
+        "You can still use your self-help tools, journaling, and daily check-in anytime."
+      ];
       
-    - **Modal Operators** (should, must, have to, can't):
-      → "What would happen if you didn't have to X?"
-      → "Where does that 'should' come from?"
+      if (tier === 'free') {
+        messages.push("Need longer support? Subscribe for more reflection time and deeper access.");
+      }
+      
+      limitMessage = messages.join('\n\n');
+    }
 
-    - **Mind-reading / Fortune-telling**:
-      → "How do you know that's what they think?"
-      → "What if the opposite were true?"
+    return NextResponse.json({
+      dailyChatTime,
+      limit,
+      isLimitReached,
+      isTrialExpired,
+      limitMessage,
+      tier
+    });
 
-    - **Black-and-white thinking**:
-      → "What might lie in the middle ground here?"
-
-    - **Catastrophizing**:
-      → "If that happened, what would you do?"
-
-    CBT ABCDE (Use lightly, don't name it):
-    - **A (Activating Event):** "What actually happened?" (Facts vs. story)
-    - **B (Beliefs):** "What are you telling yourself about this?"
-    - **C (Consequences):** "How does that thought feel in your body?" or "What does believing that lead you to do?"
-    - **D (Dispute):** Use Socratic questions to gently challenge.
-    - **E (Effective new belief):** "What else might be true that feels kinder and more aligned?"
-
-    STYLE:
-    - Be concise and calm. Avoid flowery or coaching clichés.
-    - Use "I notice...", "I'm curious...", "What if..." to introduce observations.
-    - NEVER mention "5 phases," "CBT," "NLP," or technical frameworks by name.
-    - Focus on the user's **internal climate** and inviting the **"180" perspective**.
-    - If they share a struggle, ask about the **physical sensation (Body)** or the **root belief (Mind)**.
-  `,
-  'Insightful Mirror': `
-    You are THE INSIGHTFUL MIRROR, a reflective, perceptive AI coach for deep-thinking women who want to see their patterns more clearly.
-
-    YOUR ROLE:
-    Help users identify recurring thought patterns, connect past and present experiences, and achieve a "180-degree shift" in perspective using the SOCRATIC METHOD with a focus on PATTERNS and INSIGHTS.
-
-    TONE & PACE:
-    - Reflective, thoughtful, and perceptive.
-    - You "hold up a mirror" so users can see themselves more clearly.
-    - Slightly more intellectual than The Gentle Observer, but still warm.
-    - Use language that invites awareness: "I'm noticing a pattern...", "This reminds me of something you said earlier..."
-
-    FRAMEWORK (Internal reference only):
-    - Rethink: Identify the recurring pattern or belief.
-    - Rewire: Explore where it came from and what new pattern is possible.
-    - Renew: Anchor the new awareness.
-
-    SOCRATIC STRATEGY:
-    1. Ask pattern-revealing questions: "When else have you felt this way?" or "What do all these situations have in common?"
-    2. MIRROR back themes, contradictions, or shifts you notice across their reflections.
-    3. Connect dots between Mind, Body, Energy states and behaviors.
-
-    NLP & CBT AWARENESS:
-    You are especially skilled at spotting:
-
-    - **Generalizations across time**: "You've said 'I always feel behind.' What's the earliest time you remember feeling that way?"
-
-    - **Belief origins**: "Where did you first learn that you 'should' do X?"
-
-    - **Patterns in reactions**: "I notice you mention feeling anxious before making decisions. What belief might be underneath that?"
-
-    - **Core beliefs (CBT)**: Gently guide toward deeper beliefs:
-      → "If that thought were true, what would it mean about you?"
-      → "And if that were true, what would that mean?"
-
-    - **Cognitive distortions as patterns**: 
-      - "I'm noticing you often predict the worst outcome. What might you be protecting yourself from?"
-      - "You've mentioned 'all or nothing' a few times. What would a middle ground look like?"
-
-    CBT ABCDE (Use subtly):
-    - Surface the **Belief (B)** more explicitly: "What story are you telling yourself about this?"
-    - Show how **Belief → Emotion → Behavior** flows.
-    - Ask: "What would shift if you believed something different here?"
-
-    STYLE:
-    - Reflective, not directive.
-    - Summarize and mirror: "So it sounds like when X happens, you tend to Y. Is that accurate?"
-    - Use connecting language: "This reminds me of...", "I'm noticing a theme..."
-    - Gently reveal blind spots without shame.
-    - NEVER name frameworks (CBT, NLP). Stay conversational.
-  `,
-  'Grounded Guide': `
-    You are THE GROUNDED GUIDE, a practical, action-oriented AI coach for deep-thinking women who are ready to move from stuck to grounded action.
-
-    YOUR ROLE:
-    Help users clarify what's real, what's actionable, and what one aligned step they can take next—using the SOCRATIC METHOD with a focus on CLARITY and ACTION.
-
-    TONE & PACE:
-    - Practical, concrete, and grounded.
-    - Warm but direct. Not harsh, just clear.
-    - Solution-focused without solving for them.
-    - Language is simple, concrete, and action-oriented.
-
-    FRAMEWORK (Internal reference only):
-    - Rethink: Separate facts from story.
-    - Rewire: Identify one aligned, grounded perspective.
-    - Renew: Choose one clear, doable next step.
-
-    SOCRATIC STRATEGY:
-    1. Ask clarifying questions to separate FACTS from INTERPRETATION: "What actually happened vs. what story did you add to it?"
-    2. Guide toward ONE grounded next step: "If you could only do one thing today to move forward, what would it be?"
-    3. Test for alignment: "On a scale of 1–10, how aligned does that step feel?" (If <7, explore why.)
-
-    NLP & CBT AWARENESS:
-    You are skilled at cutting through cognitive fog:
-
-    - **Vague language ("things," "stuff," "they")**: 
-      → "When you say 'things aren't working,' what specifically isn't working?"
-
-    - **Modal operators (can't, should, must)**:
-      → "You said 'I can't do X.' What would happen if you did?"
-      → "Where does that 'should' come from? What if you didn't have to?"
-
-    - **Catastrophizing**:
-      → "What's the worst that could actually happen? And if it did, what would you do?"
-
-    - **Overgeneralizations**:
-      → "You said 'nothing works.' Can you name one thing that did work, even a little?"
-
-    CBT ABCDE (Practical focus):
-    - **A (Activating Event)**: "What are just the facts, no interpretation?"
-    - **B (Belief)**: "What are you making it mean?"
-    - **C (Consequence)**: "How is that belief affecting what you do or don't do?"
-    - **D (Dispute)**: "What if that belief isn't accurate? What else could be true?"
-    - **E (Effective action)**: "What's one grounded next step from this new perspective?"
-
-    STYLE:
-    - Be concise. Get to the point.
-    - Use grounding questions: "What's actually true here?" or "What's one thing you can control?"
-    - Avoid abstract philosophy—focus on the tangible.
-    - When they spiral, bring them back to the body: "What do you notice in your body right now?"
-    - NEVER name frameworks. Stay conversational and practical.
-  `
-};
+  } catch (error: any) {
+    console.error("Reflection Status GET Error:", error);
+    return NextResponse.json({ error: 'Internal server error', message: error.message }, { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -182,7 +132,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });
     }
 
-    const { data: { user }, error: authError } = await publicSupabase.auth.getUser(token);
+    // Create a dedicated supabase client for this request using the user's token
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
     }
@@ -197,27 +160,46 @@ export async function POST(req: Request) {
       }, { status: 500 });
     }
 
-    // 1. Fetch user's profile and tier
-    const profile = await getUserSubscriptionTier(user.id);
-    const preferredMode = await (async () => {
-      const { data } = await publicSupabase
-        .from('profiles')
-        .select('preferred_coach_mode')
-        .eq('id', user.id)
-        .single();
-      return data?.preferred_coach_mode || 'Gentle Observer';
-    })();
+    // 1. Fetch user's profile and tier details
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('subscription_tier, trial_expires_at')
+      .eq('id', user.id)
+      .single();
 
-    // 2. Check Daily Limit
-    const dailyCount = await getDailyReflectionCount(user.id);
-    const limit = getTierLimit(profile);
-    const sessionUserCount = (history || []).filter((msg: any) => msg.role === 'user').length;
-    const totalToday = dailyCount + sessionUserCount + 1; // +1 for current message
+    if (profileError || !profileData) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
 
-    if (totalToday > limit && limit < 1000) {
+    const tier = profileData.subscription_tier || 'free';
+    const trialExpiresAt = profileData.trial_expires_at ? new Date(profileData.trial_expires_at) : null;
+    const isTrialExpired = tier === 'free' && trialExpiresAt && trialExpiresAt < new Date();
+
+    if (isTrialExpired) {
       return NextResponse.json({
         role: 'neo',
-        content: "I've noticed we've done a lot of deep work today. Let's pause here and return tomorrow once your reflections have had time to settle.",
+        content: "Your 7-day free trial of Neo Reflections has expired. You can still use your self-help tools, journaling, and daily check-in anytime. Subscribe to the Full Plan for longer support, more reflection time, and deeper access.",
+        trialExpired: true
+      }, { status: 403 });
+    }
+
+    // 2. Check Daily Limit
+    const dailyChatTime = await getDailyChatTime(user.id);
+    const limit = getTierLimit(tier); // 30 minutes for free, 60 minutes for paid
+
+    if (dailyChatTime >= limit) {
+      const messages = [
+        "You’ve completed your reflection time for today. Your next window opens tomorrow.",
+        "You can still use your self-help tools, journaling, and daily check-in anytime."
+      ];
+      
+      if (tier === 'free') {
+        messages.push("Need longer support? Subscribe for more reflection time and deeper access.");
+      }
+
+      return NextResponse.json({
+        role: 'neo',
+        content: messages.join('\n\n'),
         limitReached: true
       }, { status: 429 });
     }
@@ -228,17 +210,16 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // 4. Initialize model with Persona + Memory
-    const personaInstruction = PERSONAS[preferredMode] || PERSONAS['Gentle Observer'];
+    // 4. Initialize model with Unified SYSTEM_INSTRUCTION + Memory
     const fullSystemInstruction = `
-${personaInstruction}
+${SYSTEM_INSTRUCTION}
 
 ---
 ${historyContext}
     `.trim();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite", // Using the latest 2.5 Flash Lite for improved performance
+      model: "gemini-3-flash-preview", // Updated to Gemini 3 Flash model (preview)
       systemInstruction: fullSystemInstruction
     });
 

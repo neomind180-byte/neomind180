@@ -2,18 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Send, Zap, Lock } from 'lucide-react';
+import { Send, Zap, Lock, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-
-// --- CONFIGURATION ---
-const MAX_MESSAGES = {
-  free: 10,
-  starter: 30,
-  builder: 1000,
-  catalyst: 1000
-};
+import { useAuth } from '@/components/AuthProvider';
 
 export default function ReflectionPage() {
+  const { user, profile } = useAuth();
   const [messages, setMessages] = useState<any[]>([
     { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
   ]);
@@ -21,54 +15,111 @@ export default function ReflectionPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [userTier, setUserTier] = useState<string>('free');
   const [reflectionId, setReflectionId] = useState<string | null>(null);
-  const [todayUsage, setTodayUsage] = useState(0);
+  const [pastSessions, setPastSessions] = useState<any[]>([]);
+
+  // Time-Based Limits states
+  const [dailyChatTime, setDailyChatTime] = useState(0);
+  const [timeLimit, setTimeLimit] = useState(30);
+  const [isLimitReached, setIsLimitReached] = useState(false);
+  const [isTrialExpired, setIsTrialExpired] = useState(false);
+  const [limitMessage, setLimitMessage] = useState<string | null>(null);
+
+  const fetchStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) return;
+
+      const res = await fetch('/api/reflection', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDailyChatTime(data.dailyChatTime);
+        setTimeLimit(data.limit);
+        setIsLimitReached(data.isLimitReached);
+        setIsTrialExpired(data.isTrialExpired);
+        setLimitMessage(data.limitMessage);
+        if (data.tier) setUserTier(data.tier);
+      }
+    } catch (err) {
+      console.error("Error fetching status:", err);
+    }
+  };
 
   useEffect(() => {
     async function initData() {
-      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // 1. Get Tier
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_tier')
-          .eq('id', user.id)
-          .single();
+        // 1. Get Initial Tier
         if (profile) setUserTier(profile.subscription_tier);
 
-        // 2. Get Today's Usage (excluding current session)
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+        // 2. Fetch Time-Based limits status
+        await fetchStatus();
 
-        const { data: dailyRefs } = await supabase
+        // 3. Auto-resume the most recent reflection session
+        const { data: latestRef } = await supabase
           .from('reflections')
-          .select('messages')
+          .select('*')
           .eq('user_id', user.id)
-          .gte('created_at', startOfDay.toISOString());
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-        if (dailyRefs) {
-          let count = 0;
-          dailyRefs.forEach(ref => {
-            const userMsgs = (ref.messages as any[] || []).filter(m => m.role === 'user').length;
-            count += userMsgs;
-          });
-          setTodayUsage(count);
+        if (latestRef) {
+          setReflectionId(latestRef.id);
+          if (latestRef.messages && latestRef.messages.length > 0) {
+            setMessages(latestRef.messages);
+          }
+        }
+
+        // Fetch past sessions for the history dropdown
+        const { data: allRefs } = await supabase
+          .from('reflections')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false });
+
+        if (allRefs) {
+          setPastSessions(allRefs);
         }
       }
     }
     initData();
-  }, []);
+  }, [user, profile]);
 
-  // Calculate usage
-  const sessionUserCount = messages.filter(m => m.role === 'user').length;
-  const totalDailyCount = todayUsage + sessionUserCount;
-  const limit = MAX_MESSAGES[userTier as keyof typeof MAX_MESSAGES] || 10;
-  const isLimitReached = totalDailyCount >= limit;
+  const startNewSession = () => {
+    setMessages([
+      { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
+    ]);
+    setReflectionId(null);
+  };
+
+  const handleSelectSession = (id: string) => {
+    if (id === "") {
+      startNewSession();
+      return;
+    }
+    const selected = pastSessions.find(s => s.id === id);
+    if (selected) {
+      setReflectionId(selected.id);
+      if (selected.messages && selected.messages.length > 0) {
+        setMessages(selected.messages);
+      }
+    }
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || (isLimitReached && limit < 1000)) return;
+    if (!input.trim() || isLimitReached || isTrialExpired) return;
 
-    const userMsg = { role: 'user', content: input };
+    // Attach local client timestamp to help calculate active chat time correctly
+    const userMsg = { 
+      role: 'user', 
+      content: input,
+      timestamp: new Date().toISOString()
+    };
     const updatedMessagesWithUser = [...messages, userMsg];
     setMessages(updatedMessagesWithUser);
     setInput('');
@@ -91,15 +142,24 @@ export default function ReflectionPage() {
       const data = await res.json();
 
       if (res.status === 429 || data.limitReached) {
-        alert(data.content);
+        setIsLimitReached(true);
+        setLimitMessage(data.content);
         return;
       }
 
-      const finalMessages = [...updatedMessagesWithUser, data];
+      if (res.status === 403 || data.trialExpired) {
+        setIsTrialExpired(true);
+        setLimitMessage(data.content);
+        return;
+      }
+
+      const finalMessages = [...updatedMessagesWithUser, {
+        ...data,
+        timestamp: new Date().toISOString()
+      }];
       setMessages(finalMessages);
 
-      // 2. Persist to Supabase
-      const { data: { user } } = await supabase.auth.getUser();
+      // 3. Persist to Supabase
       if (user) {
         if (!reflectionId) {
           // New session: Insert
@@ -113,7 +173,10 @@ export default function ReflectionPage() {
             .select()
             .single();
 
-          if (newRef) setReflectionId(newRef.id);
+          if (newRef) {
+            setReflectionId(newRef.id);
+            setPastSessions(prev => [newRef, ...prev]);
+          }
           if (error) console.error("Error saving new reflection:", error);
         } else {
           // Existing session: Update
@@ -125,9 +188,24 @@ export default function ReflectionPage() {
             })
             .eq('id', reflectionId);
 
-          if (error) console.error("Error updating reflection:", error);
+          if (error) {
+            console.error("Error updating reflection:", error);
+          } else {
+            // Update pastSessions array in state
+            setPastSessions(prev =>
+              prev.map(s =>
+                s.id === reflectionId
+                  ? { ...s, messages: finalMessages, last_message: data.content, updated_at: new Date().toISOString() }
+                  : s
+              )
+            );
+          }
         }
       }
+
+      // 4. Refresh limits status from server
+      await fetchStatus();
+
     } catch (error) {
       console.error("Reflection Error", error);
     } finally {
@@ -136,12 +214,7 @@ export default function ReflectionPage() {
   };
 
   const profilePlanName = (tier: string) => {
-    switch (tier) {
-      case 'starter': return 'Clarity Starter';
-      case 'builder': return 'Confidence Builder';
-      case 'catalyst': return 'Compassion Catalyst';
-      default: return 'Clarity Foundation';
-    }
+    return tier === 'free' ? '7-Day Free Trial' : 'Full Plan';
   };
 
   return (
@@ -154,8 +227,41 @@ export default function ReflectionPage() {
             {profilePlanName(userTier)}
           </span>
         </div>
-        <div className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)]">
-          {limit >= 1000 ? 'Deep Journey Sessions' : `Today: ${totalDailyCount}/${limit} sessions`}
+        <div className="flex items-center gap-4">
+          <div className="text-[12px] font-black uppercase tracking-widest text-[var(--text-dim)] mr-2 hidden md:block">
+            {dailyChatTime}m / {timeLimit}m Daily Limit
+          </div>
+          {/* History Dropdown */}
+          <select
+            value={reflectionId || ''}
+            onChange={(e) => handleSelectSession(e.target.value)}
+            className="px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-secondary)] font-black uppercase text-[10px] tracking-widest rounded-xl focus:border-[#0AA390] outline-none transition-all cursor-pointer max-w-[200px] truncate"
+          >
+            <option value="">
+              {reflectionId ? "📜 Reflection History..." : "✨ Active Session"}
+            </option>
+            {pastSessions.map((session) => {
+              const dateStr = new Date(session.created_at).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric'
+              });
+              const summary = session.last_message || 'Empty session';
+              const truncatedSummary = summary.length > 25 ? `${summary.substring(0, 25)}...` : summary;
+              return (
+                <option key={session.id} value={session.id}>
+                  {dateStr} - {truncatedSummary}
+                </option>
+              );
+            })}
+          </select>
+          <button
+            onClick={startNewSession}
+            className="flex items-center gap-2 px-4 py-2 bg-[#0AA390]/10 hover:bg-[#0AA390]/25 text-[#0AA390] font-black uppercase text-[10px] tracking-widest rounded-xl border border-[#0AA390]/20 transition-all cursor-pointer"
+            title="Start a fresh reflection session"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            New Session
+          </button>
         </div>
       </div>
 
@@ -176,7 +282,39 @@ export default function ReflectionPage() {
 
       {/* Input Area or Limit Reached Message */}
       <div className="p-8 bg-[var(--bg-card)] rounded-b-[2.5rem] border border-[var(--border)] border-t-0">
-        {!isLimitReached || limit >= 1000 ? (
+        {isTrialExpired ? (
+          <div className="bg-[var(--bg-primary)] p-8 rounded-3xl text-center space-y-4 border border-[var(--border)]">
+            <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto border border-amber-500/20">
+              <Lock className="w-6 h-6 text-[#F39904]" />
+            </div>
+            <h3 className="text-base font-black text-[var(--text-primary)] uppercase tracking-tight">Free Trial Expired</h3>
+            <p className="text-[14px] text-[var(--text-muted)] max-w-md mx-auto leading-relaxed whitespace-pre-line">
+              {limitMessage || "Your 7-day free trial of Neo Reflections has expired. You can still use your self-help tools, journaling, and daily check-in anytime."}
+            </p>
+            <div className="pt-2">
+              <Link href="/pricing" className="inline-block px-8 py-4 bg-[#00538e] hover:bg-[#0AA390] text-white rounded-xl font-black uppercase text-[12px] tracking-[0.2em] transition-colors shadow-lg">
+                Subscribe to Full Plan
+              </Link>
+            </div>
+          </div>
+        ) : isLimitReached ? (
+          <div className="bg-[var(--bg-primary)] p-8 rounded-3xl text-center space-y-4 border border-[var(--border)]">
+            <div className="w-12 h-12 bg-[#0AA390]/10 rounded-2xl flex items-center justify-center mx-auto border border-[#0AA390]/20">
+              <Sparkles className="w-6 h-6 text-[#0AA390]" />
+            </div>
+            <h3 className="text-base font-black text-[var(--text-primary)] uppercase tracking-tight">Daily Reflection Completed</h3>
+            <p className="text-[14px] text-[var(--text-muted)] max-w-md mx-auto leading-relaxed whitespace-pre-line">
+              {limitMessage || "You’ve completed your reflection time for today. Your next window opens tomorrow.\n\nYou can still use your self-help tools, journaling, and daily check-in anytime."}
+            </p>
+            {userTier === 'free' && (
+              <div className="pt-2">
+                <Link href="/pricing" className="inline-block px-8 py-4 bg-[#00538e] hover:bg-[#0AA390] text-white rounded-xl font-black uppercase text-[12px] tracking-[0.2em] transition-colors shadow-lg">
+                  Subscribe for More Time
+                </Link>
+              </div>
+            )}
+          </div>
+        ) : (
           <form onSubmit={handleSend} className="relative">
             <input
               type="text"
@@ -193,22 +331,6 @@ export default function ReflectionPage() {
               <Send className="w-4 h-4" />
             </button>
           </form>
-        ) : (
-          <div className="bg-[var(--bg-primary)] p-8 rounded-3xl text-center space-y-4 border border-[var(--border)]">
-            <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto border border-red-500/20">
-              <Lock className="w-6 h-6 text-[#993366]" />
-            </div>
-            <h3 className="text-base font-black text-[var(--text-primary)] uppercase tracking-tight">Daily Limit Reached</h3>
-            <p className="text-[14px] text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">
-              You've hit your {limit} reflections limit for today.
-              {limit < 1000 && " Practice your observations and return tomorrow for more."}
-            </p>
-            {limit < 1000 && (
-              <Link href="/pricing" className="inline-block text-[12px] font-black uppercase tracking-[0.2em] text-[#00538e] hover:text-[#0AA390] transition-colors mt-2">
-                Upgrade for More Access →
-              </Link>
-            )}
-          </div>
         )}
       </div>
     </div>
