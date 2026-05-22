@@ -77,20 +77,23 @@ export default function PricingPage() {
   }
 
   async function handleAction(plan: any) {
+    // Determine active session dynamically to avoid stale state or hydration lag
+    const { data: { session: activeSession } } = await supabase.auth.getSession();
+    const currentLoggedIn = !!activeSession;
+
     if (plan.id === 'free') {
-      router.push(isLoggedIn ? "/dashboard" : "/register?tier=free");
+      router.push(currentLoggedIn ? "/dashboard" : "/register?tier=free");
       return;
     }
 
-    if (!isLoggedIn) {
+    if (!currentLoggedIn) {
       router.push(`/register?tier=${plan.id}${isVoucherValid && voucherTier === plan.id ? `&voucher=${voucherCode}` : ''}`);
       return;
     }
 
     try {
       setLoadingPlanId(plan.id);
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = activeSession?.access_token;
 
       if (!token) {
         alert('Your session has expired. Please log in again.');
@@ -143,6 +146,16 @@ export default function PricingPage() {
     }
   }
 
+  const handleBackClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      router.push('/dashboard');
+    } else {
+      router.push('/');
+    }
+  };
+
   useEffect(() => {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -157,7 +170,11 @@ export default function PricingPage() {
 
         {/* Header */}
         <div className="text-center mb-16 space-y-6">
-          <Link href={isLoggedIn ? "/dashboard" : "/"} className="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-[#00538e] transition-colors font-black uppercase text-[12px] tracking-[0.2em] mb-4 group">
+          <Link 
+            href={isLoggedIn ? "/dashboard" : "/"} 
+            onClick={handleBackClick}
+            className="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-[#00538e] transition-colors font-black uppercase text-[12px] tracking-[0.2em] mb-4 group"
+          >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> {isLoggedIn ? 'Back to Dashboard' : 'Back to Home'}
           </Link>
           <h1 className="text-4xl md:text-6xl font-black text-[var(--text-primary)] uppercase tracking-tighter leading-none">
