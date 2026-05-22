@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Send, Zap, Lock, Sparkles } from 'lucide-react';
+import { Send, Zap, Lock, Sparkles, Mic, MicOff } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -16,6 +16,66 @@ export default function ReflectionPage() {
   const [userTier, setUserTier] = useState<string>('free');
   const [reflectionId, setReflectionId] = useState<string | null>(null);
   const [pastSessions, setPastSessions] = useState<any[]>([]);
+
+  // Speech Recognition states
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
+  const [supportSpeech, setSupportSpeech] = useState(false);
+  const baselineTextRef = useRef('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        setSupportSpeech(true);
+        const rec = new SpeechRecognition();
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = 'en-US';
+        setRecognition(rec);
+      }
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognition) return;
+
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+    } else {
+      baselineTextRef.current = input;
+      
+      recognition.onresult = (event: any) => {
+        let fullSessionTranscript = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          fullSessionTranscript += event.results[i][0].transcript;
+        }
+        
+        const space = baselineTextRef.current && !baselineTextRef.current.endsWith(' ') ? ' ' : '';
+        setInput(baselineTextRef.current + space + fullSessionTranscript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+          alert('Microphone access was denied. Please allow microphone permissions in your browser settings to use speech input.');
+        }
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      try {
+        recognition.start();
+        setIsListening(true);
+      } catch (err) {
+        console.error('Failed to start speech recognition:', err);
+      }
+    }
+  };
 
   // Time-Based Limits states
   const [dailyChatTime, setDailyChatTime] = useState(0);
@@ -113,6 +173,11 @@ export default function ReflectionPage() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLimitReached || isTrialExpired) return;
+
+    if (isListening && recognition) {
+      recognition.stop();
+      setIsListening(false);
+    }
 
     // Attach local client timestamp to help calculate active chat time correctly
     const userMsg = { 
@@ -320,9 +385,28 @@ export default function ReflectionPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Share your reflection..."
-              className="w-full pl-8 pr-16 py-5 bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-primary)] rounded-2xl outline-none focus:border-[#00538e] transition-all text-base font-medium placeholder:text-[var(--text-dim)]"
+              placeholder={isListening ? "Listening... speak clearly" : "Share your reflection..."}
+              className={`w-full pl-8 ${supportSpeech ? 'pr-[110px]' : 'pr-16'} py-5 bg-[var(--bg-primary)] border text-[var(--text-primary)] rounded-2xl outline-none transition-all text-base font-medium placeholder:text-[var(--text-dim)] ${
+                isListening ? 'border-[#0AA390] ring-1 ring-[#0AA390]/30 shadow-md shadow-[#0AA390]/10' : 'border-[var(--border)] focus:border-[#00538e]'
+              }`}
             />
+            {supportSpeech && (
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`absolute right-[58px] top-1/2 -translate-y-1/2 p-3 rounded-xl transition-all flex items-center justify-center cursor-pointer ${
+                  isListening
+                    ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
+                    : 'bg-transparent text-[var(--text-muted)] hover:text-[#0AA390] hover:bg-[#0AA390]/10'
+                }`}
+                title={isListening ? "Stop listening" : "Use voice input"}
+              >
+                {isListening && (
+                  <span className="absolute -inset-1 rounded-xl bg-rose-500/30 animate-ping pointer-events-none" />
+                )}
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            )}
             <button
               type="submit"
               disabled={!input.trim() || isTyping}
