@@ -108,6 +108,15 @@ export async function POST(req: Request) {
 
     const amount = currency === 'ZAR' ? parseFloat(rawAmount).toFixed(2) : rawAmount;
 
+    // PayFast only processes South African Rand (ZAR).
+    // If currency is USD, we must charge the configured ZAR equivalent amount to avoid charging R19 instead of R350.
+    let payfastAmount = amount;
+    if (currency === 'USD') {
+      if (planId === 'starter') {
+        payfastAmount = billingPeriod === 'YEAR' ? '3500.00' : '350.00';
+      }
+    }
+
     // Allow 0.00 only if a voucher was applied
     if (parseFloat(amount) === 0 && !customStr4) {
       return NextResponse.json({ error: 'Cannot checkout a free plan' }, { status: 400 });
@@ -173,7 +182,7 @@ export async function POST(req: Request) {
       name_last: userLastName,
       email_address: userEmail,
       m_payment_id: mPaymentId,
-      amount: amount,
+      amount: payfastAmount,
       item_name: `NeoMind180 ${plan.title}`,
       custom_str1: user.id,
       custom_str2: planId,
@@ -183,7 +192,7 @@ export async function POST(req: Request) {
 
     console.log('[PayFast] Fields being sent:', JSON.stringify({
       merchant_id: config.merchantId,
-      amount,
+      amount: payfastAmount,
       item_name: `NeoMind180 ${plan.title}`,
       email_address: userEmail,
       m_payment_id: mPaymentId,
