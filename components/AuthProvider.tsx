@@ -41,11 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (sessionError || !session) {
         setUser(null);
         setProfile(null);
+        localStorage.removeItem('nm_user');
+        localStorage.removeItem('nm_profile');
         setLoading(false);
         return;
       }
 
       setUser(session.user);
+      localStorage.setItem('nm_user', JSON.stringify(session.user));
 
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -55,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!profileError && profileData) {
         setProfile(profileData);
+        localStorage.setItem('nm_profile', JSON.stringify(profileData));
       }
     } catch (err) {
       console.error('⚠️ Auth Provider Retrieval Error:', err);
@@ -64,12 +68,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // 1. Instantly restore last-known user and profile state from local cache on mount
+    try {
+      const cachedUser = localStorage.getItem('nm_user');
+      const cachedProfile = localStorage.getItem('nm_profile');
+      if (cachedUser && cachedProfile) {
+        setUser(JSON.parse(cachedUser));
+        setProfile(JSON.parse(cachedProfile));
+        setLoading(false); // Instantly bypass the loading spinner
+      }
+    } catch (e) {
+      console.warn('⚡ LocalStorage session hydration bypassed:', e);
+    }
+
     fetchUserData();
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         setUser(session.user);
+        localStorage.setItem('nm_user', JSON.stringify(session.user));
         // Refresh profile on auth state changes
         const { data: profileData } = await supabase
           .from('profiles')
@@ -78,10 +96,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
         if (profileData) {
           setProfile(profileData);
+          localStorage.setItem('nm_profile', JSON.stringify(profileData));
         }
       } else {
         setUser(null);
         setProfile(null);
+        localStorage.removeItem('nm_user');
+        localStorage.removeItem('nm_profile');
       }
       setLoading(false);
 
@@ -104,6 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .single();
     if (profileData) {
       setProfile(profileData);
+      localStorage.setItem('nm_profile', JSON.stringify(profileData));
     }
   };
 
@@ -119,6 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Clear localStorage & cookies starting with sb-
       try {
+        localStorage.removeItem('nm_user');
+        localStorage.removeItem('nm_profile');
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const key = localStorage.key(i);
           if (key && key.startsWith('sb-')) {
