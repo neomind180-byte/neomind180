@@ -24,8 +24,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid voucher code' }, { status: 404 });
     }
 
-    if (voucher.is_redeemed) {
-      return NextResponse.json({ error: 'Voucher has already been redeemed' }, { status: 400 });
+    // Check actual redemptions in subscriptions to determine if exhausted
+    const { count: redemptionCount } = await supabaseAdmin
+      .from('subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('m_payment_id', `voucher_${voucher.id}`)
+      .eq('status', 'COMPLETE');
+
+    const maxUses = voucher.max_uses ?? 1;
+    const isExhausted = voucher.is_redeemed || (redemptionCount !== null && redemptionCount >= maxUses);
+
+    if (isExhausted) {
+      return NextResponse.json({ error: 'Voucher has already been fully redeemed' }, { status: 400 });
     }
 
     return NextResponse.json({ 

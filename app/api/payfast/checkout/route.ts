@@ -48,19 +48,47 @@ export async function POST(req: Request) {
         .select('*')
         .eq('code', voucherCode.trim())
         .eq('tier', planId)
-        .eq('is_redeemed', false)
         .single();
-
+ 
       if (!vError && voucher) {
         // --- VOUCHER PATH: Bypass PayFast entirely ---
         // R0.00 PayFast transactions cause ITN failures and card rejection issues.
         // Since the voucher is already validated, we upgrade the user directly.
 
-        // 1. Mark voucher as redeemed
+        // A. Prevent double-redemption by the same user account
+        const { data: userRedemption } = await supabaseAdmin
+          .from('subscriptions')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('m_payment_id', `voucher_${voucher.id}`)
+          .eq('status', 'COMPLETE')
+          .limit(1)
+          .maybeSingle();
+
+        if (userRedemption) {
+          return NextResponse.json({ error: 'You have already redeemed this promo code' }, { status: 400 });
+        }
+
+        // B. Enforce the maximum uses quota limit
+        const { count: redemptionCount } = await supabaseAdmin
+          .from('subscriptions')
+          .select('id', { count: 'exact', head: true })
+          .eq('m_payment_id', `voucher_${voucher.id}`)
+          .eq('status', 'COMPLETE');
+
+        const maxUses = voucher.max_uses ?? 1;
+        const currentUses = redemptionCount ?? 0;
+
+        if (voucher.is_redeemed || currentUses >= maxUses) {
+          return NextResponse.json({ error: 'This promo code has reached its maximum usage limit' }, { status: 400 });
+        }
+
+        // 1. Mark voucher as redeemed globally if this final redemption exhausts the quota
+        const isNowExhausted = (currentUses + 1) >= maxUses;
         await supabaseAdmin
           .from('vouchers')
           .update({
-            is_redeemed: true,
+            is_redeemed: isNowExhausted,
             redeemed_by: user.id,
             redeemed_at: new Date().toISOString()
           })
