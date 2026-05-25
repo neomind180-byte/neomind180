@@ -131,7 +131,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Pending Payment Banner */}
-      {pendingPlan && (
+      {pendingPlan && profile?.subscription_tier === 'free' && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-8 py-5 rounded-[2rem] bg-amber-500/10 border border-amber-400/30 shadow-lg">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-amber-400/20 rounded-xl flex items-center justify-center shrink-0 border border-amber-400/30">
