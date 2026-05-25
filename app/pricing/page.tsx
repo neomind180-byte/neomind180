@@ -146,16 +146,6 @@ export default function PricingPage() {
     }
   }
 
-  const handleBackClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      router.push('/dashboard');
-    } else {
-      router.push('/');
-    }
-  };
-
   useEffect(() => {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -172,7 +162,6 @@ export default function PricingPage() {
         <div className="text-center mb-16 space-y-6">
           <Link 
             href={isLoggedIn ? "/dashboard" : "/"} 
-            onClick={handleBackClick}
             className="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-[#00538e] transition-colors font-black uppercase text-[12px] tracking-[0.2em] mb-4 group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> {isLoggedIn ? 'Back to Dashboard' : 'Back to Home'}
