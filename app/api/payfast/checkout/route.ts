@@ -66,9 +66,11 @@ export async function POST(req: Request) {
           })
           .eq('id', voucher.id);
 
-        // 2. Upgrade user profile + set 30-day trial expiry
+        // 2. Upgrade user profile + set dynamic trial expiry (1 year if code contains 'YEAR' or '365', otherwise 30 days)
         const trialExpiresAt = new Date();
-        trialExpiresAt.setDate(trialExpiresAt.getDate() + 30);
+        const isYearVoucher = voucher.code.toUpperCase().includes('YEAR') || voucher.code.toUpperCase().includes('365');
+        const durationDays = isYearVoucher ? 365 : 30;
+        trialExpiresAt.setDate(trialExpiresAt.getDate() + durationDays);
 
         await supabaseAdmin
           .from('profiles')
