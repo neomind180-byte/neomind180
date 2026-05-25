@@ -33,7 +33,7 @@ function RegisterForm() {
   // Friendly names for the tiers
   const tierNames: Record<string, string> = {
     free: 'Clarity Foundation',
-    starter: 'Clarity Starter',
+    starter: 'Full Plan',
     builder: 'Confidence Builder',
     catalyst: 'Compassion Catalyst'
   };

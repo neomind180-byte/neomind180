@@ -10,13 +10,33 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // 1. Initialize Supabase Admin/Client
-        // We use the same env vars as the client for now, but on the server
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        const supabaseAdmin = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
         console.log(`👤 Processing registration for: ${email}`);
+
+        // Check trial lock if signing up for free tier
+        const isFreeTrial = (tier || 'free') === 'free';
+        const trialLockCode = `trial-used:${email.toLowerCase().trim()}`;
+        if (isFreeTrial) {
+            const { data: existingLock } = await supabaseAdmin
+                .from('vouchers')
+                .select('id')
+                .eq('code', trialLockCode)
+                .maybeSingle();
+
+            if (existingLock) {
+                return NextResponse.json(
+                    { error: 'This email is not eligible for another free trial. Please register for a paid plan.' },
+                    { status: 400 }
+                );
+            }
+        }
+
+        // 1. Initialize Supabase Admin/Client
+        // We use the same env vars as the client for now, but on the server
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
         // 2. Sign up the user in Supabase
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -39,17 +59,33 @@ export async function POST(request: Request) {
 
         // 2b. Manually ensure profile is updated (fallback in case trigger is slow or limited)
         if (authData.user) {
-            const trialExpiresAt = (tier || 'free') === 'free'
+            const trialExpiresAt = isFreeTrial
                 ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
                 : null;
 
-            await supabase.from('profiles').upsert({
+            await supabaseAdmin.from('profiles').upsert({
                 id: authData.user.id,
+                email: email.toLowerCase().trim(),
                 full_name: fullName,
                 phone: phone || '',
                 subscription_tier: tier || 'free',
                 trial_expires_at: trialExpiresAt
             });
+
+            // Lock the trial code if free trial
+            if (isFreeTrial) {
+                const { error: lockError } = await supabaseAdmin
+                    .from('vouchers')
+                    .insert({
+                        code: trialLockCode,
+                        tier: 'starter',
+                        is_redeemed: true,
+                        voucher_type: 'trial'
+                    });
+                if (lockError) {
+                    console.error('⚠️ Failed to insert trial lock voucher:', lockError.message);
+                }
+            }
         }
 
         // 3. Conditionally Sync to Systeme.io based on user opt-in

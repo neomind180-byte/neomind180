@@ -8,14 +8,14 @@ import { supabase } from '@/lib/supabaseClient';
 const FAQ_ITEMS = [
   {
     q: "What's the difference between AI reflections in each tier?",
-    a: "All tiers include AI-powered coaching reflections that remember your journey. Free users get 10 sessions/day to experience the value, Clarity Starter gets 30/day for consistent growth, and Confidence Builder+ get intensive Deep Journey AI Sessions. The AI learns from your conversations and provides increasingly personalized guidance."
+    a: "All tiers include AI-powered coaching reflections that remember your journey. Free users get 10 sessions/day to experience the value, the Full Plan gets 30/day for consistent growth, and Confidence Builder+ get intensive Deep Journey AI Sessions. The AI learns from your conversations and provides increasingly personalized guidance."
   },
   {
     q: "Does the AI remember my previous conversations?",
     a: "Yes! Your AI coach maintains context from all your previous reflections, tracking your growth patterns, recurring themes, and transformation milestones. This creates a truly personalized coaching experience that deepens over time."
   },
   {
-    q: "Why is Clarity Starter annual-only?",
+    q: "Why is the Full Plan annual-only?",
     a: "Annual commitment helps you stay accountable to your transformation journey while giving you the best value - just $1.58/month. Plus, you can cancel anytime with our 30-day guarantee."
   },
   {

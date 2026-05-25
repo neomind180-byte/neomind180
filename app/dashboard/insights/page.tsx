@@ -63,7 +63,7 @@ export default function InsightsPage() {
         );
     }
 
-    const isLocked = subscriptionTier === 'free';
+    const isLocked = false;
 
     return (
         <div className="space-y-12 pb-20 animate-in fade-in duration-700">

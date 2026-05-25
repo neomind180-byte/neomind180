@@ -22,7 +22,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, loading, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -44,6 +44,59 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   if (!user) return null;
+
+  const isTrialExpired = profile && 
+    profile.subscription_tier === 'free' && 
+    (profile.trial_expires_at ? new Date(profile.trial_expires_at) < new Date() : true);
+
+  if (isTrialExpired) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-6 font-sans relative overflow-hidden">
+        {/* Decorative ambient glow */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0ca78d]/5 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#00538e]/5 rounded-full blur-[100px] animate-pulse"></div>
+
+        <div className="bg-[var(--bg-card)] w-full max-w-lg p-10 md:p-12 rounded-[3.5rem] border border-[#0ca78d]/25 shadow-2xl shadow-[var(--shadow-color)] space-y-8 animate-in zoom-in-95 duration-500 relative z-10 text-center">
+          <div className="w-20 h-20 bg-[#0ca78d]/10 rounded-full flex items-center justify-center mx-auto border border-[#0ca78d]/20 shadow-inner">
+            <span className="text-[#0ca78d] text-4xl animate-pulse">✨</span>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Your Free Trial Has Ended</h2>
+            <p className="text-sm md:text-base text-[var(--text-secondary)] leading-relaxed font-medium italic">
+              We hope you enjoyed your 7-day trial of NeoMind180! Your trial period has now concluded.
+            </p>
+            <div className="bg-[var(--bg-input)]/50 p-6 rounded-2xl border border-[var(--border)] text-left space-y-3 font-medium">
+              <p className="text-xs font-black uppercase tracking-widest text-[#00538e] mb-1">Unlock Clarity & Growth:</p>
+              <ul className="text-[12px] text-[var(--text-muted)] space-y-1.5 list-disc list-inside">
+                <li>Unlimited reflections with Neo AI (60 minutes daily)</li>
+                <li>Direct asynchronous chat with Coach Emmeline</li>
+                <li>Advanced progress trends and behavioral analytics</li>
+                <li>Access to circles and community support</li>
+              </ul>
+            </div>
+            <p className="text-sm font-bold text-[var(--text-primary)]">
+              Upgrade to the Full Plan today to continue your transformation.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <Link href="/pricing" className="w-full">
+              <button className="w-full py-4.5 rounded-2xl bg-[#00538e] text-white text-[12px] font-black uppercase tracking-widest hover:bg-[#004272] shadow-xl shadow-[#00538e]/20 transition-all flex items-center justify-center gap-2">
+                Upgrade to Full Plan
+              </button>
+            </Link>
+            <button
+              onClick={signOut}
+              className="w-full py-4.5 rounded-2xl border border-[var(--border)] text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-input)] transition-all flex items-center justify-center gap-2"
+            >
+              Sign Out & Exit
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] overflow-hidden font-sans relative">

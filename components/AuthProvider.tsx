@@ -116,8 +116,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Force client clear to prevent stale tokens causing errors
       setUser(null);
       setProfile(null);
-      // Remove any local supabase cookies or session cache
-      localStorage.removeItem('sb-' + process.env.NEXT_PUBLIC_SUPABASE_URL + '-auth-token');
+      
+      // Clear localStorage & cookies starting with sb-
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('sb-')) {
+            localStorage.removeItem(key);
+          }
+        }
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          if (name.startsWith('sb-')) {
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname + ';';
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname.split('.').slice(-2).join('.') + ';';
+          }
+        }
+      } catch (e) {
+        console.error('Error clearing cookies on signout:', e);
+      }
+
       router.push('/login');
     }
   };

@@ -48,7 +48,7 @@ function ProgressSummary() {
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   return (
-    <div className="bg-[#ffe599] p-8 rounded-[2.5rem] border border-amber-200 shadow-sm space-y-6 h-full flex flex-col justify-between">
+    <div className="bg-[#fff2cc] p-8 rounded-[2.5rem] border border-amber-200 shadow-sm space-y-6 h-full flex flex-col justify-between">
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-lg font-black text-amber-950 uppercase tracking-tight">Momentum</h3>
@@ -72,13 +72,22 @@ function ProgressSummary() {
           </div>
         ))}
       </div>
+
+      <div className="border-t border-amber-950/10 pt-4 flex justify-start">
+        <Link
+          href="/dashboard/insights"
+          className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-amber-950 hover:opacity-75 transition-opacity"
+        >
+          View Monthly Streaks <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
     </div>
   );
 }
 
 // --- MAIN DASHBOARD PAGE ---
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { weeklyStreak, recentShifts, subscriptionTier, checkedInToday, todayCheckIn } = useCheckInData();
   const [dayIndex, setDayIndex] = useState(0);
 
@@ -110,7 +119,7 @@ export default function DashboardPage() {
   }, [user]);
 
   const PLAN_NAMES: Record<string, string> = {
-    starter: 'Clarity Starter',
+    starter: 'Full Plan',
     builder: 'Confidence Builder',
     catalyst: 'Compassion Catalyst',
   };
@@ -340,8 +349,8 @@ export default function DashboardPage() {
               {[
                 { label: 'Reflection with Neo', href: '/dashboard/reflection', icon: Zap, color: '#8E44AD', minTier: 'free' },
                 { label: 'Self-Help Library', href: '/dashboard/library', icon: BookOpen, color: '#F39904', minTier: 'free' },
-                { label: 'Ask-the-Coach', href: '/dashboard/coach', icon: HelpCircle, color: '#0AA390', minTier: 'starter' },
-                { label: 'Insights & Analytics', href: '/dashboard/insights', icon: TrendingUp, color: '#0AA390', minTier: 'starter' },
+                { label: 'Ask-the-Coach', href: '/dashboard/coach', icon: HelpCircle, color: '#0AA390', minTier: 'free' },
+                { label: 'Insights & Analytics', href: '/dashboard/insights', icon: TrendingUp, color: '#0AA390', minTier: 'free' },
                 { label: 'Shift History', href: '/dashboard/history', icon: History, color: '#0AA390', minTier: 'free' }
               ].map((item, idx) => {
                 const isLocked = item.minTier === 'starter' && subscriptionTier === 'free';
@@ -374,6 +383,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
+
 
     </div>
   );

@@ -28,8 +28,8 @@ const navItems = [
   { icon: BookOpen, label: "Self-Help Library", href: "/dashboard/library", minTier: 0, color: "#F39904" },
 
   // Paid Features (Level 1)
-  { icon: MessageSquare, label: "Ask-the-Coach", href: "/dashboard/coach", minTier: 1, color: "#4A90E2" },
-  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 1, color: "#0AA390" },
+  { icon: MessageSquare, label: "Ask-the-Coach", href: "/dashboard/coach", minTier: 0, color: "#4A90E2" },
+  { icon: TrendingUp, label: "Insights", href: "/dashboard/insights", minTier: 0, color: "#0AA390" },
   { icon: History, label: "Shift History", href: "/dashboard/history", minTier: 0, color: "#0AA390" },
 ];
 

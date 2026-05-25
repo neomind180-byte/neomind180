@@ -123,21 +123,26 @@ export default function SettingsPage() {
   const handleDelete = async (mode: 'selected' | 'all') => {
     setActionLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("No active session found");
 
-      const idsToDelete = mode === 'all' ? history.map(h => h.id) : selectedIds;
+      const idsToDelete = mode === 'all' ? [] : selectedIds;
 
-      // Delete from reflections
-      const reflectionIds = history.filter(h => h.table === 'reflections' && idsToDelete.includes(h.id)).map(h => h.id);
-      if (reflectionIds.length > 0) {
-        await supabase.from('reflections').delete().in('id', reflectionIds);
-      }
+      const response = await fetch('/api/user/purge-history', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          mode,
+          ids: idsToDelete
+        })
+      });
 
-      // Delete from coach_messages
-      const coachIds = history.filter(h => h.table === 'coach_messages' && idsToDelete.includes(h.id)).map(h => h.id);
-      if (coachIds.length > 0) {
-        await supabase.from('coach_messages').delete().in('id', coachIds);
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete history");
       }
 
       setMessage({ text: "History purged successfully.", type: 'success' });
@@ -546,6 +551,45 @@ export default function SettingsPage() {
           <Trash2 className="w-4 h-4" /> Delete My Account
         </button>
       </section>
+
+      {/* --- CHAT HISTORY DELETE CONFIRMATION MODAL --- */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-[var(--bg-card)] w-full max-w-md p-10 rounded-[3rem] border border-red-500/20 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
+              <Trash2 className="w-8 h-8 text-red-500" />
+            </div>
+
+            <div className="text-center space-y-4">
+              <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter">
+                {showDeleteModal === 'all' ? 'Purge All History?' : 'Delete Selected History?'}
+              </h2>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium italic">
+                {showDeleteModal === 'all'
+                  ? 'This will permanently delete all your conversation history with Neo and Coaches. This action is irreversible.'
+                  : `This will permanently delete the ${selectedIds.length} selected conversation items from your history. This action is irreversible.`}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => setShowDeleteModal(null)}
+                className="py-4 rounded-2xl border border-[var(--border)] text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-input)] transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(showDeleteModal)}
+                disabled={actionLoading}
+                className="py-4 rounded-2xl bg-red-600 text-white text-[12px] font-black uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-600/20 transition-all flex items-center justify-center gap-2"
+              >
+                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* --- DOWNGRADE CONFIRMATION MODAL --- */}
       {showDowngradeModal && (
