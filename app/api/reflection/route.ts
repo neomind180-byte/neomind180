@@ -250,6 +250,16 @@ ${historyContext}
 
   } catch (error: any) {
     console.error("Gemini/Reflection Error:", error);
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      fs.appendFileSync(
+        path.join(process.cwd(), 'error.txt'),
+        `[${new Date().toISOString()}] reflection API error: ${error.stack || error.message}\n`
+      );
+    } catch (e) {
+      console.error("Failed to write error to log file:", e);
+    }
     return NextResponse.json({
       role: 'neo',
       content: "I'm pausing for a moment to find clarity. Please try again in a few moments.",

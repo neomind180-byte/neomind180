@@ -144,41 +144,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.error('Error signing out:', err);
-    } finally {
-      // Force client clear to prevent stale tokens causing errors
-      setUser(null);
-      setProfile(null);
-      
-      // Clear localStorage & cookies starting with sb-
-      try {
-        localStorage.removeItem('nm_user');
-        localStorage.removeItem('nm_profile');
-        for (let i = localStorage.length - 1; i >= 0; i--) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith('sb-')) {
-            localStorage.removeItem(key);
-          }
-        }
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          const eqPos = cookie.indexOf('=');
-          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-          if (name.startsWith('sb-')) {
-            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname + ';';
-            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname.split('.').slice(-2).join('.') + ';';
-          }
-        }
-      } catch (e) {
-        console.error('Error clearing cookies on signout:', e);
-      }
+    // 1. Immediately clean up client-side states so the UI resets instantly
+    setUser(null);
+    setProfile(null);
 
-      router.push('/login');
+    // 2. Instantly clear cookies & localStorage
+    try {
+      localStorage.removeItem('nm_user');
+      localStorage.removeItem('nm_profile');
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-')) {
+          localStorage.removeItem(key);
+        }
+      }
+      
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        if (name.startsWith('sb-')) {
+          document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname + ';';
+          document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname.split('.').slice(-2).join('.') + ';';
+        }
+      }
+    } catch (e) {
+      console.error('Error clearing local storage / cookies on signout:', e);
+    }
+
+    // 3. Immediately redirect to login
+    router.push('/login');
+
+    // 4. Background fire-and-forget server signout (doesn't block execution if session is stale)
+    try {
+      supabase.auth.signOut().catch(() => {});
+    } catch (err) {
+      console.error('Error signing out of Supabase in background:', err);
     }
   };
 
