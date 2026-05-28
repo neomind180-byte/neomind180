@@ -4,6 +4,20 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
+// Intercept benign Supabase refresh token errors in development to prevent Next.js dev overlay from hijacking localhost
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  const originalError = console.error;
+  console.error = (...args: any[]) => {
+    const errorStr = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+    if (errorStr.includes('Invalid Refresh Token') || errorStr.includes('Refresh Token Not Found')) {
+      console.warn('[Filtered Dev Error]:', ...args);
+      return;
+    }
+    originalError(...args);
+  };
+}
+
+
 export interface UserProfile {
   id: string;
   subscription_tier: string;
