@@ -11,9 +11,11 @@ import {
 
 import { supabase } from '@/lib/supabaseClient';
 import { useTheme } from '@/components/ThemeProvider';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
+  const { user, profile: authProfile, loading: authLoading, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
@@ -66,43 +68,33 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (data) {
-          setProfile({
-            full_name: data.full_name || '',
-            email: user.email || '',
-            phone: data.phone || '',
-            subscription_tier: data.subscription_tier || 'free'
-          });
-        }
+    if (!authLoading) {
+      if (user && authProfile) {
+        setProfile({
+          full_name: authProfile.full_name || '',
+          email: user.email || '',
+          phone: authProfile.phone || '',
+          subscription_tier: authProfile.subscription_tier || 'free'
+        });
+        loadHistory(user.id);
       }
       setLoading(false);
     }
-    loadData();
-    loadHistory();
-  }, []);
+  }, [user, authProfile, authLoading]);
 
-  async function loadHistory() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  async function loadHistory(userId?: string) {
+    const activeUserId = userId || user?.id;
+    if (!activeUserId) return;
 
     const { data: reflections } = await supabase
       .from('reflections')
       .select('id, last_message, created_at')
-      .eq('user_id', user.id);
+      .eq('user_id', activeUserId);
 
     const { data: coachMsgs } = await supabase
       .from('coach_messages')
       .select('id, subject, created_at')
-      .eq('user_id', user.id);
+      .eq('user_id', activeUserId);
 
     const combined = [
       ...(reflections || []).map(r => ({ id: r.id, title: r.last_message || 'Neo Reflection', date: r.created_at, table: 'reflections' })),
@@ -149,7 +141,7 @@ export default function SettingsPage() {
       setMessage({ text: "History purged successfully.", type: 'success' });
       setSelectedIds([]);
       setShowDeleteModal(null);
-      await loadHistory();
+      await loadHistory(user?.id);
     } catch (error: any) {
       setMessage({ text: error.message || "Failed to delete history.", type: 'error' });
     } finally {
@@ -161,8 +153,6 @@ export default function SettingsPage() {
     setSaving(true);
     setMessage(null);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) {
         // Just mock the update locally if there is no user session (super helpful for local UI testing)
         setProfile(prev => ({ ...prev, ...updates }));
@@ -188,6 +178,7 @@ export default function SettingsPage() {
 
       setProfile(prev => ({ ...prev, ...updates }));
       setMessage({ text: "Changes saved successfully.", type: 'success' });
+      await refreshProfile();
 
       // If subscription_tier changed, reload to update sidebar etc.
       if (updates.subscription_tier) {
@@ -204,7 +195,6 @@ export default function SettingsPage() {
 
   const downloadChatHistory = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert("Please log in to export your chat history.");
         return;
@@ -253,6 +243,8 @@ export default function SettingsPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      // Clean up object URL to prevent leaks
+      setTimeout(() => URL.revokeObjectURL(url), 100);
     } catch (err) {
       console.error("Error downloading history:", err);
       alert("Failed to download chat history.");
@@ -261,7 +253,6 @@ export default function SettingsPage() {
 
   const downloadAllData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert("Please log in to export your data.");
         return;
@@ -294,6 +285,8 @@ export default function SettingsPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      // Clean up object URL to prevent leaks
+      setTimeout(() => URL.revokeObjectURL(url), 100);
     } catch (err) {
       console.error("Error downloading backup data:", err);
       alert("Failed to download backup data.");

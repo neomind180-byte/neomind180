@@ -219,7 +219,7 @@ ${historyContext}
     `.trim();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview", // Updated to Gemini 3 Flash model (preview)
+      model: "gemini-2.5-flash", // Highly stable, fast, and quota-allowed Gemini 2.5 Flash model
       systemInstruction: fullSystemInstruction
     });
 
