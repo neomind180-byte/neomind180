@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Send, Zap, Lock, Sparkles, Mic, MicOff } from 'lucide-react';
+import { Send, Zap, Lock, Sparkles, Mic, MicOff, Download } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -16,6 +16,8 @@ export default function ReflectionPage() {
   const [userTier, setUserTier] = useState<string>('free');
   const [reflectionId, setReflectionId] = useState<string | null>(null);
   const [pastSessions, setPastSessions] = useState<any[]>([]);
+  const hasResumedRef = useRef(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Speech Recognition states
   const [isListening, setIsListening] = useState(false);
@@ -109,6 +111,40 @@ export default function ReflectionPage() {
     }
   };
 
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
+
+  const downloadCurrentSession = () => {
+    if (messages.length <= 1) {
+      alert("No conversation history in this session to download.");
+      return;
+    }
+
+    let markdown = `# NeoMind180 Guided AI Reflection Session\n`;
+    markdown += `Date: ${new Date().toLocaleDateString()}\n`;
+    markdown += `Plan Tier: ${userTier === 'free' ? '7-Day Free Trial' : 'Full Plan'}\n\n`;
+    markdown += `==================================================\n\n`;
+
+    messages.forEach((msg) => {
+      const role = msg.role === 'user' ? 'USER' : 'NEO';
+      markdown += `### [${role}] (${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : 'N/A'})\n${msg.content || msg.text || ''}\n\n`;
+    });
+
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `NeoMind180_Session_${reflectionId || 'new'}_${new Date().toISOString().split('T')[0]}.md`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   useEffect(() => {
     async function initData() {
       if (user) {
@@ -117,22 +153,6 @@ export default function ReflectionPage() {
 
         // 2. Fetch Time-Based limits status
         await fetchStatus();
-
-        // 3. Auto-resume the most recent reflection session
-        const { data: latestRef } = await supabase
-          .from('reflections')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (latestRef) {
-          setReflectionId(latestRef.id);
-          if (latestRef.messages && latestRef.messages.length > 0) {
-            setMessages(latestRef.messages);
-          }
-        }
 
         // Fetch past sessions for the history dropdown
         const { data: allRefs } = await supabase
@@ -143,6 +163,33 @@ export default function ReflectionPage() {
 
         if (allRefs) {
           setPastSessions(allRefs);
+        }
+
+        // 3. Auto-resume the most recent reflection session ONCE on mount
+        if (!hasResumedRef.current) {
+          const latestRef = allRefs && allRefs.length > 0 ? allRefs[0] : null;
+
+          if (latestRef) {
+            setReflectionId(latestRef.id);
+            if (latestRef.messages && latestRef.messages.length > 0) {
+              setMessages(latestRef.messages);
+            }
+          } else {
+            // Restore clean state if database has no history
+            setReflectionId(null);
+            setMessages([
+              { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
+            ]);
+          }
+          hasResumedRef.current = true;
+        } else {
+          // If already initialized once, but history was cleared/purged under Settings
+          if (!allRefs || allRefs.length === 0) {
+            setReflectionId(null);
+            setMessages([
+              { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
+            ]);
+          }
         }
       }
     }
@@ -320,6 +367,15 @@ export default function ReflectionPage() {
             })}
           </select>
           <button
+            onClick={downloadCurrentSession}
+            disabled={messages.length <= 1}
+            className="flex items-center gap-2 px-4 py-2 bg-[#00538e]/10 hover:bg-[#00538e]/25 text-[#00538e] font-black uppercase text-[10px] tracking-widest rounded-xl border border-[#00538e]/20 transition-all cursor-pointer disabled:opacity-30"
+            title="Download this conversation session"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export Session
+          </button>
+          <button
             onClick={startNewSession}
             className="flex items-center gap-2 px-4 py-2 bg-[#0AA390]/10 hover:bg-[#0AA390]/25 text-[#0AA390] font-black uppercase text-[10px] tracking-widest rounded-xl border border-[#0AA390]/20 transition-all cursor-pointer"
             title="Start a fresh reflection session"
@@ -343,6 +399,7 @@ export default function ReflectionPage() {
           </div>
         ))}
         {isTyping && <div className="text-[12px] text-[var(--text-dim)] font-black uppercase tracking-widest animate-pulse pl-4">Neo is observing...</div>}
+        <div ref={chatEndRef} />
       </div>
 
       {/* Input Area or Limit Reached Message */}

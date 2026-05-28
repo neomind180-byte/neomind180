@@ -5,7 +5,8 @@ import Link from 'next/link';
 import {
   ArrowLeft, User, Mail, Phone, Save, Loader2, AlertCircle,
   ShieldAlert, Trash2, AlertTriangle, CheckSquare, Square,
-  RefreshCcw, Sun, Moon, Lock, Settings, ChevronDown, KeyRound, X
+  RefreshCcw, Sun, Moon, Lock, Settings, ChevronDown, KeyRound, X,
+  Download, FileText
 } from 'lucide-react';
 
 import { supabase } from '@/lib/supabaseClient';
@@ -201,7 +202,106 @@ export default function SettingsPage() {
     }
   };
 
+  const downloadChatHistory = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Please log in to export your chat history.");
+        return;
+      }
+
+      const { data: reflections } = await supabase
+        .from('reflections')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (!reflections || reflections.length === 0) {
+        alert("No chat reflections found to download.");
+        return;
+      }
+
+      let markdown = `# NeoMind180 Personal Chat History & Reflections\n`;
+      markdown += `Generated on: ${new Date().toLocaleString()}\n`;
+      markdown += `User: ${profile.full_name} (${profile.email})\n\n`;
+      markdown += `==================================================\n\n`;
+
+      reflections.forEach((ref, index) => {
+        markdown += `## Session ${reflections.length - index}: ${ref.last_message || 'Neo Reflection'}\n`;
+        markdown += `**Created on**: ${new Date(ref.created_at).toLocaleString()}\n`;
+        markdown += `**Mindset Shift**: ${ref.shift_before || 'N/A'} ➔ ${ref.shift_after || 'N/A'}\n\n`;
+        
+        if (ref.messages && Array.isArray(ref.messages)) {
+          ref.messages.forEach((msg: any) => {
+            const role = msg.role === 'user' ? 'USER' : 'NEO';
+            markdown += `### [${role}] (${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : 'N/A'})\n${msg.content || msg.text || ''}\n\n`;
+          });
+        }
+        
+        if (ref.observation) {
+          markdown += `**Neo's Observations**:\n> ${ref.observation}\n\n`;
+        }
+        
+        markdown += `--------------------------------------------------\n\n`;
+      });
+
+      const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `NeoMind180_Chat_History_${new Date().toISOString().split('T')[0]}.md`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading history:", err);
+      alert("Failed to download chat history.");
+    }
+  };
+
+  const downloadAllData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Please log in to export your data.");
+        return;
+      }
+
+      const [reflectionsRes, checkinsRes, coachRes] = await Promise.all([
+        supabase.from('reflections').select('*').eq('user_id', user.id),
+        supabase.from('check_ins').select('*').eq('user_id', user.id),
+        supabase.from('coach_messages').select('*').eq('user_id', user.id)
+      ]);
+
+      const allData = {
+        profile: {
+          full_name: profile.full_name,
+          email: profile.email,
+          phone: profile.phone,
+          subscription_tier: profile.subscription_tier
+        },
+        reflections: reflectionsRes.data || [],
+        check_ins: checkinsRes.data || [],
+        coach_messages: coachRes.data || [],
+        exported_at: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `NeoMind180_Backup_Data_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading backup data:", err);
+      alert("Failed to download backup data.");
+    }
+  };
+
   const handleDowngrade = async () => {
+
     setActionLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -219,7 +319,7 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error(result.error || "Failed to downgrade");
 
       setProfile(prev => ({ ...prev, subscription_tier: 'free' }));
-      setMessage({ text: "You've been downgraded to the free plan. We have received your cancellation request.", type: 'success' });
+      setMessage({ text: "Your subscription has been cancelled. We have received your cancellation request.", type: 'success' });
       setShowDowngradeModal(false);
     } catch (error: any) {
       setMessage({ text: error.message || "Failed to downgrade.", type: 'error' });
@@ -402,12 +502,14 @@ export default function SettingsPage() {
               <div className="px-6 py-2 bg-[#00538e]/10 text-[#00538e] rounded-full text-xs font-black uppercase tracking-[0.2em]">
                 Current Tier: {userPlan}
               </div>
-              <Link
-                href="/pricing"
-                className="px-6 py-2 bg-[#0AA390] text-white rounded-full text-[12px] font-black uppercase tracking-widest hover:shadow-lg shadow-[#0AA390]/20 transition-all hover:-translate-y-0.5"
-              >
-                Change Plan
-              </Link>
+              {profile.subscription_tier === 'free' && (
+                <Link
+                  href="/pricing"
+                  className="px-6 py-2 bg-[#0AA390] text-white rounded-full text-[12px] font-black uppercase tracking-widest hover:shadow-lg shadow-[#0AA390]/20 transition-all hover:-translate-y-0.5"
+                >
+                  Change Plan
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -437,20 +539,46 @@ export default function SettingsPage() {
           </div>
         )}
       </section>
-
-      {/* --- DOWNGRADE SECTION (Visible only if paid) --- */}
+       {/* --- DOWNGRADE SECTION (Visible only if paid) --- */}
       {profile.subscription_tier !== 'free' && (
         <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-4">
-          <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Cancel / Downgrade Subscription</h2>
-          <p className="text-[12px] text-[var(--text-muted)] italic">Switch back to the free Clarity Foundation plan and cancel future billing. You'll lose access to premium coaching, AI reflections, and community circles.</p>
+          <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Cancel Subscription</h2>
+          <p className="text-[12px] text-[var(--text-muted)] italic leading-relaxed">
+            Warning: You&apos;ll lose all access to the application! If you are serious, you can download your data before proceeding.
+          </p>
           <button
             onClick={() => setShowDowngradeModal(true)}
             className="px-8 py-3 rounded-2xl border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-dim)] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center gap-2 mt-4"
           >
-            Cancel Subscription & Downgrade <ChevronDown className="w-4 h-4" />
+            Cancel Subscription <ChevronDown className="w-4 h-4" />
           </button>
         </section>
       )}
+
+      {/* --- DATA EXPORT SECTION --- */}
+      <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-[var(--border)] shadow-2xl shadow-[var(--shadow-color)] space-y-6">
+        <div className="flex items-center gap-3">
+          <Download className="w-6 h-6 text-[#0AA390]" />
+          <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">Data Backup & Export</h2>
+        </div>
+        <p className="text-[12px] text-[var(--text-muted)] italic leading-relaxed">
+          Your privacy and data ownership are our top priorities. Download a complete archive of your reflections, chats, check-ins, and analytics at any time.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <button
+            onClick={downloadChatHistory}
+            className="flex-1 px-8 py-4.5 rounded-2xl bg-[#00538e] text-white text-[11px] font-black uppercase tracking-widest hover:bg-[#004272] transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#00538e]/10"
+          >
+            <FileText className="w-4 h-4" /> Export Chat History (.MD)
+          </button>
+          <button
+            onClick={downloadAllData}
+            className="flex-1 px-8 py-4.5 rounded-2xl border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-dim)] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" /> Download Complete Archive (.JSON)
+          </button>
+        </div>
+      </section>
 
       {/* --- CHAT HISTORY SECTION --- */}
       <section className="bg-[var(--bg-card)] p-8 md:p-12 rounded-[3.5rem] border border-red-500/10 shadow-2xl shadow-[var(--shadow-color)] space-y-8">
@@ -590,32 +718,19 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
-
-      {/* --- DOWNGRADE CONFIRMATION MODAL --- */}
+       {/* --- DOWNGRADE CONFIRMATION MODAL --- */}
       {showDowngradeModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-[var(--bg-card)] w-full max-w-lg p-10 rounded-[3rem] border border-[var(--border)] shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
             <div className="text-center space-y-4">
-              <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Downgrade to Free Plan?</h2>
-              <div className="text-sm text-[var(--text-secondary)] text-left space-y-4 leading-relaxed font-medium bg-[var(--bg-input)]/30 p-6 rounded-2xl italic border border-[var(--border)]">
-                <p>You're about to cancel your subscription to the <span className="text-[#00538e] font-black">Full Plan</span>.</p>
-                <div className="space-y-2">
-                  <p className="font-bold text-red-400 not-italic uppercase tracking-widest text-[10px]">What you'll lose:</p>
-                  <ul className="list-disc list-inside text-[12px] space-y-1 ml-2">
-                    <li>Extended daily Neo AI reflection time (60 mins down to 30 mins)</li>
-                    <li>Access to Ask-the-Coach (direct async messaging with Coach Emmeline)</li>
-                    <li>Advanced progress insights and analytics</li>
-                  </ul>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-bold text-[#0AA390] not-italic uppercase tracking-widest text-[10px]">What you'll keep:</p>
-                  <ul className="list-disc list-inside text-[12px] space-y-1 ml-2">
-                    <li>Daily check-in tool and self-observation tracker</li>
-                    <li>Full access to self-help library and worksheets</li>
-                    <li>Your historical data and mindset shift records</li>
-                  </ul>
-                </div>
-                <p className="mt-4 text-[11px]">Your current billing cycle will continue until the end of your current period, then you'll be moved to the free plan.</p>
+              <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Cancel Subscription?</h2>
+              <div className="text-sm text-[var(--text-secondary)] text-left space-y-4 leading-relaxed font-medium bg-[var(--bg-input)]/30 p-6 rounded-2xl italic border border-[var(--border)] animate-in fade-in duration-500">
+                <p className="text-red-400 font-bold not-italic">
+                  ⚠️ WARNING: Canceling your subscription will immediately lock you out of all features on NeoMind180 at the end of your billing cycle.
+                </p>
+                <p>
+                  You will lose all access to Guided Reflections with Neo AI, circles, community support, and asynchronous chat with Coach Emmeline. If you are serious about proceeding, please make sure you have exported your reflection history and backup data first.
+                </p>
               </div>
             </div>
 
@@ -624,15 +739,15 @@ export default function SettingsPage() {
                 onClick={() => setShowDowngradeModal(false)}
                 className="py-4 rounded-2xl border border-[var(--border)] text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-input)] transition-all"
               >
-                Cancel
+                Go Back
               </button>
               <button
                 onClick={handleDowngrade}
                 disabled={actionLoading}
-                className="py-4 rounded-2xl bg-orange-500 text-white text-[12px] font-black uppercase tracking-widest hover:bg-orange-600 shadow-xl shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+                className="py-4 rounded-2xl bg-red-600 text-white text-[12px] font-black uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-600/20 transition-all flex items-center justify-center gap-2"
               >
-                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
-                Yes, Downgrade to Free
+                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
+                Yes, Cancel Subscription
               </button>
             </div>
           </div>
