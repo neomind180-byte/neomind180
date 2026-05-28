@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   title: "NeoMind180 – Clarity. Confidence. Compassion.",
   description: "Your personal growth and coaching platform.",
   icons: {
-    icon: "/business-logo.png",
-    apple: "/business-logo.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
