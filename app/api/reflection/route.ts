@@ -274,7 +274,7 @@ export async function GET(req: Request) {
       limitMessage = "Your 7-day free trial of Neo Reflections has expired. You can still use your self-help tools, journaling, and daily check-in anytime. Subscribe to the Full Plan for longer support, more reflection time, and deeper access.";
     } else if (isLimitReached) {
       const messages = [
-        "You’ve completed your reflection time for today. Your next window opens tomorrow.",
+        "You've completed your reflection time for today. Your next window opens tomorrow.",
         "You can still use your self-help tools, journaling, and daily check-in anytime."
       ];
       
@@ -367,7 +367,7 @@ export async function POST(req: Request) {
 
     if (dailyChatTime >= limit) {
       const messages = [
-        "You’ve completed your reflection time for today. Your next window opens tomorrow.",
+        "You've completed your reflection time for today. Your next window opens tomorrow.",
         "You can still use your self-help tools, journaling, and daily check-in anytime."
       ];
       
