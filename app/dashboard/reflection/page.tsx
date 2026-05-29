@@ -237,6 +237,15 @@ export default function ReflectionPage() {
     setInput('');
     setIsTyping(true);
 
+    const interruptionOptions = [
+      "Looks like I lost the thread for a moment. I’m still here — please continue.",
+      "I hit a temporary interruption while following your thought. Try sending that again.",
+      "I lost connection to the flow of our conversation for a moment. Please resend your last message.",
+      "Something interrupted my response mid-thought. Go ahead and send that again.",
+      "I momentarily lost the conversational thread. I’m ready to continue.",
+      "Looks like our conversation got briefly interrupted. Please continue from your last thought."
+    ];
+
     try {
       // 1. Get Auth Token
       const { data: { session } } = await supabase.auth.getSession();
@@ -253,15 +262,63 @@ export default function ReflectionPage() {
       });
       const data = await res.json();
 
-      if (res.status === 429 || data.limitReached) {
-        setIsLimitReached(true);
-        setLimitMessage(data.content);
-        return;
-      }
+      if (!res.ok) {
+        if (res.status === 429 || data.limitReached) {
+          setIsLimitReached(true);
+          setLimitMessage(data.content);
+          return;
+        }
 
-      if (res.status === 403 || data.trialExpired) {
-        setIsTrialExpired(true);
-        setLimitMessage(data.content);
+        if (res.status === 403 || data.trialExpired) {
+          setIsTrialExpired(true);
+          setLimitMessage(data.content);
+          return;
+        }
+
+        // For other server errors (like 500 API errors), append the returned or a local fallback interruption message
+        const errorContent = data?.content || interruptionOptions[Math.floor(Math.random() * interruptionOptions.length)];
+        const errorMsg = {
+          role: 'neo',
+          content: errorContent,
+          timestamp: new Date().toISOString()
+        };
+        const finalMessages = [...updatedMessagesWithUser, errorMsg];
+        setMessages(finalMessages);
+
+        if (user) {
+          if (!reflectionId) {
+            const { data: newRef } = await supabase
+              .from('reflections')
+              .insert({
+                user_id: user.id,
+                messages: finalMessages,
+                last_message: errorContent
+              })
+              .select()
+              .single();
+
+            if (newRef) {
+              setReflectionId(newRef.id);
+              setPastSessions(prev => [newRef, ...prev]);
+            }
+          } else {
+            await supabase
+              .from('reflections')
+              .update({
+                messages: finalMessages,
+                last_message: errorContent
+              })
+              .eq('id', reflectionId);
+
+            setPastSessions(prev =>
+              prev.map(s =>
+                s.id === reflectionId
+                  ? { ...s, messages: finalMessages, last_message: errorContent, updated_at: new Date().toISOString() }
+                  : s
+              )
+            );
+          }
+        }
         return;
       }
 
@@ -320,6 +377,54 @@ export default function ReflectionPage() {
 
     } catch (error) {
       console.error("Reflection Error", error);
+      // Hard network failure (offline / timeouts): append local fallback interruption message
+      const fallbackMessage = interruptionOptions[Math.floor(Math.random() * interruptionOptions.length)];
+      const errorMsg = {
+        role: 'neo',
+        content: fallbackMessage,
+        timestamp: new Date().toISOString()
+      };
+      const finalMessages = [...updatedMessagesWithUser, errorMsg];
+      setMessages(finalMessages);
+
+      if (user) {
+        try {
+          if (!reflectionId) {
+            const { data: newRef } = await supabase
+              .from('reflections')
+              .insert({
+                user_id: user.id,
+                messages: finalMessages,
+                last_message: fallbackMessage
+              })
+              .select()
+              .single();
+
+            if (newRef) {
+              setReflectionId(newRef.id);
+              setPastSessions(prev => [newRef, ...prev]);
+            }
+          } else {
+            await supabase
+              .from('reflections')
+              .update({
+                messages: finalMessages,
+                last_message: fallbackMessage
+              })
+              .eq('id', reflectionId);
+
+            setPastSessions(prev =>
+              prev.map(s =>
+                s.id === reflectionId
+                  ? { ...s, messages: finalMessages, last_message: fallbackMessage, updated_at: new Date().toISOString() }
+                  : s
+              )
+            );
+          }
+        } catch (dbErr) {
+          console.error("Failed to save offline interruption message to DB:", dbErr);
+        }
+      }
     } finally {
       setIsTyping(false);
     }
