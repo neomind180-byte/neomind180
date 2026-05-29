@@ -2,9 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Send, Zap, Lock, Sparkles, Mic, MicOff, Download } from 'lucide-react';
+import { Send, Zap, Lock, Sparkles, Mic, MicOff, Download, CheckCircle, RefreshCw, X, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/components/AuthProvider';
+
+interface ChatMessage {
+  role: string;
+  content: string;
+  summary?: string[];
+  checkInQuestions?: string[];
+}
 
 export default function ReflectionPage() {
   const { user, profile } = useAuth();
@@ -18,6 +25,13 @@ export default function ReflectionPage() {
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const hasResumedRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Growth Completion & Tailored Check-In states
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [showCompletionCard, setShowCompletionCard] = useState(false);
+  const [completionSummary, setCompletionSummary] = useState<string[]>([]);
+  const [lastSessionCheckIns, setLastSessionCheckIns] = useState<string[]>([]);
+  const [hasCompletion, setHasCompletion] = useState(false);
 
   // Speech Recognition states
   const [isListening, setIsListening] = useState(false);
@@ -163,6 +177,9 @@ export default function ReflectionPage() {
 
         if (allRefs) {
           setPastSessions(allRefs);
+          // Extract last completed session check-ins to show quick-start pills
+          const foundQuestions = findLastSessionCheckIns(allRefs);
+          setLastSessionCheckIns(foundQuestions);
         }
 
         // 3. Auto-resume the most recent reflection session ONCE on mount
@@ -173,6 +190,7 @@ export default function ReflectionPage() {
             setReflectionId(latestRef.id);
             if (latestRef.messages && latestRef.messages.length > 0) {
               setMessages(latestRef.messages);
+              checkCompletionStatus(latestRef.messages);
             }
           } else {
             // Restore clean state if database has no history
@@ -180,6 +198,7 @@ export default function ReflectionPage() {
             setMessages([
               { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
             ]);
+            setHasCompletion(false);
           }
           hasResumedRef.current = true;
         } else {
@@ -189,6 +208,7 @@ export default function ReflectionPage() {
             setMessages([
               { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
             ]);
+            setHasCompletion(false);
           }
         }
       }
@@ -201,6 +221,32 @@ export default function ReflectionPage() {
       { role: 'neo', content: "Hello. I’ve been observing your shifts. Ready to reflect?" }
     ]);
     setReflectionId(null);
+    setShowCompletionCard(false);
+    setHasCompletion(false);
+    fetchStatus();
+  };
+
+  const checkCompletionStatus = (msgs: ChatMessage[]) => {
+    const completionMsg = msgs.find((m: ChatMessage) => m.role === 'session_completion');
+    if (completionMsg) {
+      setCompletionSummary(completionMsg.summary || []);
+      setHasCompletion(true);
+    } else {
+      setCompletionSummary([]);
+      setHasCompletion(false);
+    }
+  };
+
+  const findLastSessionCheckIns = (sessionsList: { messages: ChatMessage[] }[]) => {
+    for (const session of sessionsList) {
+      if (session.messages && Array.isArray(session.messages)) {
+        const completionMsg = session.messages.find((m: ChatMessage) => m.role === 'session_completion');
+        if (completionMsg && completionMsg.checkInQuestions && Array.isArray(completionMsg.checkInQuestions)) {
+          return completionMsg.checkInQuestions;
+        }
+      }
+    }
+    return [];
   };
 
   const handleSelectSession = (id: string) => {
@@ -213,13 +259,85 @@ export default function ReflectionPage() {
       setReflectionId(selected.id);
       if (selected.messages && selected.messages.length > 0) {
         setMessages(selected.messages);
+        checkCompletionStatus(selected.messages);
+      } else {
+        setHasCompletion(false);
       }
     }
   };
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLimitReached || isTrialExpired) return;
+  const handleSelectCheckInPrompt = (promptText: string) => {
+    handleSend(undefined, promptText);
+  };
+
+  const completeCurrentSession = async () => {
+    if (!reflectionId || isCompleting) return;
+    setIsCompleting(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch('/api/reflection/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          reflectionId: reflectionId,
+          history: messages
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCompletionSummary(data.summary || []);
+        setLastSessionCheckIns(data.checkInQuestions || []);
+        setShowCompletionCard(true);
+        setHasCompletion(true);
+        
+        const completionMsg = {
+          role: 'session_completion',
+          content: 'Session Completed',
+          summary: data.summary,
+          checkInQuestions: data.checkInQuestions,
+          timestamp: data.timestamp || new Date().toISOString()
+        };
+        
+        setMessages(prev => {
+          const filtered = prev.filter(m => m.role !== 'session_completion');
+          return [...filtered, completionMsg];
+        });
+
+        setPastSessions(prev =>
+          prev.map(s =>
+            s.id === reflectionId
+              ? {
+                  ...s,
+                  messages: [...s.messages.filter((m: ChatMessage) => m.role !== 'session_completion'), completionMsg],
+                  last_message: "Session Completed",
+                  updated_at: new Date().toISOString()
+                }
+              : s
+          )
+        );
+      } else {
+        const err = await res.json();
+        alert(`Could not complete session: ${err.message || 'Error occurred'}`);
+      }
+    } catch (err) {
+      console.error("Error completing session:", err);
+      alert("A connection error occurred while trying to complete the session.");
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const handleSend = async (e?: React.FormEvent, directInput?: string) => {
+    if (e) e.preventDefault();
+    const messageText = directInput !== undefined ? directInput : input;
+    if (!messageText.trim() || isLimitReached || isTrialExpired) return;
 
     if (isListening && recognition) {
       recognition.stop();
@@ -229,7 +347,7 @@ export default function ReflectionPage() {
     // Attach local client timestamp to help calculate active chat time correctly
     const userMsg = { 
       role: 'user', 
-      content: input,
+      content: messageText,
       timestamp: new Date().toISOString()
     };
     const updatedMessagesWithUser = [...messages, userMsg];
@@ -258,7 +376,7 @@ export default function ReflectionPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message: input, history: messages }),
+        body: JSON.stringify({ message: messageText, history: messages }),
       });
       const data = await res.json();
 
@@ -480,6 +598,36 @@ export default function ReflectionPage() {
             <Download className="w-3.5 h-3.5" />
             Export Session
           </button>
+
+          {/* Complete Session Action Button */}
+          {reflectionId && !hasCompletion && (
+            <button
+              onClick={completeCurrentSession}
+              disabled={messages.filter(m => m.role === 'user').length === 0 || isCompleting}
+              className="flex items-center gap-2 px-4 py-2 bg-[#8E44AD]/10 hover:bg-[#8E44AD]/25 text-[#8E44AD] font-black uppercase text-[10px] tracking-widest rounded-xl border border-[#8E44AD]/20 transition-all cursor-pointer disabled:opacity-30"
+              title="Complete this session and generate a background summary and check-in prompts"
+            >
+              {isCompleting ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <CheckCircle className="w-3.5 h-3.5" />
+              )}
+              Complete Session
+            </button>
+          )}
+
+          {/* View Summary Action Button */}
+          {hasCompletion && (
+            <button
+              onClick={() => setShowCompletionCard(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#8E44AD]/10 hover:bg-[#8E44AD]/25 text-[#8E44AD] font-black uppercase text-[10px] tracking-widest rounded-xl border border-[#8E44AD]/20 transition-all cursor-pointer"
+              title="View the growth summary for this session"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              View Summary
+            </button>
+          )}
+
           <button
             onClick={startNewSession}
             className="flex items-center gap-2 px-4 py-2 bg-[#0AA390]/10 hover:bg-[#0AA390]/25 text-[#0AA390] font-black uppercase text-[10px] tracking-widest rounded-xl border border-[#0AA390]/20 transition-all cursor-pointer"
@@ -493,16 +641,54 @@ export default function ReflectionPage() {
 
       {/* Chat Area */}
       <div className="flex-grow overflow-y-auto p-8 space-y-6 border-x border-[var(--border)] bg-[var(--bg-card)]/50">
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-5 rounded-2xl text-base leading-relaxed ${msg.role === 'user'
-              ? 'bg-[#00538e] text-white rounded-tr-none shadow-lg shadow-[#00538e]/10'
-              : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] rounded-tl-none border border-[var(--border)]'
-              }`}>
-              {msg.content}
+        {messages
+          .filter((msg: ChatMessage) => msg.role === 'user' || msg.role === 'neo')
+          .map((msg: ChatMessage, idx: number) => (
+            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] p-5 rounded-2xl text-base leading-relaxed ${msg.role === 'user'
+                ? 'bg-[#00538e] text-white rounded-tr-none shadow-lg shadow-[#00538e]/10'
+                : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] rounded-tl-none border border-[var(--border)]'
+                }`}>
+                {msg.content}
+              </div>
+            </div>
+          ))}
+
+        {/* Somatic / Mind / Action tailored Socratic check-in pills */}
+        {!messages.some((msg: ChatMessage) => msg.role === 'user') && lastSessionCheckIns.length > 0 && (
+          <div className="flex flex-col gap-3 pl-4 max-w-[85%] animate-fade-in pb-4">
+            <span className="text-[12px] font-black uppercase tracking-widest text-[#0AA390] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              Tailored Socratic Check-Ins
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {lastSessionCheckIns.map((q, qIdx) => {
+                const colors = [
+                  { bg: 'bg-[#0AA390]/5 hover:bg-[#0AA390]/15', border: 'border-[#0AA390]/25 focus:border-[#0AA390]', text: 'text-[#0AA390]', label: 'Somatic (Body)' },
+                  { bg: 'bg-[#8E44AD]/5 hover:bg-[#8E44AD]/15', border: 'border-[#8E44AD]/25 focus:border-[#8E44AD]', text: 'text-[#8E44AD]', label: 'Insight (Mind)' },
+                  { bg: 'bg-[#00538e]/5 hover:bg-[#00538e]/15', border: 'border-[#00538e]/25 focus:border-[#00538e]', text: 'text-[#00538e]', label: 'Action (Movement)' }
+                ];
+                const col = colors[qIdx % 3];
+                return (
+                  <button
+                    key={qIdx}
+                    type="button"
+                    onClick={() => handleSelectCheckInPrompt(q)}
+                    className={`flex flex-col text-left p-4 rounded-xl border ${col.bg} ${col.border} transition-all duration-300 hover:-translate-y-0.5 cursor-pointer shadow-sm`}
+                  >
+                    <span className={`text-[10px] font-black uppercase tracking-wider ${col.text} mb-1`}>
+                      {col.label}
+                    </span>
+                    <span className="text-[13px] text-[var(--text-secondary)] font-medium leading-normal">
+                      &quot;{q}&quot;
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
-        ))}
+        )}
+
         {isTyping && <div className="text-[12px] text-[var(--text-dim)] font-black uppercase tracking-widest animate-pulse pl-4">Neo is observing...</div>}
         <div ref={chatEndRef} />
       </div>
@@ -579,6 +765,84 @@ export default function ReflectionPage() {
           </form>
         )}
       </div>
+
+      {/* Session Completed Growth Summary Overlay Modal */}
+      {showCompletionCard && (
+        <div className="fixed inset-0 bg-[var(--bg-primary)]/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[var(--bg-card)] border border-[var(--border)] max-w-lg w-full rounded-3xl p-8 shadow-2xl relative space-y-6">
+            <button
+              onClick={() => setShowCompletionCard(false)}
+              className="absolute right-6 top-6 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-2 hover:bg-[var(--bg-primary)] rounded-full cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 bg-[#8E44AD]/10 rounded-2xl flex items-center justify-center mx-auto border border-[#8E44AD]/25 text-[#8E44AD] shadow-lg shadow-[#8E44AD]/5">
+                <Sparkles className="w-7 h-7" />
+              </div>
+              <h2 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter pt-2">
+                Session Complete
+              </h2>
+              <p className="text-[12px] font-black uppercase tracking-widest text-[#0AA390]">
+                Your Growth Insights
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] p-6 rounded-2xl space-y-4">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] block mb-1">
+                SUMMARY & INSIGHTS
+              </span>
+              <ul className="space-y-3">
+                {completionSummary.length > 0 ? (
+                  completionSummary.map((bullet, bIdx) => {
+                    const parts = bullet.split(':');
+                    const title = parts[0];
+                    const desc = parts.slice(1).join(':');
+                    return (
+                      <li key={bIdx} className="text-[14px] leading-relaxed text-[var(--text-secondary)] font-medium flex items-start gap-2 text-left">
+                        <span className="text-[#8E44AD] mt-1.5 font-bold">•</span>
+                        <span>
+                          <strong className="text-[var(--text-primary)]">{title}:</strong>{desc}
+                        </span>
+                      </li>
+                    );
+                  })
+                ) : (
+                  <li className="text-sm text-[var(--text-muted)] italic">No summary generated. Start typing to reflect.</li>
+                )}
+              </ul>
+            </div>
+
+            <div className="bg-[#8E44AD]/5 border border-[#8E44AD]/10 p-5 rounded-2xl space-y-2 text-center">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#8E44AD] block">
+                What&apos;s Next
+              </span>
+              <p className="text-[13px] text-[var(--text-muted)] leading-relaxed font-medium">
+                Neo has generated 3 tailored Socratic check-ins to reopen this thread. They will be waiting as quick-start suggestions in your next session.
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowCompletionCard(false)}
+                className="flex-1 py-4 bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] rounded-xl font-black uppercase text-[11px] tracking-widest transition-colors cursor-pointer"
+              >
+                Review Current Chat
+              </button>
+              <button
+                onClick={() => {
+                  setShowCompletionCard(false);
+                  startNewSession();
+                }}
+                className="flex-1 py-4 bg-[#8E44AD] hover:bg-[#7D3C98] text-white rounded-xl font-black uppercase text-[11px] tracking-widest transition-colors cursor-pointer shadow-lg shadow-[#8E44AD]/20 flex items-center justify-center gap-2"
+              >
+                Start New Session
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
