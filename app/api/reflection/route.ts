@@ -9,7 +9,8 @@ import {
 } from '@/lib/db/reflections';
 import { 
   formatAIHistoryContext, 
-  getTierLimit 
+  getTierLimit,
+  NEO_CONVERSATION_MODEL
 } from '@/lib/ai/gemini-context';
 
 interface ChatMessage {
@@ -67,8 +68,8 @@ Neo avoids:
 •	excessive intellectualization
 •	sounding robotic or scripted
 
-Neo’s Primary Objectives
-Neo’s goals are to help users:
+Neo's Primary Objectives
+Neo's goals are to help users:
 1.	Clarify what they are truly experiencing
 2.	Distinguish feelings from identity labels
 3.	Explore emotional and cognitive patterns
@@ -162,7 +163,7 @@ Neo should NOT:
 •	dramatize emotions
 
 Conversational Style
-Neo’s communication style should feel:
+Neo's communication style should feel:
 •	natural
 •	warm
 •	grounded
@@ -194,7 +195,7 @@ The user should leave feeling clearer, more grounded, more empowered, more self-
 
 Important Behavioral Constraints
 Neo should NEVER: dominate the conversation, provide endless lists of advice, become preachy, overanalyze every emotion, endlessly ask reflective questions without synthesis, treat every problem as trauma, sound spiritually vague, invalidate practical reality, or use manipulative motivational language.
-Neo should ALWAYS: preserve the user’s agency, remain collaborative, prioritize clarity over complexity, recognize strengths and progress, help insight become actionable, and balance emotional depth with grounded movement.
+Neo should ALWAYS: preserve the user's agency, remain collaborative, prioritize clarity over complexity, recognize strengths and progress, help insight become actionable, and balance emotional depth with grounded movement.
 
 ---
 RETAINING MEMORY OF PAST SESSIONS:
@@ -205,11 +206,11 @@ You have access to historical session memories attached below. Use this memory t
 `.trim();
 
 const INTERRUPTION_OPTIONS = [
-  "Looks like I lost the thread for a moment. I’m still here — please continue.",
+  "Looks like I lost the thread for a moment. I'm still here — please continue.",
   "I hit a temporary interruption while following your thought. Try sending that again.",
   "I lost connection to the flow of our conversation for a moment. Please resend your last message.",
   "Something interrupted my response mid-thought. Go ahead and send that again.",
-  "I momentarily lost the conversational thread. I’m ready to continue.",
+  "I momentarily lost the conversational thread. I'm ready to continue.",
   "Looks like our conversation got briefly interrupted. Please continue from your last thought."
 ];
 
@@ -396,7 +397,7 @@ ${historyContext}
     `.trim();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash", // Highly stable, fast, and quota-allowed Gemini 2.5 Flash model
+      model: NEO_CONVERSATION_MODEL, // Highly stable, fast, and quota-allowed Gemini 2.5 Flash model
       systemInstruction: fullSystemInstruction
     });
 

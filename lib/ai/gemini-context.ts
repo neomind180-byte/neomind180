@@ -1,7 +1,18 @@
+interface ReflectionMessage {
+  role: string;
+  content: string;
+}
+
+interface ReflectionSession {
+  created_at: string;
+  messages: ReflectionMessage[];
+  last_message: string;
+}
+
 /**
  * Formats recent reflection summaries into a context string for Gemini.
  */
-export function formatAIHistoryContext(reflections: any[]) {
+export function formatAIHistoryContext(reflections: ReflectionSession[]) {
   if (!reflections || reflections.length === 0) {
     return "This is the user's first reflection session. Start with a warm, welcoming presence.";
   }
@@ -11,7 +22,7 @@ export function formatAIHistoryContext(reflections: any[]) {
     const date = new Date(ref.created_at).toLocaleDateString();
     
     // Extract up to the last 3 user statements to capture the core topics of the session
-    const userMsgs = (ref.messages as any[] || [])
+    const userMsgs = (ref.messages || [])
       .filter(m => m.role === 'user')
       .map(m => m.content)
       .slice(-3);
@@ -49,3 +60,11 @@ export function getTierLimit(tier: string): number {
   }
   return 60; // 60 minutes/day for full plan (and other paid tiers)
 }
+
+/**
+ * Model definitions for the NeoMind180 platform.
+ * Gemini 2.5 Flash is used for the main conversational coach (Neo reflections) where high emotional intelligence is required.
+ * Gemini 2.5 Flash-lite is used for lightweight structured backend tasks like summaries, prompts, and post-chat analysis.
+ */
+export const NEO_CONVERSATION_MODEL = "gemini-2.5-flash";
+export const NEO_BACKGROUND_MODEL = "gemini-2.5-flash-lite";
