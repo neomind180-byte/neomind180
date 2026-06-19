@@ -364,12 +364,62 @@ export default function ReflectionPage() {
       "Looks like our conversation got briefly interrupted. Please continue from your last thought."
     ];
 
+    let activeReflectionId = reflectionId;
+
+    // 1. Immediately save the user message to Supabase
+    if (user) {
+      try {
+        if (!activeReflectionId) {
+          // New session: Insert user message
+          const { data: newRef, error } = await supabase
+            .from('reflections')
+            .insert({
+              user_id: user.id,
+              messages: updatedMessagesWithUser,
+              last_message: messageText
+            })
+            .select()
+            .single();
+
+          if (newRef) {
+            activeReflectionId = newRef.id;
+            setReflectionId(newRef.id);
+            setPastSessions(prev => [newRef, ...prev]);
+          }
+          if (error) console.error("Error saving new reflection user message:", error);
+        } else {
+          // Existing session: Update user message
+          const { error } = await supabase
+            .from('reflections')
+            .update({
+              messages: updatedMessagesWithUser,
+              last_message: messageText
+            })
+            .eq('id', activeReflectionId);
+
+          if (error) {
+            console.error("Error updating reflection user message:", error);
+          } else {
+            setPastSessions(prev =>
+              prev.map(s =>
+                s.id === activeReflectionId
+                  ? { ...s, messages: updatedMessagesWithUser, last_message: messageText, updated_at: new Date().toISOString() }
+                  : s
+              )
+            );
+          }
+        }
+      } catch (dbErr) {
+        console.error("Failed to save user message to database:", dbErr);
+      }
+    }
+
     try {
-      // 1. Get Auth Token
+      // 2. Get Auth Token
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      // 2. Call AI API
+      // 3. Call AI API
       const res = await fetch('/api/reflection', {
         method: 'POST',
         headers: { 
@@ -403,39 +453,22 @@ export default function ReflectionPage() {
         const finalMessages = [...updatedMessagesWithUser, errorMsg];
         setMessages(finalMessages);
 
-        if (user) {
-          if (!reflectionId) {
-            const { data: newRef } = await supabase
-              .from('reflections')
-              .insert({
-                user_id: user.id,
-                messages: finalMessages,
-                last_message: errorContent
-              })
-              .select()
-              .single();
+        if (user && activeReflectionId) {
+          await supabase
+            .from('reflections')
+            .update({
+              messages: finalMessages,
+              last_message: errorContent
+            })
+            .eq('id', activeReflectionId);
 
-            if (newRef) {
-              setReflectionId(newRef.id);
-              setPastSessions(prev => [newRef, ...prev]);
-            }
-          } else {
-            await supabase
-              .from('reflections')
-              .update({
-                messages: finalMessages,
-                last_message: errorContent
-              })
-              .eq('id', reflectionId);
-
-            setPastSessions(prev =>
-              prev.map(s =>
-                s.id === reflectionId
-                  ? { ...s, messages: finalMessages, last_message: errorContent, updated_at: new Date().toISOString() }
-                  : s
-              )
-            );
-          }
+          setPastSessions(prev =>
+            prev.map(s =>
+              s.id === activeReflectionId
+                ? { ...s, messages: finalMessages, last_message: errorContent, updated_at: new Date().toISOString() }
+                : s
+            )
+          );
         }
         return;
       }
@@ -446,51 +479,31 @@ export default function ReflectionPage() {
       }];
       setMessages(finalMessages);
 
-      // 3. Persist to Supabase
-      if (user) {
-        if (!reflectionId) {
-          // New session: Insert
-          const { data: newRef, error } = await supabase
-            .from('reflections')
-            .insert({
-              user_id: user.id,
-              messages: finalMessages,
-              last_message: data.content
-            })
-            .select()
-            .single();
+      // 4. Update the DB with the received AI response
+      if (user && activeReflectionId) {
+        const { error } = await supabase
+          .from('reflections')
+          .update({
+            messages: finalMessages,
+            last_message: data.content
+          })
+          .eq('id', activeReflectionId);
 
-          if (newRef) {
-            setReflectionId(newRef.id);
-            setPastSessions(prev => [newRef, ...prev]);
-          }
-          if (error) console.error("Error saving new reflection:", error);
+        if (error) {
+          console.error("Error updating reflection with AI response:", error);
         } else {
-          // Existing session: Update
-          const { error } = await supabase
-            .from('reflections')
-            .update({
-              messages: finalMessages,
-              last_message: data.content
-            })
-            .eq('id', reflectionId);
-
-          if (error) {
-            console.error("Error updating reflection:", error);
-          } else {
-            // Update pastSessions array in state
-            setPastSessions(prev =>
-              prev.map(s =>
-                s.id === reflectionId
-                  ? { ...s, messages: finalMessages, last_message: data.content, updated_at: new Date().toISOString() }
-                  : s
-              )
-            );
-          }
+          // Update pastSessions array in state
+          setPastSessions(prev =>
+            prev.map(s =>
+              s.id === activeReflectionId
+                ? { ...s, messages: finalMessages, last_message: data.content, updated_at: new Date().toISOString() }
+                : s
+            )
+          );
         }
       }
 
-      // 4. Refresh limits status from server
+      // 5. Refresh limits status from server
       await fetchStatus();
 
     } catch (error) {
@@ -505,40 +518,23 @@ export default function ReflectionPage() {
       const finalMessages = [...updatedMessagesWithUser, errorMsg];
       setMessages(finalMessages);
 
-      if (user) {
+      if (user && activeReflectionId) {
         try {
-          if (!reflectionId) {
-            const { data: newRef } = await supabase
-              .from('reflections')
-              .insert({
-                user_id: user.id,
-                messages: finalMessages,
-                last_message: fallbackMessage
-              })
-              .select()
-              .single();
+          await supabase
+            .from('reflections')
+            .update({
+              messages: finalMessages,
+              last_message: fallbackMessage
+            })
+            .eq('id', activeReflectionId);
 
-            if (newRef) {
-              setReflectionId(newRef.id);
-              setPastSessions(prev => [newRef, ...prev]);
-            }
-          } else {
-            await supabase
-              .from('reflections')
-              .update({
-                messages: finalMessages,
-                last_message: fallbackMessage
-              })
-              .eq('id', reflectionId);
-
-            setPastSessions(prev =>
-              prev.map(s =>
-                s.id === reflectionId
-                  ? { ...s, messages: finalMessages, last_message: fallbackMessage, updated_at: new Date().toISOString() }
-                  : s
-              )
-            );
-          }
+          setPastSessions(prev =>
+            prev.map(s =>
+              s.id === activeReflectionId
+                ? { ...s, messages: finalMessages, last_message: fallbackMessage, updated_at: new Date().toISOString() }
+                : s
+            )
+          );
         } catch (dbErr) {
           console.error("Failed to save offline interruption message to DB:", dbErr);
         }

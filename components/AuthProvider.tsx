@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
@@ -143,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async (isIdle: boolean = false) => {
     // 1. Immediately clean up client-side states so the UI resets instantly
     setUser(null);
     setProfile(null);
@@ -175,7 +175,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // 3. Immediately redirect to login
-    router.push('/login');
+    if (isIdle) {
+      router.push('/login?reason=idle');
+    } else {
+      router.push('/login');
+    }
 
     // 4. Background fire-and-forget server signout (doesn't block execution if session is stale)
     try {
@@ -183,7 +187,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error('Error signing out of Supabase in background:', err);
     }
-  };
+  }, [router]);
+
+  // Inactivity timeout configuration (30 minutes)
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
+
+  useEffect(() => {
+    if (!user) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        handleSignOut(true);
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    // Events that signify user activity
+    const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+
+    // Initialize the timer
+    resetTimer();
+
+    // Attach listeners
+    activityEvents.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    return () => {
+      clearTimeout(timeoutId);
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [user, handleSignOut]);
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, refreshProfile, signOut: handleSignOut }}>

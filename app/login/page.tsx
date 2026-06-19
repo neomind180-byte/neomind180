@@ -14,8 +14,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check search params for idle signout reason
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('reason') === 'idle') {
+        setWarningMessage("You have been signed out due to inactivity.");
+      }
+    }
+
     // Clear any stale local storage or cookies related to Supabase to prevent auth/token conflicts
     try {
       // 1. Clear all localStorage keys starting with sb-
@@ -47,6 +56,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setWarningMessage(null);
 
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -94,6 +104,12 @@ export default function LoginPage() {
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[14px] font-bold rounded-2xl text-center uppercase tracking-widest">
             {error}
+          </div>
+        )}
+
+        {warningMessage && !error && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[14px] font-bold rounded-2xl text-center uppercase tracking-widest">
+            {warningMessage}
           </div>
         )}
 
