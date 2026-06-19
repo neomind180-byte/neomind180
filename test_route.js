@@ -1,7 +1,6 @@
 const dotenv = require("dotenv");
 const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Load local environment variables from workspace
 dotenv.config({ path: path.join(__dirname, ".env.local") });
@@ -10,7 +9,7 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const apiKey = process.env.GEMINI_API_KEY;
+const apiKey = process.env.OPENROUTER_API_KEY;
 
 const publicSupabase = createClient(supabaseUrl, supabaseAnonKey);
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRole);
@@ -85,20 +84,24 @@ async function run() {
     const recentReflections = await getRecentReflections(userId, 5);
     const historyContext = formatAIHistoryContext(recentReflections);
 
-    console.log("5. Initializing GoogleGenerativeAI...");
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      systemInstruction: "You are a helpful assistant."
+    console.log("5. Initializing OpenAI for OpenRouter...");
+    const OpenAI = require("openai");
+    const openrouter = new OpenAI({
+      apiKey: apiKey,
+      baseURL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
     });
 
-    console.log("6. Starting Chat...");
-    const chat = model.startChat({ history: [] });
-
-    console.log("7. Sending Message...");
-    const result = await chat.sendMessage("Hello");
-    const response = await result.response.text();
-    console.log("Gemini response:", response);
+    console.log("6. Requesting Chat Completion from OpenRouter...");
+    const response = await openrouter.chat.completions.create({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: "You are a helpful assistant." },
+        { role: "user", content: "Hello" }
+      ],
+      temperature: 0.7,
+    });
+    const content = response.choices?.[0]?.message?.content;
+    console.log("OpenRouter response:", content);
 
     console.log("ALL STEPS COMPLETED PERFECTLY!");
   } catch (error) {

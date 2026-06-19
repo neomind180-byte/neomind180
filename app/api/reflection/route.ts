@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
@@ -9,9 +8,9 @@ import {
 } from '@/lib/db/reflections';
 import { 
   formatAIHistoryContext, 
-  getTierLimit,
-  NEO_CONVERSATION_MODEL
+  getTierLimit
 } from '@/lib/ai/gemini-context';
+import { runNeoConversation, ChatCompletionMessageParam } from '@/lib/ai/openrouter';
 
 interface ChatMessage {
   role: string;
@@ -419,11 +418,12 @@ export async function POST(req: Request) {
 
     const { message, history } = await req.json();
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
+      console.error("Server Configuration Error: OPENROUTER_API_KEY is not set.");
       return NextResponse.json({
         role: 'neo',
-        content: getInterruptionResponse()
+        content: "I'm having trouble connecting to my cognitive system right now. Please verify server configurations."
       }, { status: 500 });
     }
 
@@ -475,9 +475,7 @@ export async function POST(req: Request) {
     const recentReflections = await getRecentReflections(user.id, 5);
     const historyContext = formatAIHistoryContext(recentReflections);
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-    // 4. Initialize model with Unified SYSTEM_INSTRUCTION + Memory
+    // 4. Initialize Unified SYSTEM_INSTRUCTION + Memory
     const fullSystemInstruction = `
 ${SYSTEM_INSTRUCTION}
 
@@ -485,12 +483,7 @@ ${SYSTEM_INSTRUCTION}
 ${historyContext}
     `.trim();
 
-    const model = genAI.getGenerativeModel({
-      model: NEO_CONVERSATION_MODEL, // Highly stable, fast, and quota-allowed Gemini 2.5 Flash model
-      systemInstruction: fullSystemInstruction
-    });
-
-    // 5. Format current session history for Gemini with Interruption detection & Context Recovery
+    // 5. Format current session history with Interruption detection & Context Recovery
     const rawHistory: ChatMessage[] = history || [];
 
     // Check last Neo response to see if it was an interruption
@@ -545,7 +538,7 @@ ${historyContext}
       // This strips the interruption message, retry keywords, and the resent user message from history.
       finalHistoryForGemini = rawHistory.slice(0, lastMeaningfulUserIndex);
 
-      // Instruct Gemini to process the recovered statement following the Resume Response Structure
+      // Instruct Neo to process the recovered statement following the Resume Response Structure
       promptToSend = `
 ${recoveredUserMsgContent}
 
@@ -568,20 +561,22 @@ Do NOT mention connection drops, servers, API limitations, or technical terms. K
 
     const firstUserIndex = finalHistoryForGemini.findIndex((msg: ChatMessage) => msg.role !== 'neo');
 
-    const formattedHistory = firstUserIndex === -1
+    const formattedHistory: ChatCompletionMessageParam[] = firstUserIndex === -1
       ? []
       : finalHistoryForGemini.slice(firstUserIndex).map((msg: ChatMessage) => ({
-        role: msg.role === 'neo' ? 'model' : 'user',
-        parts: [{ text: msg.content || "" }] as Part[],
+        role: msg.role === 'neo' ? 'assistant' : 'user',
+        content: msg.content || "",
       }));
 
-    // 6. Start chat and get response
-    const chat = model.startChat({
-      history: formattedHistory,
-    });
+    // Construct the full messages array for standard chat completion
+    const messages = [
+      { role: 'system' as const, content: fullSystemInstruction },
+      ...formattedHistory,
+      { role: 'user' as const, content: promptToSend }
+    ];
 
-    const result = await chat.sendMessage(promptToSend);
-    const response = await result.response.text();
+    // 6. Request response from OpenRouter
+    const response = await runNeoConversation(messages);
 
     return NextResponse.json({
       role: 'neo',
@@ -591,7 +586,7 @@ Do NOT mention connection drops, servers, API limitations, or technical terms. K
 
   } catch (error: unknown) {
     const err = error as Error;
-    console.error("Gemini/Reflection Error:", err);
+    console.error("OpenRouter/Reflection Error:", err);
     try {
       fs.appendFileSync(
         path.join(process.cwd(), 'error.txt'),
@@ -603,7 +598,7 @@ Do NOT mention connection drops, servers, API limitations, or technical terms. K
     return NextResponse.json({
       role: 'neo',
       content: getInterruptionResponse(),
-      error: err.message
+      error: 'An unexpected issue occurred while communicating with the AI service.'
     }, { status: 500 });
   }
 }

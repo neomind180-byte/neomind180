@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { createClient } from '@supabase/supabase-js';
 import { 
-  NEO_BACKGROUND_MODEL, 
   getCompletionSystemInstruction 
 } from '@/lib/ai/gemini-context';
+import { runNeoBackgroundTask, parseJson } from '@/lib/ai/openrouter';
 
 interface ChatMessage {
   role: string;
@@ -49,42 +48,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Cannot summarize empty session' }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 });
+      console.error("Server Configuration Error: OPENROUTER_API_KEY is not set.");
+      return NextResponse.json({ error: 'OpenRouter is not configured on the server.' }, { status: 500 });
     }
 
-    // 1. Initialize Gemini with background Flash-lite model
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: NEO_BACKGROUND_MODEL,
-      systemInstruction: getCompletionSystemInstruction()
-    });
-
-    // 2. Format history for Gemini (filtering out any system completions or metadata)
+    // 2. Format history (filtering out any system completions or metadata)
     const cleanHistory = rawHistory.filter(msg => msg.role === 'user' || msg.role === 'neo');
     const firstUserIndex = cleanHistory.findIndex(msg => msg.role !== 'neo');
 
     const formattedHistory = firstUserIndex === -1
       ? []
       : cleanHistory.slice(firstUserIndex).map(msg => ({
-        role: msg.role === 'neo' ? 'model' : 'user',
-        parts: [{ text: msg.content || "" }] as Part[],
+        role: msg.role === 'neo' ? 'assistant' as const : 'user' as const,
+        content: msg.content || "",
       }));
 
-    // 3. Request structured JSON summary from Flash-lite
-    const chat = model.startChat({
-      history: formattedHistory,
-      generationConfig: {
-        responseMimeType: "application/json"
-      }
-    });
+    // Construct the full messages array for standard chat completion background task
+    const messages = [
+      { role: 'system' as const, content: getCompletionSystemInstruction() },
+      ...formattedHistory,
+      { role: 'user' as const, content: "Please perform the session analysis now and return the structured JSON containing 'summary' and 'checkInQuestions'." }
+    ];
 
-    const result = await chat.sendMessage(
-      "Please perform the session analysis now and return the structured JSON containing 'summary' and 'checkInQuestions'."
-    );
-    const responseText = await result.response.text();
-    const parsedData = JSON.parse(responseText);
+    // 3. Request structured JSON summary from OpenRouter using Flash-lite
+    const responseText = await runNeoBackgroundTask(messages);
+    const parsedData = parseJson(responseText);
 
     // 4. Retrieve current session messages from Supabase to preserve concurrent updates
     const { data: refData, error: refError } = await supabase
@@ -138,8 +128,8 @@ export async function POST(req: Request) {
     const err = error as Error;
     console.error("Session Completion Endpoint Error:", err);
     return NextResponse.json({ 
-      error: 'Internal server error during session completion', 
-      message: err.message 
+      error: 'Failed to complete session analysis due to a server-side error.', 
+      message: 'A temporary issue occurred while processing your request.' 
     }, { status: 500 });
   }
 }

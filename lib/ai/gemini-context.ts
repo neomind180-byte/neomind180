@@ -66,8 +66,8 @@ export function getTierLimit(tier: string): number {
  * Gemini 2.5 Flash is used for the main conversational coach (Neo reflections) where high emotional intelligence is required.
  * Gemini 2.5 Flash-lite is used for lightweight structured backend tasks like summaries, prompts, and post-chat analysis.
  */
-export const NEO_CONVERSATION_MODEL = "gemini-2.5-flash";
-export const NEO_BACKGROUND_MODEL = "gemini-2.5-flash-lite";
+export const NEO_CONVERSATION_MODEL = "google/gemini-2.5-flash";
+export const NEO_BACKGROUND_MODEL = "google/gemini-2.5-flash-lite";
 
 /**
  * Constructs the system instruction for generating a session completion summary and check-in questions.
