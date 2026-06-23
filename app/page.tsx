@@ -568,7 +568,7 @@ export default function Page() {
                               Full Access
                             </span>
                           )}
-                          {starterT && (
+                          {starterT && plan === 'yearly' && (
                             <span className="rounded-full bg-[#00538e] px-3 py-1.5 text-[9px] font-black uppercase text-white tracking-widest shadow-lg shadow-[#00538e]/20">
                               Best Value
                             </span>
