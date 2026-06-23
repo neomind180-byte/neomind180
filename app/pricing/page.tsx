@@ -41,6 +41,7 @@ const COMPARISON_FEATURES = [
 
 export default function PricingPage() {
   const [currency, setCurrency] = useState<'USD' | 'ZAR'>('USD');
+  const [billingPeriod, setBillingPeriod] = useState<'MONTH' | 'YEAR'>('MONTH');
   const [hoveredTier, setHoveredTier] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
@@ -109,7 +110,7 @@ export default function PricingPage() {
         },
         body: JSON.stringify({
           planId: plan.id,
-          billingPeriod: plan.price[currency].period,
+          billingPeriod: plan.id === 'starter' ? billingPeriod : 'MONTH',
           currency: currency,
           voucherCode: isVoucherValid && voucherTier === plan.id ? voucherCode : undefined
         })
@@ -174,27 +175,52 @@ export default function PricingPage() {
             Simple, honest plans tailored to your transformation. Cancel anytime.
           </p>
  
-          {/* Currency Toggle & Voucher */}
-          <div className="flex flex-col items-center gap-8 pt-8">
-            <div className="bg-[var(--bg-card)] p-1.5 rounded-full inline-flex items-center border border-[var(--border)] shadow-xl">
-              <button
-                onClick={() => setCurrency('USD')}
-                className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${currency === 'USD'
-                  ? 'bg-[#00538e] text-white shadow-lg'
-                  : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
-                  }`}
-              >
-                USD ($)
-              </button>
-              <button
-                onClick={() => setCurrency('ZAR')}
-                className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${currency === 'ZAR'
-                  ? 'bg-[#00538e] text-white shadow-lg'
-                  : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
-                  }`}
-              >
-                ZAR (R)
-              </button>
+          {/* Currency & Billing Cycle Toggles */}
+          <div className="flex flex-col items-center gap-6 pt-8">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              {/* Currency Toggle */}
+              <div className="bg-[var(--bg-card)] p-1.5 rounded-full inline-flex items-center border border-[var(--border)] shadow-xl">
+                <button
+                  onClick={() => setCurrency('USD')}
+                  className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${currency === 'USD'
+                    ? 'bg-[#00538e] text-white shadow-lg'
+                    : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
+                    }`}
+                >
+                  USD ($)
+                </button>
+                <button
+                  onClick={() => setCurrency('ZAR')}
+                  className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${currency === 'ZAR'
+                    ? 'bg-[#00538e] text-white shadow-lg'
+                    : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
+                    }`}
+                >
+                  ZAR (R)
+                </button>
+              </div>
+
+              {/* Billing Cycle Toggle */}
+              <div className="bg-[var(--bg-card)] p-1.5 rounded-full inline-flex items-center border border-[var(--border)] shadow-xl">
+                <button
+                  onClick={() => setBillingPeriod('MONTH')}
+                  className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${billingPeriod === 'MONTH'
+                    ? 'bg-[#00538e] text-white shadow-lg'
+                    : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
+                    }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingPeriod('YEAR')}
+                  className={`px-10 py-3 rounded-full text-[12px] font-black uppercase tracking-widest transition-all ${billingPeriod === 'YEAR'
+                    ? 'bg-[#00538e] text-white shadow-lg'
+                    : 'text-[var(--text-dim)] hover:text-[var(--text-primary)]'
+                    }`}
+                >
+                  Yearly
+                </button>
+              </div>
             </div>
 
             {/* Voucher Input */}
@@ -231,74 +257,92 @@ export default function PricingPage() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-8 mb-24">
-          {PRICING_PLANS.map((plan) => (
-            <div
-              key={plan.id}
-              onMouseEnter={() => setHoveredTier(plan.id)}
-              onMouseLeave={() => setHoveredTier(null)}
-              className={`relative bg-[var(--bg-card)] p-8 rounded-[3.5rem] border transition-all duration-500 flex flex-col ${
-                plan.badgeType === 'primary' 
-                  ? 'border-[#00538e] shadow-2xl scale-105 z-10' 
-                  : 'border-[var(--border)] shadow-lg'
-              } ${hoveredTier === plan.id ? '-translate-y-2' : ''}`}
-            >
-              {plan.badge && (
-                <div className="absolute top-0 right-0 px-6 py-2.5 rounded-bl-3xl rounded-tr-[3.4rem] text-[10px] font-black uppercase tracking-[0.2em] text-white bg-[#00538e]">
-                  {plan.badge}
+          {PRICING_PLANS.map((plan) => {
+            const isStarter = plan.id === 'starter';
+            const isYearly = billingPeriod === 'YEAR';
+            const displayPrice = isStarter
+              ? (isYearly
+                  ? (currency === 'USD' ? '150' : '2500.00')
+                  : plan.price[currency].amount)
+              : plan.price[currency].amount;
+            const displayPeriod = isStarter
+              ? (isYearly ? 'YEAR' : 'MONTH')
+              : plan.price[currency].period;
+            const displayNote = isStarter
+              ? (isYearly ? 'Billed annually. Cancel anytime.' : 'Billed monthly. Cancel anytime.')
+              : plan.note;
+            const shouldHighlight = isStarter && isYearly;
+            const badgeText = shouldHighlight ? 'BEST VALUE' : null;
+
+            return (
+              <div
+                key={plan.id}
+                onMouseEnter={() => setHoveredTier(plan.id)}
+                onMouseLeave={() => setHoveredTier(null)}
+                className={`relative bg-[var(--bg-card)] p-8 rounded-[3.5rem] border transition-all duration-500 flex flex-col ${
+                  shouldHighlight
+                    ? 'border-[#00538e] shadow-2xl scale-105 z-10' 
+                    : 'border-[var(--border)] shadow-lg'
+                } ${hoveredTier === plan.id ? '-translate-y-2' : ''}`}
+              >
+                {badgeText && (
+                  <div className="absolute top-0 right-0 px-6 py-2.5 rounded-bl-3xl rounded-tr-[3.4rem] text-[10px] font-black uppercase tracking-[0.2em] text-white bg-[#00538e]">
+                    {badgeText}
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight mb-2">{plan.title}</h3>
+                  <p className="text-[12px] text-[var(--text-muted)] font-medium italic leading-relaxed min-h-[40px]">{plan.tagline}</p>
                 </div>
-              )}
 
-              <div className="mb-6">
-                <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight mb-2">{plan.title}</h3>
-                <p className="text-[12px] text-[var(--text-muted)] font-medium italic leading-relaxed min-h-[40px]">{plan.tagline}</p>
-              </div>
-
-              <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-4xl font-black text-[var(--text-primary)]">
-                  {currency === 'USD' ? '$' : 'R'}{plan.price[currency].amount}
-                </span>
-                {plan.price[currency].period && (
-                  <span className="text-[var(--text-dim)] font-black uppercase text-[10px] tracking-widest">
-                    /{plan.price[currency].period.toLowerCase()}
+                <div className="mb-8 flex items-baseline gap-1">
+                  <span className="text-4xl font-black text-[var(--text-primary)]">
+                    {currency === 'USD' ? '$' : 'R'}{displayPrice}
                   </span>
-                )}
-              </div>
-
-              {plan.highlight && (
-                <div className="mb-8 p-4 bg-[#00538e]/10 rounded-2xl border border-[#00538e]/20">
-                  <p className="text-[11px] font-bold text-[#00538e] italic flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" /> {plan.highlight}
-                  </p>
+                  {displayPeriod && (
+                    <span className="text-[var(--text-dim)] font-black uppercase text-[10px] tracking-widest">
+                      /{displayPeriod.toLowerCase()}
+                    </span>
+                  )}
                 </div>
-              )}
 
-              <ul className="space-y-4 mb-20 flex-grow">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex gap-3 text-[12px] text-[var(--text-secondary)] font-bold uppercase tracking-tight leading-tight">
-                    <Check className="w-4 h-4 shrink-0 text-[#0AA390]" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="space-y-4">
-                <button
-                  disabled={loadingPlanId !== null}
-                  onClick={() => handleAction(plan)}
-                  className={`block w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                    plan.id === 'free'
-                      ? 'border-2 border-[var(--border)] text-[var(--text-muted)] hover:border-[#00538e] hover:text-[#00538e]'
-                      : 'bg-[#00538e] text-white shadow-xl shadow-[#00538e]/20'
-                  }`}
-                >
-                  {loadingPlanId === plan.id ? 'Processing...' : plan.cta}
-                </button>
-                {plan.note && (
-                  <p className="text-[10px] text-[var(--text-muted)] text-center italic font-medium">{plan.note}</p>
+                {plan.highlight && (
+                  <div className="mb-8 p-4 bg-[#00538e]/10 rounded-2xl border border-[#00538e]/20">
+                    <p className="text-[11px] font-bold text-[#00538e] italic flex items-center gap-2">
+                      <Sparkles className="w-3 h-3" /> {plan.highlight}
+                    </p>
+                  </div>
                 )}
+
+                <ul className="space-y-4 mb-20 flex-grow">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex gap-3 text-[12px] text-[var(--text-secondary)] font-bold uppercase tracking-tight leading-tight">
+                      <Check className="w-4 h-4 shrink-0 text-[#0AA390]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="space-y-4">
+                  <button
+                    disabled={loadingPlanId !== null}
+                    onClick={() => handleAction(plan)}
+                    className={`block w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                      plan.id === 'free'
+                        ? 'border-2 border-[var(--border)] text-[var(--text-muted)] hover:border-[#00538e] hover:text-[#00538e]'
+                        : 'bg-[#00538e] text-white shadow-xl shadow-[#00538e]/20'
+                    }`}
+                  >
+                    {loadingPlanId === plan.id ? 'Processing...' : plan.cta}
+                  </button>
+                  {displayNote && (
+                    <p className="text-[10px] text-[var(--text-muted)] text-center italic font-medium">{displayNote}</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Feature Comparison Table */}

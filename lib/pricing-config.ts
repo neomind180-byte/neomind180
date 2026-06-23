@@ -42,8 +42,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     badgeType: 'primary',
     tagline: 'Deepen your transformation with extended reflection time and direct coach guidance.',
     price: {
-      USD: { amount: '19', period: 'MONTH' },
-      ZAR: { amount: '350.00', period: 'MONTH' },
+      USD: { amount: '15', period: 'MONTH' },
+      ZAR: { amount: '250.00', period: 'MONTH' },
     },
     highlight: '💡 Complete coaching system: Advanced Insights + Async Coach Chat',
     features: [

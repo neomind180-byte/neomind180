@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     // Determine amount based on currency and plan
     let rawAmount = plan.price[currency as 'ZAR' | 'USD'].amount;
     if (planId === 'starter' && billingPeriod === 'YEAR') {
-      rawAmount = currency === 'ZAR' ? '3500.00' : '190.00';
+      rawAmount = currency === 'ZAR' ? '2500.00' : '150.00';
     }
     let customStr4 = ''; // For voucher ID
 
@@ -139,11 +139,11 @@ export async function POST(req: Request) {
     const amount = currency === 'ZAR' ? parseFloat(rawAmount).toFixed(2) : rawAmount;
 
     // PayFast only processes South African Rand (ZAR).
-    // If currency is USD, we must charge the configured ZAR equivalent amount to avoid charging R19 instead of R350.
+    // If currency is USD, we must charge the configured ZAR equivalent amount to avoid charging R15 instead of R250.
     let payfastAmount = amount;
     if (currency === 'USD') {
       if (planId === 'starter') {
-        payfastAmount = billingPeriod === 'YEAR' ? '3500.00' : '350.00';
+        payfastAmount = billingPeriod === 'YEAR' ? '2500.00' : '250.00';
       }
     }
 

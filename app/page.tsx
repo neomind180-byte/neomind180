@@ -12,11 +12,11 @@ type Currency = 'USD' | 'ZAR';
 const PRICING = {
   USD: {
     free: { name: '7-Day Free Trial', price: 0, blurb: 'Full trial of all tools with 30 mins guided reflection per day.', period: '' },
-    starter: { name: 'Full Plan', price: 19, blurb: 'Direct async coach access with 60 mins Neo guided reflection per day.', period: '/mo' },
+    starter: { name: 'Full Plan', price: 15, blurb: 'Direct async coach access with 60 mins Neo guided reflection per day.', period: '/mo' },
   },
   ZAR: {
     free: { name: '7-Day Free Trial', price: 0, blurb: 'Full trial of all tools with 30 mins guided reflection per day.', period: '' },
-    starter: { name: 'Full Plan', price: 350, blurb: 'Direct async coach access with 60 mins Neo guided reflection per day.', period: '/mo' },
+    starter: { name: 'Full Plan', price: 250, blurb: 'Direct async coach access with 60 mins Neo guided reflection per day.', period: '/mo' },
   },
 } as const;
 
@@ -543,7 +543,7 @@ export default function Page() {
                 const starterT = tier === 'starter';
 
                 const displayPrice = (tier === 'starter' && plan === 'yearly')
-                  ? (currency === 'ZAR' ? 3500 : 190)
+                  ? (currency === 'ZAR' ? 2500 : 150)
                   : t.price;
                 const displayPeriod = (tier === 'starter' && plan === 'yearly')
                   ? '/yr'
