@@ -291,6 +291,18 @@ Neo should feel present, not performative. The user should experience emotional 
 ### FINAL BEHAVIORAL PRINCIPLE
 Neo’s purpose is not to impress the user with intelligence. Neo’s purpose is to help the user feel understood, recognize deeper truth, reconnect with agency, integrate insight, and move forward with greater clarity and self-trust.
 The best Neo responses often feel simple, clear, human, and emotionally honest.
+
+### 11. Identifying & Challenging Cognitive Distortions & Limiting Beliefs (CRITICAL)
+Neo must actively watch for and identify cognitive distortions and limiting beliefs in the user's statements. You should not call them out using clinical terminology (e.g. do not say "You are catastrophizing"), but instead use Socratic questioning to help the user inspect and reframe these patterns.
+Key Distortions to track:
+• **All-or-Nothing Thinking:** Seeing things in black-and-white (e.g., "I always fail," "Nobody cares"). Reframe by exploring exceptions.
+• **Catastrophizing:** Expecting the worst possible outcome (e.g., "If I make one mistake, I'll be fired"). Reframe by checking the realistic probability and their capacity to cope.
+• **"Should" Statements:** Holding rigid rules of how oneself or others "should" behave, generating shame and guilt. Reframe by shifting "should" to "could" or exploring self-compassion.
+• **Personalization:** Blaming oneself for events outside of one's control (e.g., "It's my fault they are unhappy"). Reframe by mapping out other contributing factors.
+• **Mind Reading:** Arbitrarily concluding that someone is reacting negatively to you without evidence. Reframe by examining the facts.
+When a distortion or limiting belief is detected, gently prompt the user to notice it, for example:
+• “I notice the word 'always' there. I wonder if there has been even a single moment where that wasn't true?”
+• “What is the assumption sitting underneath that rules how you 'should' behave right now?”
 `.trim();
 
 const INTERRUPTION_OPTIONS = [
@@ -311,6 +323,47 @@ function isInterruptionMessage(content: string): boolean {
   if (!content) return false;
   const normalized = content.trim().toLowerCase();
   return INTERRUPTION_OPTIONS.some(option => option.trim().toLowerCase() === normalized);
+}
+
+/**
+ * Crisis safety check helper function.
+ * Matches keywords for suicide, self-harm, domestic violence, or severe illegal harm.
+ * Returns a formatted message with hotlines if a crisis is detected, or null.
+ */
+function checkCrisisSafety(message: string): string | null {
+  if (!message) return null;
+  
+  const text = message.toLowerCase();
+  
+  // Crisis safety triggers
+  const selfHarmPattern = /\b(suicide|suicidal|kill myself|end my life|want to die|commit suicide|self harm|cutting myself|harming myself)\b/;
+  const violencePattern = /\b(kill him|kill her|kill them|murder|shoot someone|stab someone|harm someone)\b/;
+  const domesticAbusePattern = /\b(abuse|domestic violence|beating me|physically hurting me|assaulted me|hitting me|husband beats)\b/;
+  
+  if (selfHarmPattern.test(text) || violencePattern.test(text) || domesticAbusePattern.test(text)) {
+    return `It sounds like you are going through an incredibly difficult time or experiencing a crisis. Your safety and well-being are the absolute priority, and I want to make sure you have immediate access to professional support. 
+
+Please reach out to one of the following free, confidential resources right now:
+
+🇿🇦 **South Africa Helplines:**
+• **Suicide Crisis Helpline:** 0800 567 567 (24/7)
+• **Careline (24hr Crisis distress support):** 082 787 6452 or 082 822 7981
+
+🇺🇸 / 🇨🇦 **US & Canada Helplines:**
+• **Suicide & Crisis Lifeline:** Call or text 988 (24/7)
+• **Crisis Text Line:** Text "HOME" to 741741
+
+🇬🇧 **UK Helplines:**
+• **Samaritans:** Call 116 123
+• **National Domestic Abuse Helpline:** 0808 2000 247
+
+🌐 **International Support:**
+• Find a crisis center in your country at [Befrienders Worldwide](https://www.befrienders.org/) or [Find A Helpline](https://findahelpline.com/)
+
+Please connect with someone who can help keep you safe. I am here to support your reflection once you are in a safe space.`;
+  }
+  
+  return null;
 }
 
 export async function GET(req: Request) {
@@ -417,6 +470,16 @@ export async function POST(req: Request) {
     }
 
     const { message, history } = await req.json();
+
+    // Run hard safety crisis middleware check
+    const crisisWarning = checkCrisisSafety(message);
+    if (crisisWarning) {
+      return NextResponse.json({
+        role: 'neo',
+        content: crisisWarning,
+        timestamp: new Date().toISOString()
+      });
+    }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
