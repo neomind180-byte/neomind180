@@ -4,6 +4,7 @@ import { NEO_CONVERSATION_MODEL, NEO_BACKGROUND_MODEL } from "./gemini-context";
 export const openrouter = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY || "build-placeholder-key",
   baseURL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
+  timeout: 25000,
   defaultHeaders: {
     "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://app.neomind180.com",
     "X-OpenRouter-Title": "NeoMind180 Mindset Coaching",

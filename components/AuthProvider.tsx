@@ -102,15 +102,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session) {
         setUser(session.user);
         localStorage.setItem('nm_user', JSON.stringify(session.user));
-        // Refresh profile on auth state changes
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        if (profileData) {
-          setProfile(profileData);
-          localStorage.setItem('nm_profile', JSON.stringify(profileData));
+        // ONLY fetch/refresh the profile on SIGNED_IN, INITIAL_SESSION, or USER_UPDATED events.
+        // Doing this on TOKEN_REFRESHED can trigger deadlocks or infinite loops.
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          if (profileData) {
+            setProfile(profileData);
+            localStorage.setItem('nm_profile', JSON.stringify(profileData));
+          }
         }
       } else {
         setUser(null);
