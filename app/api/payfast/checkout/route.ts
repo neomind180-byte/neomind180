@@ -94,10 +94,12 @@ export async function POST(req: Request) {
           })
           .eq('id', voucher.id);
 
-        // 2. Upgrade user profile + set dynamic trial expiry (1 year if code contains 'YEAR' or '365', otherwise 30 days)
+        // 2. Upgrade user profile + set dynamic trial expiry (1 year if code contains 'YEAR' or '365', 60 days if '2MONTH' or '60', otherwise 30 days)
         const trialExpiresAt = new Date();
-        const isYearVoucher = voucher.code.toUpperCase().includes('YEAR') || voucher.code.toUpperCase().includes('365');
-        const durationDays = isYearVoucher ? 365 : 30;
+        const codeUpper = voucher.code.toUpperCase();
+        const isYearVoucher = codeUpper.includes('YEAR') || codeUpper.includes('365');
+        const isTwoMonthVoucher = codeUpper.includes('2MONTH') || codeUpper.includes('60');
+        const durationDays = isYearVoucher ? 365 : (isTwoMonthVoucher ? 60 : 30);
         trialExpiresAt.setDate(trialExpiresAt.getDate() + durationDays);
 
         await supabaseAdmin
@@ -125,7 +127,7 @@ export async function POST(req: Request) {
         // 4. Send thank-you email and notify coach of trial start
         const userName = user.user_metadata?.full_name || user.email || 'User';
         await sendUpgradeConfirmationToUser(user.email!, userName, plan.title, plan.tagline);
-        await notifyCoachOfUserUpgrade(user.email!, userName, `${plan.title} (Trial - 30 days)`);
+        await notifyCoachOfUserUpgrade(user.email!, userName, `${plan.title} (Trial - ${durationDays} days)`);
 
         // 5. Return redirect (no PayFast needed)
         return NextResponse.json({ redirect: '/dashboard?payment=success' });

@@ -7,7 +7,7 @@
  */
 export async function addToSystemeIO(email: string, firstName?: string) {
     const apiKey = process.env.SYSTEME_API_KEY;
-    const TAG_ID = 1902549; // NeoMind180_FreeUser
+    const TAG_ID = 1902549; // NeoMind180_AppUser
 
     if (!apiKey) {
         console.error('❌ Missing SYSTEME_API_KEY in environment variables');
@@ -34,7 +34,7 @@ export async function addToSystemeIO(email: string, firstName?: string) {
         const text = await contactResponse.text();
         try {
             contactData = JSON.parse(text);
-        } catch (e) {
+        } catch {
             contactData = { raw: text };
         }
 
@@ -82,8 +82,8 @@ export async function addToSystemeIO(email: string, firstName?: string) {
             tagAssigned: tagResponse.ok || tagResponse.status === 204
         };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('❌ Error in addToSystemeIO utility:', error);
-        return { success: false, error: error.message };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
