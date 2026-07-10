@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/components/AuthProvider';
+import { appLogger } from '@/lib/logger';
 import {
   BookOpen, Headphones, Play, Pause, Clock, FileText,
   Download, Lock, Video, Volume2, Upload, Loader2,
@@ -29,6 +31,8 @@ export default function LibraryPage() {
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [userTier, setUserTier] = useState<string>('free');
+  const { profile } = useAuth();
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Audio Playback State
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
@@ -114,37 +118,52 @@ export default function LibraryPage() {
     setLoading(false);
   }
 
+  // Sync tier from AuthProvider profile
   useEffect(() => {
-    async function fetchData() {
-      // 1. Get User Tier
-      const { data: { user } } = await supabase.auth.getUser();
-      let currentTier = 'free';
-
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_tier')
-          .eq('id', user.id)
-          .single();
-        if (profile) currentTier = profile.subscription_tier;
-      }
-      setUserTier(currentTier);
-
-      // 2. Get Library Items
-      const { data, error } = await supabase
-        .from('library_items')
-        .select('*')
-        .order('title');
-
-      if (data) {
-        setItems(data as LibraryItem[]);
-      }
-      setLoading(false);
+    if (profile?.subscription_tier) {
+      setUserTier(profile.subscription_tier);
     }
-    fetchData();
+  }, [profile]);
 
-    // Cleanup audio on unmount
+  // Fetch library items with timeout protection
+  useEffect(() => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+    async function fetchLibraryItems() {
+      try {
+        setFetchError(null);
+        const { data, error } = await supabase
+          .from('library_items')
+          .select('*')
+          .order('title')
+          .abortSignal(controller.signal);
+
+        if (error) throw error;
+        if (data) {
+          setItems(data as LibraryItem[]);
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          setFetchError('Loading took too long. Please refresh the page.');
+          appLogger.error('library_timeout', 'Library fetch timed out after 15s');
+        } else {
+          setFetchError('Failed to load library. Please try again.');
+          appLogger.error('library_fetch_error', 'Library fetch failed', { error: String(err) });
+          console.error('Library fetch error:', err);
+        }
+      } finally {
+        setLoading(false);
+        clearTimeout(timeout);
+      }
+    }
+
+    fetchLibraryItems();
+
+    // Cleanup on unmount
     return () => {
+      controller.abort();
+      clearTimeout(timeout);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -403,9 +422,45 @@ export default function LibraryPage() {
       </div>
 
       {/* CONTENT AREA */}
+      {fetchError && (
+        <div style={{
+          padding: '16px 20px',
+          margin: '12px 0',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: '12px',
+          color: '#ef4444',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          fontSize: '0.9rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertCircle size={18} />
+            <span>{fetchError}</span>
+          </div>
+          <button
+            onClick={() => { setFetchError(null); setLoading(true); fetchItems(); }}
+            style={{
+              padding: '6px 16px',
+              borderRadius: '8px',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              background: 'rgba(239, 68, 68, 0.15)',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-12 text-[var(--text-dim)] font-black uppercase tracking-widest text-[12px] animate-pulse">Loading library resources...</div>
-      ) : (
+      ) : !fetchError && (
         <div className="grid gap-6">
 
           {/* --- READ TAB --- */}

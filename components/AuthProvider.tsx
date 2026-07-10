@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
+import { appLogger } from '@/lib/logger';
 
 // Intercept benign Supabase refresh token errors in development to prevent Next.js dev overlay from hijacking localhost
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
@@ -30,7 +31,9 @@ interface AuthContextType {
   user: any | null;
   profile: UserProfile | null;
   loading: boolean;
+  authError: string | null;
   refreshProfile: () => Promise<void>;
+  refreshSession: () => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
@@ -38,7 +41,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  authError: null,
   refreshProfile: async () => {},
+  refreshSession: async () => null,
   signOut: async () => {},
 });
 
@@ -46,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const router = useRouter();
 
   const fetchUserData = async () => {
@@ -76,6 +82,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.error('⚠️ Auth Provider Retrieval Error:', err);
+      setAuthError('Failed to verify session.');
+      appLogger.error('auth_session_error', 'Failed to verify session', { error: String(err) });
     } finally {
       setLoading(false);
     }
@@ -105,17 +113,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // ONLY fetch/refresh the profile on SIGNED_IN, INITIAL_SESSION, or USER_UPDATED events.
         // Doing this on TOKEN_REFRESHED can trigger deadlocks or infinite loops.
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          if (profileData) {
-            setProfile(profileData);
-            localStorage.setItem('nm_profile', JSON.stringify(profileData));
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            if (profileData) {
+              setProfile(profileData);
+              localStorage.setItem('nm_profile', JSON.stringify(profileData));
+            }
+          } catch (err) {
+            console.error('Failed to fetch profile during auth state change:', err);
           }
         }
       } else {
+        if (event !== 'SIGNED_OUT') {
+          setAuthError('Session lost. Please sign in again.');
+          appLogger.warn('auth_session_lost', 'Session lost during auth state change', { event });
+        }
         setUser(null);
         setProfile(null);
         localStorage.removeItem('nm_user');
@@ -132,6 +148,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, [router]);
+
+  const refreshSession = useCallback(async (): Promise<string | null> => {
+    try {
+      setAuthError(null);
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error || !data.session) {
+        setAuthError('Session expired. Please sign in again.');
+        return null;
+      }
+      setUser(data.session.user);
+      return data.session.access_token;
+    } catch (err) {
+      console.error('Session refresh failed:', err);
+      setAuthError('Unable to refresh session.');
+      appLogger.error('auth_refresh_failed', 'Session refresh failed', { error: String(err) });
+      return null;
+    }
+  }, []);
 
   const refreshProfile = async () => {
     if (!user) return;
@@ -227,7 +261,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, handleSignOut]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, refreshProfile, signOut: handleSignOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, authError, refreshProfile, refreshSession, signOut: handleSignOut }}>
       {children}
     </AuthContext.Provider>
   );

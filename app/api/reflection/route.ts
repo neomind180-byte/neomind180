@@ -12,6 +12,9 @@ import {
 } from '@/lib/ai/gemini-context';
 import { runNeoConversation, ChatCompletionMessageParam } from '@/lib/ai/openrouter';
 
+// Allow up to 60s for AI-powered reflection responses (Vercel Hobby supports up to 60s)
+export const maxDuration = 60;
+
 interface ChatMessage {
   role: string;
   content: string;

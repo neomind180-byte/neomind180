@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -10,7 +10,17 @@ if (!supabaseUrl || !supabaseKey) {
     );
 }
 
-export const supabase = createClient(
+/**
+ * Browser-side Supabase client using @supabase/ssr.
+ *
+ * Key difference from the old createClient():
+ * - Uses cookies as the auth storage mechanism (not just localStorage)
+ * - Syncs auth state with the server-side middleware
+ * - When the middleware refreshes an expired JWT, this client picks up the fresh token automatically
+ *
+ * This is a singleton — importing it in multiple components returns the same instance.
+ */
+export const supabase = createBrowserClient(
     supabaseUrl || 'https://placeholder.supabase.co',
     supabaseKey || 'placeholder-key'
 );

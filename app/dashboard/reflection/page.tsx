@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Send, Zap, Lock, Sparkles, Mic, MicOff, Download, CheckCircle, RefreshCw, X, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/components/AuthProvider';
+import { appLogger } from '@/lib/logger';
 
 interface ChatMessage {
   role: string;
@@ -101,16 +102,34 @@ export default function ReflectionPage() {
   const [limitMessage, setLimitMessage] = useState<string | null>(null);
 
   const fetchStatus = async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      if (!token) return;
+      if (!token) {
+        appLogger.warn('reflection_no_token', 'No auth token available for status fetch');
+        return;
+      }
 
       const res = await fetch('/api/reflection', {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        signal: controller.signal,
       });
+
+      if (res.status === 401) {
+        appLogger.warn('reflection_auth_expired', 'Auth token expired during status fetch');
+        // Try to refresh the session silently
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (!refreshData.session) {
+          appLogger.error('reflection_refresh_failed', 'Session refresh failed after 401');
+        }
+        return;
+      }
+
       if (res.ok) {
         const data = await res.json();
         setDailyChatTime(data.dailyChatTime);
@@ -121,7 +140,13 @@ export default function ReflectionPage() {
         if (data.tier) setUserTier(data.tier);
       }
     } catch (err) {
-      console.error("Error fetching status:", err);
+      if ((err as Error).name === 'AbortError') {
+        appLogger.warn('reflection_status_timeout', 'Status fetch timed out after 10s');
+      } else {
+        console.error("Error fetching status:", err);
+      }
+    } finally {
+      clearTimeout(timeout);
     }
   };
 
@@ -445,7 +470,27 @@ export default function ReflectionPage() {
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      const data = await res.json();
+
+      if (res.status === 401) {
+        appLogger.error('reflection_send_auth_expired', 'Auth expired during reflection send');
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        const errorContent = "My connection refreshed. Please try sending your message again.";
+        const errorMsg = {
+          role: 'neo',
+          content: errorContent,
+          timestamp: new Date().toISOString()
+        };
+        const finalMessages = [...updatedMessagesWithUser, errorMsg];
+        setMessages(finalMessages);
+        return;
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        data = { content: 'I encountered an unexpected response. Please try again.' };
+      }
 
       if (!res.ok) {
         if (res.status === 429 || data.limitReached) {
@@ -536,7 +581,11 @@ export default function ReflectionPage() {
       }
 
       // 5. Refresh limits status from server
-      await fetchStatus();
+      try {
+        await fetchStatus();
+      } catch (statusErr) {
+        console.error("Non-critical status refresh failed:", statusErr);
+      }
 
     } catch (error) {
       clearTimeout(timeoutId);
