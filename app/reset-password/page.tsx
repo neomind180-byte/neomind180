@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -17,16 +17,16 @@ export default function ResetPasswordPage() {
     const [error, setError] = useState<string | null>(null);
     const [checkingSession, setCheckingSession] = useState(true);
     const [hasValidSession, setHasValidSession] = useState(false);
+    const sessionEstablishedRef = useRef(false);
 
     useEffect(() => {
         let isMounted = true;
 
-        const checkAndEstablishSession = async () => {
-            try {
-                if (typeof window === 'undefined') return;
+        const initAuth = async () => {
+            if (typeof window === 'undefined') return;
 
-                // 1. Check for Hash Fragment (#access_token=...&refresh_token=...&type=recovery)
-                // Supabase email recovery links typically redirect using URL hash fragments (implicit flow)
+            try {
+                // 1. Immediately inspect URL hash before anything can clear it
                 if (window.location.hash && window.location.hash.startsWith('#')) {
                     const hashParams = new URLSearchParams(window.location.hash.substring(1));
                     
@@ -49,22 +49,20 @@ export default function ResetPasswordPage() {
                             refresh_token: refreshToken || ''
                         });
 
-                        if (!setSessionError && data.session) {
+                        if (!setSessionError && data?.session) {
+                            sessionEstablishedRef.current = true;
                             if (isMounted) {
                                 setHasValidSession(true);
                                 setCheckingSession(false);
                             }
                             return;
-                        } else if (setSessionError) {
-                            console.error('Error setting session from hash tokens:', setSessionError.message);
                         }
                     }
                 }
 
-                // 2. Check URL Search Parameters (?error=... or ?code=...)
+                // 2. Check query params for errors or PKCE code
                 const searchParams = new URLSearchParams(window.location.search);
                 const urlError = searchParams.get('error_description') || searchParams.get('error');
-                
                 if (urlError) {
                     if (isMounted) {
                         setError(decodeURIComponent(urlError.replace(/\+/g, ' ')));
@@ -77,14 +75,14 @@ export default function ResetPasswordPage() {
                 const code = searchParams.get('code');
                 if (code) {
                     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-                    if (!exchangeError && data.session) {
+                    if (!exchangeError && data?.session) {
+                        sessionEstablishedRef.current = true;
                         if (isMounted) {
                             setHasValidSession(true);
                             setCheckingSession(false);
                         }
                         return;
                     } else if (exchangeError) {
-                        console.error('Code exchange error on reset-password:', exchangeError.message);
                         if (isMounted) {
                             setError('The password reset link is invalid or has expired. Please request a new one.');
                             setCheckingSession(false);
@@ -94,9 +92,10 @@ export default function ResetPasswordPage() {
                     }
                 }
 
-                // 3. Check for existing active session in client
+                // 3. Check for existing session
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
+                    sessionEstablishedRef.current = true;
                     if (isMounted) {
                         setHasValidSession(true);
                         setCheckingSession(false);
@@ -104,18 +103,16 @@ export default function ResetPasswordPage() {
                     return;
                 }
 
-                // 4. Grace period for onAuthStateChange to fire
-                const timeoutId = setTimeout(() => {
-                    if (isMounted && checkingSession) {
+                // 4. Fallback timer if auth client is still hydrating asynchronously
+                setTimeout(() => {
+                    if (isMounted && !sessionEstablishedRef.current) {
                         setCheckingSession(false);
                     }
-                }, 1500);
-
-                return () => clearTimeout(timeoutId);
+                }, 3500);
 
             } catch (err: any) {
-                console.error('Session verification exception:', err);
-                if (isMounted) {
+                console.error('Session verification error:', err);
+                if (isMounted && !sessionEstablishedRef.current) {
                     setError('Unable to verify reset session. Please request a new link.');
                     setCheckingSession(false);
                 }
@@ -124,7 +121,8 @@ export default function ResetPasswordPage() {
 
         // Listen for auth state change events
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || session) {
+            if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || (session && event === 'INITIAL_SESSION')) {
+                sessionEstablishedRef.current = true;
                 if (isMounted) {
                     setHasValidSession(true);
                     setCheckingSession(false);
@@ -133,13 +131,13 @@ export default function ResetPasswordPage() {
             }
         });
 
-        checkAndEstablishSession();
+        initAuth();
 
         return () => {
             isMounted = false;
             subscription.unsubscribe();
         };
-    }, [checkingSession]);
+    }, []);
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -159,23 +157,6 @@ export default function ResetPasswordPage() {
         }
 
         try {
-            // Ensure session exists before updating
-            const { data: currentSession } = await supabase.auth.getSession();
-            if (!currentSession.session) {
-                // If tokens exist in hash, re-attempt setSession
-                if (window.location.hash && window.location.hash.startsWith('#')) {
-                    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                    const accessToken = hashParams.get('access_token');
-                    const refreshToken = hashParams.get('refresh_token');
-                    if (accessToken) {
-                        await supabase.auth.setSession({
-                            access_token: accessToken,
-                            refresh_token: refreshToken || ''
-                        });
-                    }
-                }
-            }
-
             const { error: updateError } = await supabase.auth.updateUser({
                 password: password
             });
@@ -184,7 +165,6 @@ export default function ResetPasswordPage() {
 
             setSuccess(true);
 
-            // Redirect to login after 2 seconds
             setTimeout(() => {
                 router.push('/login');
             }, 2000);
@@ -230,7 +210,7 @@ export default function ResetPasswordPage() {
                     </div>
                 )}
 
-                {/* Invalid or Expired Session without form */}
+                {/* Invalid or Expired Session */}
                 {!checkingSession && !hasValidSession && (
                     <div className="space-y-6">
                         <div className="p-5 bg-red-50 border border-red-100 rounded-2xl text-center space-y-2">
