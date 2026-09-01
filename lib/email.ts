@@ -283,3 +283,89 @@ export async function notifyCoachOfUserDowngrade(userEmail: string, userName: st
     return { success: false, error };
   }
 }
+
+// ─── Temporary Password Email ──────────────────────────────────────────────────
+
+export async function sendTemporaryPasswordEmail(userEmail: string, userName: string, temporaryPassword: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"NeoMind180 Security" <${FROM_EMAIL}>`,
+      to: userEmail,
+      subject: `Your NeoMind180 Temporary Password 🔑`,
+      text: `Hi ${userName},\n\nA temporary password has been generated for your NeoMind180 account.\n\nYour Temporary Password: ${temporaryPassword}\n\nHow to log in:\n1. Go to: ${APP_URL}/login\n2. Sign in with your email (${userEmail}) and the temporary password above.\n3. Once logged in, visit your Settings page to set your own permanent password.\n\nIf you did not request this password reset, please contact us immediately at ${COACH_EMAIL}.\n\nWith care,\nCoach Emmeline & The NeoMind180 Team`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 20px; background: #f8fafc;">
+          <div style="background: #ffffff; border-radius: 24px; padding: 40px 32px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 32px;">
+              <div style="display: inline-block; width: 56px; height: 56px; background: #eff6ff; border-radius: 16px; line-height: 56px; text-align: center; font-size: 28px; margin-bottom: 16px;">
+                🔑
+              </div>
+              <h1 style="color: #0f172a; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase;">
+                Your Temporary Password
+              </h1>
+              <p style="color: #64748b; font-size: 14px; margin: 8px 0 0; font-weight: 500;">
+                Follow the instructions below to regain access to your account.
+              </p>
+            </div>
+
+            <!-- Greeting -->
+            <p style="color: #334155; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+              Hi <strong>${userName}</strong>,
+            </p>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+              We received a request to reset your password. Use the temporary password below to sign in:
+            </p>
+
+            <!-- Password Box -->
+            <div style="background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 20px; text-align: center; margin: 24px 0;">
+              <span style="font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: 800; color: #00538e; letter-spacing: 2px; display: inline-block;">
+                ${temporaryPassword}
+              </span>
+              <p style="color: #94a3b8; font-size: 11px; margin: 8px 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                Copy & paste this temporary password
+              </p>
+            </div>
+
+            <!-- Instructions List -->
+            <div style="background: #f8fafc; border-radius: 16px; padding: 20px 24px; margin: 24px 0; border: 1px solid #f1f5f9;">
+              <p style="color: #0f172a; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px;">
+                Next Steps:
+              </p>
+              <ol style="color: #475569; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                <li>Click the button below to go to the <strong>Login Page</strong>.</li>
+                <li>Sign in using <strong>${userEmail}</strong> and your temporary password.</li>
+                <li>Once inside, go to <strong>Settings</strong> to set your permanent password.</li>
+              </ol>
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 32px 0 16px;">
+              <a href="${APP_URL}/login" style="background: #00538e; color: #ffffff; padding: 16px 36px; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; display: inline-block;">
+                Log In to NeoMind180 →
+              </a>
+            </div>
+
+            <!-- Security Footer -->
+            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 32px 0 20px;">
+            <p style="color: #94a3b8; font-size: 11px; line-height: 1.5; margin: 0; text-align: center;">
+              If you did not request this password reset, please contact us immediately at <a href="mailto:${COACH_EMAIL}" style="color: #00538e; text-decoration: none; font-weight: bold;">${COACH_EMAIL}</a>.
+            </p>
+          </div>
+
+          <p style="color: #94a3b8; font-size: 12px; text-align: center; margin-top: 20px;">
+            NeoMind180 Mindset Coaching &copy; ${new Date().getFullYear()}
+          </p>
+        </div>
+      `
+    });
+
+    console.log("✅ Temporary password email sent successfully:", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error sending temporary password email:", error);
+    return { success: false, error };
+  }
+}
+

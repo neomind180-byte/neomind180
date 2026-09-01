@@ -6,7 +6,7 @@ import {
   ArrowLeft, User, Mail, Phone, Save, Loader2, AlertCircle,
   ShieldAlert, Trash2, AlertTriangle, CheckSquare, Square,
   RefreshCcw, Sun, Moon, Lock, Settings, ChevronDown, KeyRound, X,
-  Download, FileText
+  Download, FileText, Eye, EyeOff
 } from 'lucide-react';
 
 import { supabase } from '@/lib/supabaseClient';
@@ -35,6 +35,49 @@ export default function SettingsPage() {
   const [showDowngradeModal, setShowDowngradeModal] = useState(false);
   const [showAccountDeleteModal, setShowAccountDeleteModal] = useState<number>(0); // 0: closed, 1: warning, 2: final confirmation
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+
+  // Password Change Modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordSaving(true);
+    setPasswordError(null);
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("Passwords do not match.");
+      setPasswordSaving(false);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
+      setPasswordSaving(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      setMessage({ text: "Password updated successfully!", type: 'success' });
+      setShowPasswordModal(false);
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err: any) {
+      setPasswordError(err.message || "Failed to update password.");
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
 
   // Secret Dev Mode lock
   const [devModeClicks, setDevModeClicks] = useState(0);
@@ -428,15 +471,21 @@ export default function SettingsPage() {
               />
             </div>
           </div>
-          <div className="px-4">
-            <Link
-              href="/forgot-password"
-              className="text-[11px] font-black underline uppercase tracking-widest text-[#00538e] hover:text-[#0AA390] transition-colors"
+          <div className="px-4 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowPasswordModal(true);
+                setPasswordError(null);
+                setNewPassword('');
+                setConfirmNewPassword('');
+              }}
+              className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#00538e] hover:text-[#0AA390] transition-colors"
             >
-              Update Email or Password →
-            </Link>
-            <p className="text-[10px] text-[var(--text-muted)] italic mt-2">
-              For security, email updates require a verification link sent to your current inbox.
+              <KeyRound className="w-3.5 h-3.5" /> Change Password →
+            </button>
+            <p className="text-[10px] text-[var(--text-muted)] italic">
+              Update your account password anytime directly from here.
             </p>
           </div>
         </div>
@@ -880,6 +929,87 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- CHANGE PASSWORD MODAL --- */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-[var(--bg-card)] w-full max-w-md p-10 rounded-[3rem] border border-[var(--border)] shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="w-16 h-16 bg-[#00538e]/10 rounded-full flex items-center justify-center border border-[#00538e]/20 text-[#00538e]">
+                <KeyRound className="w-8 h-8" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tighter text-[var(--text-primary)]">Change Password</h2>
+                <p className="text-[12px] text-[var(--text-muted)] italic mt-1">Set a new strong password for your account.</p>
+              </div>
+            </div>
+
+            {passwordError && (
+              <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[11px] font-black uppercase tracking-widest animate-in shake-x duration-300">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {passwordError}
+              </div>
+            )}
+
+            <form onSubmit={handlePasswordUpdate} className="space-y-5">
+              <div className="space-y-1">
+                <label className="text-[11px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">
+                  New Password
+                </label>
+                <div className="relative">
+                  <input
+                    required
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-6 py-4 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#00538e] text-[var(--text-primary)] font-medium transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-[var(--text-dim)] hover:text-[#00538e] transition-colors"
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-black uppercase tracking-widest text-[var(--text-dim)] ml-4">
+                  Confirm New Password
+                </label>
+                <input
+                  required
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="w-full px-6 py-4 bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl outline-none focus:border-[#00538e] text-[var(--text-primary)] font-medium transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="py-4 rounded-2xl border border-[var(--border)] text-[12px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-input)] transition-all flex items-center justify-center gap-2"
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={passwordSaving}
+                  className="py-4 rounded-2xl bg-[#00538e] text-white text-[12px] font-black uppercase tracking-widest hover:bg-[#004272] shadow-xl shadow-[#00538e]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                  {passwordSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
