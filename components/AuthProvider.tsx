@@ -90,6 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Intercept password recovery hash if landed on another page (e.g. /)
+    if (typeof window !== 'undefined' && window.location.hash) {
+      if (window.location.hash.includes('type=recovery') && !window.location.pathname.startsWith('/reset-password')) {
+        window.location.href = '/reset-password' + window.location.hash;
+        return;
+      }
+    }
+
     // 1. Instantly restore last-known user and profile state from local cache on mount
     try {
       const cachedUser = localStorage.getItem('nm_user');

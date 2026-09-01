@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
@@ -12,6 +12,16 @@ export default function ForgotPasswordPage() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const urlError = params.get('error');
+            if (urlError) {
+                setError(urlError);
+            }
+        }
+    }, []);
+
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -19,8 +29,12 @@ export default function ForgotPasswordPage() {
         setSuccess(false);
 
         try {
+            const redirectOrigin = typeof window !== 'undefined' && window.location.hostname.includes('neomind180.com')
+                ? 'https://app.neomind180.com'
+                : window.location.origin;
+
             const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`,
+                redirectTo: `${redirectOrigin}/reset-password`,
             });
 
             if (resetError) throw resetError;
