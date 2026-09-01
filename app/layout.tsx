@@ -12,7 +12,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "NeoMind180 – Clarity. Confidence. Compassion.",
+  title: "Clarity for the mind. Confidence for the next step. Compassion for yourself along the way.",
   description: "Your personal growth and coaching platform.",
   icons: {
     icon: "/favicon.png",

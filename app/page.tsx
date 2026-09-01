@@ -209,9 +209,6 @@ export default function Page() {
             </div>
             <span className="font-extrabold tracking-tight text-[var(--text-primary)]">
               NeoMind180
-              <span className="ml-2 rounded-full border border-[var(--border)] bg-[var(--bg-input)] px-2 py-0.5 text-[12px] text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors">
-                Mindset Coaching
-              </span>
             </span>
           </div>
 
@@ -274,7 +271,7 @@ export default function Page() {
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--bg-input)] px-4 py-2 text-sm text-[var(--text-secondary)]">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(77,255,181,.10)]" />
-              AI-powered clarity sessions
+              Your AI-powered Mindful Neuro-Coaching companion
             </div>
 
             <h1 className="mt-4 text-balance text-[50px] font-black leading-[1.03] tracking-tighter text-[var(--text-primary)] md:text-[70px] uppercase">
@@ -285,7 +282,7 @@ export default function Page() {
             </h1>
 
             <p className="mt-4 max-w-[60ch] text-[19px] leading-relaxed text-[var(--text-secondary)] font-medium">
-              Move from overthinking to clarity. Master your mind with our unique blend of powerful AI insights and the dedicated human guidance of Coach Emmeline.
+              Move from overthinking to clarity through guided AI reflection, mindful micro-resets and human coaching support.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -304,7 +301,21 @@ export default function Page() {
               Mindset coaching for clarity, not therapy. Seek professional help for mental health concerns.
             </p>
 
-            {/* Removed Stat Cards */}
+            {/* Rethink. Rewire. Renew Pillars */}
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-input)]">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#7c4dff]">RETHINK</div>
+                <div className="text-xs font-extrabold text-[var(--text-primary)] mt-1">Reflect with Neo</div>
+              </div>
+              <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-input)]">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00d4ff]">REWIRE</div>
+                <div className="text-xs font-extrabold text-[var(--text-primary)] mt-1">Micro-Resets</div>
+              </div>
+              <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-input)]">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ff4fd8]">RENEW</div>
+                <div className="text-xs font-extrabold text-[var(--text-primary)] mt-1">Insights + intentional action</div>
+              </div>
+            </div>
 
             {/* Journey Section */}
             <div className="mt-10">
@@ -330,7 +341,7 @@ export default function Page() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-10 left-10 right-10">
                 <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Ready to transform?</h2>
-                <p className="mt-1 text-xs text-white/70 font-medium">Start your 7-day free trial today.</p>
+                <p className="mt-1 text-xs text-white/70 font-medium">Start your 7-day free trial and experience guided reflections, micro-resets and personalised support.</p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <a href="/register" className="ctaBtn !py-3 !px-8">Begin</a>
                   <button onClick={openPricing} className="secondaryBtn !bg-white/10 !backdrop-blur-md !border-white/20 !text-white !py-3 !px-8">Pricing</button>
@@ -377,7 +388,7 @@ export default function Page() {
                   Save Check-in
                 </button>
                 <div className="text-[12px] text-center font-bold uppercase tracking-widest text-[var(--text-dim)]">
-                  Stored locally for testing.
+                  Try a Daily Check-In
                 </div>
               </form>
             </div>
@@ -386,26 +397,53 @@ export default function Page() {
               <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--bg-input)] p-6">
                 <div className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] mb-2">Mental Clarity</div>
                 <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
-                  Designed for professional women who want to break free from overthinking and lead with confidence.
+                  Designed for women who tend to overthink and want to develop greater clarity, confidence and intentional action.
                 </p>
               </div>
 
               <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--bg-input)] p-6">
                 <div className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] mb-3">What you get</div>
-                <ul className="grid gap-3">
+                <div className="grid gap-4">
                   {[
-                    'Guided AI reflections (Gemini 3 Flash)',
-                    'Daily mindset check-ins',
-                    'Guided micro-resets',
-                    'Direct Ask-the-Coach guidance — A Human Connection',
-                    'Complete Self-Help Library & Worksheets',
-                  ].map((t) => (
-                    <li key={t} className="flex gap-3 text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">
-                      <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[#0AA390]" />
-                      <span>{t}</span>
-                    </li>
+                    {
+                      category: 'Understand',
+                      title: 'Daily Check-In',
+                      description: 'Notice what is happening in your mind right now.',
+                    },
+                    {
+                      category: 'Shift',
+                      title: 'Guided Micro-Resets',
+                      description: 'Create a short pause when overthinking, stress or emotional reactivity takes over.',
+                    },
+                    {
+                      category: 'Reflect',
+                      title: 'AI Reflection Coach',
+                      description: 'Explore your thinking patterns and recurring themes.',
+                    },
+                    {
+                      category: 'Grow',
+                      title: 'Personal Growth Memory',
+                      description: 'See patterns and progress over time.',
+                    },
+                    {
+                      category: 'Connect',
+                      title: 'Ask Coach Emmeline',
+                      description: 'Get human guidance when you need a deeper perspective.',
+                    },
+                  ].map((item) => (
+                    <div key={item.category} className="flex flex-col gap-0.5">
+                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0AA390]">
+                        {item.category}
+                      </div>
+                      <div className="text-[13px] font-extrabold text-[var(--text-primary)]">
+                        {item.title}
+                      </div>
+                      <div className="text-[12px] font-medium text-[var(--text-secondary)] leading-snug">
+                        {item.description}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
 
               <button onClick={openPricing} className="secondaryBtn w-full py-4 uppercase tracking-[0.2em] text-[12px]">

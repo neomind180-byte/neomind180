@@ -18,8 +18,8 @@ export const microResets: Record<string, MicroReset> = {
     breathing: {
         slug: 'breathing',
         title: '60-Second Breathing',
-        purpose: 'Calm your nervous system in one minute.',
-        description: 'Calm your nervous system in one minute.',
+        purpose: 'Feeling mentally overloaded?',
+        description: 'Slow down and create a moment of calm.',
         timeBadge: '60 SEC',
         color: '#00538e',
         textColor: 'text-blue-900',
@@ -44,13 +44,13 @@ export const microResets: Record<string, MicroReset> = {
             '/micro-resets/1_breathing/6_repeat.mp3',
             '/micro-resets/1_breathing/7_notice.mp3'
         ],
-        completionMessage: 'Reset complete! Take a moment to notice how you feel!'
+        completionMessage: 'Reset complete! What do you want to do with the space you\'ve just created?'
     },
     grounding: {
         slug: 'grounding',
         title: '2-Minute Grounding',
-        purpose: 'For decision overwhelm - come back to the present moment.',
-        description: 'Come back to the present moment.',
+        purpose: 'Mind racing?',
+        description: 'Return your attention to the present moment.',
         timeBadge: '2 MIN',
         color: '#0AA390',
         textColor: 'text-emerald-900',
@@ -77,13 +77,13 @@ export const microResets: Record<string, MicroReset> = {
             '/micro-resets/2_grounding/7_notice-1.mp3',
             '/micro-resets/2_grounding/8_return.mp3'
         ],
-        completionMessage: 'Well done! You\'ve completed the 2-Minute Grounding. Take a moment to notice any shifts in your body or mind.'
+        completionMessage: 'Well done! What do you want to do with the space you\'ve just created?'
     },
     'self-compassion': {
         slug: 'self-compassion',
         title: '3-Minute Self-Compassion Reset',
-        purpose: 'After a difficult day or moment of self-criticism.',
-        description: 'Offer yourself kindness after a hard moment.',
+        purpose: 'Being hard on yourself?',
+        description: 'Replace self-criticism with a kinder perspective.',
         timeBadge: '3 MIN',
         color: '#993366',
         textColor: 'text-fuchsia-900',
@@ -110,7 +110,7 @@ export const microResets: Record<string, MicroReset> = {
             '/micro-resets/3_self-compassion/7_act-of-care.mp3',
             '/micro-resets/3_self-compassion/8_thank-you.mp3'
         ],
-        completionMessage: 'Well done! You\'ve completed the Self-Compassion Reset.'
+        completionMessage: 'Well done! What do you want to do with the space you\'ve just created?'
     },
     'thought-release': {
         slug: 'thought-release',
@@ -143,7 +143,7 @@ export const microResets: Record<string, MicroReset> = {
             '/micro-resets/4_thought-release/7_return.mp3',
             '/micro-resets/4_thought-release/8_breaths.mp3'
         ],
-        completionMessage: 'Well done! You\'ve completed the Thought Release Exercise.'
+        completionMessage: 'Well done! What do you want to do with the space you\'ve just created?'
     },
     'body-scan': {
         slug: 'body-scan',
@@ -176,6 +176,6 @@ export const microResets: Record<string, MicroReset> = {
             '/micro-resets/5_body-scan/7_notice-belly.mp3',
             '/micro-resets/5_body-scan/8_final-breath.mp3'
         ],
-        completionMessage: 'Well done! You\'ve completed the Quick Body Scan.'
+        completionMessage: 'Well done! What do you want to do with the space you\'ve just created?'
     }
 };

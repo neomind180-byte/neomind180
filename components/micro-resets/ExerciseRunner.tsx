@@ -69,7 +69,18 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
                     if (updateError) {
                         console.error('Error updating micro_resets_today in profile:', updateError);
                     } else {
-                        console.log('Successfully updated micro resets count in profile table.');
+                        // Also record micro-reset event in shifts table for historical practice tracking
+                        await supabase
+                            .from('shifts')
+                            .insert([
+                                {
+                                    user_id: user.id,
+                                    thought: `Micro-Reset: ${exercise.title}`,
+                                    emotion: exercise.purpose,
+                                    evidence: 'Mindful Practice',
+                                    new_perspective: exercise.completionMessage
+                                }
+                            ]);
                     }
                 } catch (err) {
                     console.error('Failed to sync micro resets count to profile:', err);
@@ -77,7 +88,7 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
             }
             updateMicroResetsInProfile();
         }
-    }, [isCompleted]);
+    }, [isCompleted, exercise]);
 
     const startExercise = () => {
         setIsPlaying(true);
@@ -159,7 +170,19 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-4">
+                    <div className="p-6 bg-white/60 rounded-2xl border border-emerald-200/50 space-y-3">
+                        <p className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                            Would you like to reflect on what's making your mind feel overloaded?
+                        </p>
+                        <Link
+                            href="/dashboard/reflection"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-[#8E44AD] text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-[#7d3b99] transition-all shadow-md shadow-[#8E44AD]/20"
+                        >
+                            Reflect with Neo →
+                        </Link>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-2">
                         <button
                             onClick={restart}
                             className="flex items-center justify-center gap-2 py-5 bg-white border border-emerald-200 text-emerald-950 rounded-[1.5rem] font-bold uppercase text-[12px] tracking-[0.2em] hover:bg-emerald-100 transition-all"

@@ -897,13 +897,32 @@ export default function ReflectionPage() {
               </ul>
             </div>
 
-            <div className="bg-[#8E44AD]/5 border border-[#8E44AD]/10 p-5 rounded-2xl space-y-2 text-center">
+            <div className="bg-[#8E44AD]/5 border border-[#8E44AD]/15 p-5 rounded-2xl space-y-3 text-center">
               <span className="text-[10px] font-black uppercase tracking-widest text-[#8E44AD] block">
-                What&apos;s Next
+                YOUR NEXT STEP
               </span>
-              <p className="text-[13px] text-[var(--text-muted)] leading-relaxed font-medium">
-                Neo has generated 3 tailored Socratic check-ins to reopen this thread. They will be waiting as quick-start suggestions in your next session.
+              <p className="text-[13px] text-[var(--text-primary)] font-bold leading-relaxed">
+                Would you like to turn this insight into one small action?
               </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  placeholder="One small intentional action..."
+                  className="flex-1 min-w-0 px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-primary)] outline-none focus:border-[#8E44AD]"
+                  defaultValue={typeof window !== 'undefined' ? localStorage.getItem('neomind_next_step') || '' : ''}
+                  onChange={(e) => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('neomind_next_step', e.target.value);
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => alert('Your Next Step has been saved to your dashboard!')}
+                  className="px-4 py-2 bg-[#8E44AD] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#7D3C98] transition-all"
+                >
+                  Save
+                </button>
+              </div>
             </div>
 
             <div className="flex gap-4">

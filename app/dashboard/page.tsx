@@ -3,25 +3,20 @@
 import { useCheckInData } from '@/hooks/useCheckInData';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import Notifications from '@/components/Notifications';
 import {
   BookOpen,
   MessageSquare,
   Zap,
-  UserCircle,
   Sparkles,
   ArrowRight,
-  LogOut,
   Heart,
   History,
   CheckCircle2,
   TrendingUp,
-  Lightbulb,
-  Star,
   AlertTriangle,
   CreditCard,
-  HelpCircle
+  HelpCircle,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabaseClient';
@@ -42,43 +37,108 @@ const mindsetQuotes = [
   { text: "Awareness is the first step toward change.", author: "Nathaniel Branden" }
 ];
 
-// --- SUB-COMPONENT: PROGRESS SUMMARY ---
+// --- SUB-COMPONENT: MOMENTUM PRACTICE SUMMARY ---
 function ProgressSummary() {
-  const { weeklyStreak } = useCheckInData();
-  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const { weeklySummary, loading } = useCheckInData();
 
   return (
-    <div className="bg-[#fff2cc] p-8 rounded-[2.5rem] border border-amber-200 shadow-sm space-y-6 h-full flex flex-col justify-between">
+    <div className="bg-[#fff2cc] p-8 md:p-10 rounded-[2.5rem] border border-amber-200 shadow-sm space-y-6 h-full flex flex-col justify-between">
+      {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-lg font-black text-amber-950 uppercase tracking-tight">Momentum</h3>
-          <p className="text-[12px] font-black uppercase tracking-widest text-amber-800/70">7-Day Streak</p>
+          <h3 className="text-xl font-black text-amber-950 uppercase tracking-tight">MOMENTUM</h3>
+          <p className="text-[11px] font-black uppercase tracking-widest text-amber-800/75 mt-1">
+            Your mindful practice this week
+          </p>
         </div>
-        <div className="bg-white/40 px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/20">
-          <TrendingUp className="w-3 h-3 text-amber-900" />
-          <span className="text-[11px] font-black text-amber-900 uppercase tracking-widest">Live Sync</span>
+        <div className="bg-white/50 px-3 py-1.5 rounded-full flex items-center gap-2 border border-amber-900/10 shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-black text-amber-950 uppercase tracking-widest">LIVE</span>
         </div>
       </div>
 
-      <div className="flex justify-between items-center py-2">
-        {days.map((day, i) => (
-          <div key={i} className="flex flex-col items-center gap-2">
-            <span className="text-[10px] font-black text-amber-800/70 uppercase">{day}</span>
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-              weeklyStreak[i] ? "bg-amber-600 text-white shadow-lg shadow-amber-900/10" : "bg-amber-950/10 text-amber-900/30"
-            }`}>
-              {weeklyStreak[i] ? <CheckCircle2 className="w-3.5 h-3.5" /> : <div className="w-1 h-1 rounded-full bg-amber-950/20" />}
+      {/* Dynamic Summary Numbers */}
+      <div className="bg-white/60 p-5 rounded-2xl border border-amber-900/10 text-center space-y-1.5 shadow-xs">
+        <div className="text-2xl font-black text-amber-950 tracking-tight">
+          {weeklySummary.totalPractices} {weeklySummary.totalPractices === 1 ? 'PRACTICE' : 'PRACTICES'}
+        </div>
+        <div className="text-[11px] font-black uppercase tracking-wider text-amber-900/80 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <span>{weeklySummary.totalCheckIns} {weeklySummary.totalCheckIns === 1 ? 'CHECK-IN' : 'CHECK-INS'}</span>
+          <span className="text-amber-900/30">•</span>
+          <span>{weeklySummary.totalReflections} {weeklySummary.totalReflections === 1 ? 'REFLECTION' : 'REFLECTIONS'}</span>
+          <span className="text-amber-900/30">•</span>
+          <span>{weeklySummary.totalMicroResets} {weeklySummary.totalMicroResets === 1 ? 'MICRO-RESET' : 'MICRO-RESETS'}</span>
+        </div>
+      </div>
+
+      {/* 7-Day Mindful Practice Pattern Map */}
+      <div className="space-y-3 py-1">
+        <div className="flex justify-between items-center px-1">
+          {weeklySummary.days.map((day, idx) => (
+            <div
+              key={idx}
+              className="flex flex-col items-center gap-2 flex-1 relative group"
+              title={day.ariaLabel}
+            >
+              {/* Day Letter */}
+              <span className={`text-[11px] font-black uppercase ${
+                day.isToday ? 'text-amber-950 font-black' : 'text-amber-800/70'
+              }`}>
+                {day.dayName}
+              </span>
+
+              {/* Practice State Dot */}
+              <div
+                tabIndex={0}
+                role="img"
+                aria-label={day.ariaLabel}
+                className={`transition-all duration-300 relative flex items-center justify-center cursor-default outline-none h-6 w-6 ${
+                  day.isToday ? 'rounded-full ring-2 ring-amber-700/40 bg-amber-950/5' : ''
+                }`}
+              >
+                {day.state === 'multiple' ? (
+                  /* Multiple practices: Solid dot with layered ring */
+                  <div className="w-4 h-4 rounded-full bg-amber-800 flex items-center justify-center shadow-xs">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-100" />
+                  </div>
+                ) : day.state === 'active' ? (
+                  /* Active day (1 practice): Soft filled dot */
+                  <div className="w-3.5 h-3.5 rounded-full bg-amber-700/85 shadow-xs" />
+                ) : (
+                  /* No activity yet: Neutral empty circle */
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-amber-950/20 bg-transparent" />
+                )}
+              </div>
+
+              {/* Subtle Today Label */}
+              {day.isToday && (
+                <span className="text-[8px] font-black uppercase tracking-tighter text-amber-900/80 absolute -bottom-4">
+                  TODAY
+                </span>
+              )}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <div className="border-t border-amber-950/10 pt-4 flex justify-start">
+      {/* Engagement Status & Encouraging Microcopy */}
+      <div className="text-center space-y-1 pt-3">
+        <div className="text-[11px] font-black uppercase tracking-widest text-amber-950">
+          {weeklySummary.daysEngaged} OF 7 DAYS ENGAGED
+        </div>
+        <p className="text-[12px] font-medium italic text-amber-900/80">
+          &quot;{weeklySummary.encouragement}&quot;
+        </p>
+      </div>
+
+      {/* Footer Link */}
+      <div className="border-t border-amber-950/10 pt-4 flex justify-between items-center">
         <Link
-          href="/dashboard/insights"
-          className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-amber-950 hover:opacity-75 transition-opacity"
+          href="/dashboard/history"
+          className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-amber-950 hover:text-amber-800 transition-colors group"
         >
-          View Monthly Streaks <ArrowRight className="w-3 h-3" />
+          <span>VIEW PRACTICE HISTORY</span>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
     </div>
@@ -88,7 +148,7 @@ function ProgressSummary() {
 // --- MAIN DASHBOARD PAGE ---
 export default function DashboardPage() {
   const { user, profile } = useAuth();
-  const { weeklyStreak, recentShifts, subscriptionTier, checkedInToday, todayCheckIn } = useCheckInData();
+  const { checkedInToday, todayCheckIn } = useCheckInData();
   const [dayIndex, setDayIndex] = useState(0);
 
   useEffect(() => {
@@ -96,8 +156,6 @@ export default function DashboardPage() {
     const index = (today.getFullYear() + today.getMonth() + today.getDate()) % scriptureQuotes.length;
     setDayIndex(index);
   }, []);
-
-
 
   // --- Pending Payment State ---
   const [pendingPlan, setPendingPlan] = useState<{ plan_id: string; m_payment_id: string } | null>(null);
@@ -156,7 +214,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Getting Started Welcome FAQ Card */}
+      {/* Getting Started Welcome Card */}
       <div className="p-6 md:p-8 rounded-[2.5rem] bg-gradient-to-r from-[#00538e]/10 to-[#0ca78d]/10 border border-[#00538e]/20 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-[#00538e]/20 shadow-sm">
@@ -167,7 +225,7 @@ export default function DashboardPage() {
               Getting Started with NeoMind180
             </h3>
             <p className="text-[13px] text-[var(--text-secondary)] font-medium mt-1 leading-relaxed max-w-2xl">
-              Welcome to your sanctuary for clarity. This guide explains how to use the core features of your dashboard to start transforming your mindset today.
+              Welcome to your space for clarity and mindful growth. Start with a Daily Check-In, explore a Micro-Reset, or reflect with Neo when something is on your mind.
             </p>
           </div>
         </div>
@@ -179,6 +237,36 @@ export default function DashboardPage() {
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
+
+      {/* What's happening for you today? Triage Bar */}
+      <section className="p-6 md:p-8 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border)] shadow-sm space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-[#0AA390] animate-pulse" />
+          <h3 className="text-base font-black uppercase tracking-tight text-[var(--text-primary)]">
+            What's happening for you today?
+          </h3>
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          {[
+            { label: "I'm overwhelmed", action: "2-Minute Grounding", href: "/dashboard/micro-resets/grounding", color: "#0AA390" },
+            { label: "My mind won't stop", action: "Thought Release", href: "/dashboard/micro-resets/thought-release", color: "#F39904" },
+            { label: "I'm doubting myself", action: "Be-Enough Shift", href: "/dashboard/be-enough", color: "#993366" },
+            { label: "I'm stuck on a decision", action: "Reflect with Neo", href: "/dashboard/reflection", color: "#8E44AD" },
+            { label: "I need perspective", action: "Ask the Coach", href: "/dashboard/coach", color: "#00538e" },
+          ].map((item, idx) => (
+            <Link
+              key={idx}
+              href={item.href}
+              className="px-4 py-2.5 rounded-2xl bg-[var(--bg-input)] border border-[var(--border)] hover:border-[var(--text-muted)] text-[12px] font-bold text-[var(--text-primary)] transition-all flex items-center gap-2 group hover:-translate-y-0.5"
+            >
+              <span>{item.label}</span>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full text-white tracking-widest" style={{ backgroundColor: item.color }}>
+                → {item.action}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* Daily Insight Cards */}
       <section className="grid md:grid-cols-2 gap-6">
@@ -210,11 +298,16 @@ export default function DashboardPage() {
         {/* Be-Enough Shift Card */}
         <div className="p-8 rounded-[2.5rem] bg-[#e7e5e4] border border-stone-300 shadow-sm relative overflow-hidden group hover:border-[#993366]/40 transition-all flex flex-col justify-between min-h-[180px]">
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#993366]/10 rounded-xl flex items-center justify-center text-[#993366]">
-                <Heart className="w-5 h-5 fill-current" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#993366]/10 rounded-xl flex items-center justify-center text-[#993366]">
+                  <Heart className="w-5 h-5 fill-current" />
+                </div>
+                <h4 className="text-sm font-black uppercase tracking-widest text-[#993366]">Be-Enough Shift</h4>
               </div>
-              <h4 className="text-sm font-black uppercase tracking-widest text-[#993366]">Be-Enough Shift</h4>
+              <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#993366]/15 text-[#993366] border border-[#993366]/30">
+                SELF-COMPASSION
+              </span>
             </div>
             <p className="text-[13px] leading-relaxed text-stone-700 font-medium">
               Dismantle conditional self-worth and quiet the inner critic. Reset your internal baseline to &quot;I am enough&quot; by stepping out of performance-driven pressure and practicing gentle self-compassion.
@@ -229,7 +322,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Reflections with Neo Socratic Chat Card */}
+        {/* Reflections with Neo Card */}
         <div className="p-8 rounded-[2.5rem] bg-[#e7e5e4] border border-stone-300 shadow-sm relative overflow-hidden group hover:border-[#8E44AD]/40 transition-all flex flex-col justify-between min-h-[180px]">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -239,7 +332,7 @@ export default function DashboardPage() {
               <h4 className="text-sm font-black uppercase tracking-widest text-[#8E44AD]">Reflections with Neo</h4>
             </div>
             <p className="text-[13px] leading-relaxed text-stone-700 font-medium">
-              Your private sanctuary for guided self-reflection. Chat freely with Neo, observe your thought patterns, and uncover blind spots with supportive, non-judgmental dialogue.
+              Your private space for guided self-reflection. Explore what's on your mind with Neo and notice patterns, perspectives and possibilities without judgment.
             </p>
           </div>
           <Link
@@ -253,43 +346,87 @@ export default function DashboardPage() {
       </section>
 
       {/* Row 2: Daily Check-in + Momentum */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-        {/* Daily Check-In */}
-        <div className="bg-[#ffd966] p-8 md:p-10 rounded-[2.5rem] border border-amber-300 shadow-sm transition-all hover:shadow-md flex flex-col justify-between">
-          <div>
-            <h3 className="text-xl font-black text-amber-950 uppercase tracking-tight">Daily Check-In</h3>
-            <p className="text-sm text-amber-900/70 mt-2 font-medium">
-              {checkedInToday ? "Done! You've acknowledged your internal climate today." : "Acknowledge your internal climate."}
-            </p>
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* Left Column: Daily Check-In + Next Step Tracker */}
+        <div className="space-y-6">
+          <div className="bg-[#ffd966] p-8 md:p-10 rounded-[2.5rem] border border-amber-300 shadow-sm transition-all hover:shadow-md flex flex-col justify-between">
+            <div>
+              <h3 className="text-xl font-black text-amber-950 uppercase tracking-tight">Daily Check-In</h3>
+              <p className="text-sm text-amber-900/80 mt-2 font-medium">
+                Notice what's happening in your mind, emotions and body—without needing to change anything yet.
+              </p>
+            </div>
+
+            {checkedInToday ? (
+              <div className="my-6 py-4 px-6 bg-white/40 rounded-2xl border border-white/20 flex flex-row gap-4 justify-around items-center">
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-950/60">Mind</span>
+                  <span className="text-sm font-black uppercase text-[#00538e]">{todayCheckIn?.mind || 'Balanced'}</span>
+                </div>
+                <div className="h-8 w-px bg-amber-950/15"></div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-950/60">Body</span>
+                  <span className="text-sm font-black uppercase text-[#0AA390]">{todayCheckIn?.body || 'Neutral'}</span>
+                </div>
+                <div className="h-8 w-px bg-amber-950/15"></div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-950/60">Energy</span>
+                  <span className="text-sm font-black uppercase text-[#993366]">{todayCheckIn?.energy || 'Steady'}</span>
+                </div>
+              </div>
+            ) : (
+              <Link href="/dashboard/check-in" className="block mt-6">
+                <button className="w-full py-4.5 bg-[#00538e] text-white rounded-[1.5rem] font-bold uppercase text-[12px] tracking-[0.2em] hover:shadow-2xl shadow-[#00538e]/20 hover:-translate-y-0.5 transition-all">
+                  Begin Check-In
+                </button>
+              </Link>
+            )}
           </div>
 
-          {checkedInToday ? (
-            <div className="my-6 py-4 px-6 bg-white/40 rounded-2xl border border-white/20 flex flex-row gap-4 justify-around items-center">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-950/60">Mind</span>
-                <span className="text-sm font-black uppercase text-[#00538e]">{todayCheckIn?.mind || 'Balanced'}</span>
+          {/* Next Step Tracking Card */}
+          <div className="p-6 rounded-[2.5rem] bg-[#fdf4ff] border border-fuchsia-200 shadow-sm flex flex-col justify-between space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#993366]" />
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#993366]">MY NEXT STEP</h4>
               </div>
-              <div className="h-8 w-px bg-amber-950/15"></div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-950/60">Body</span>
-                <span className="text-sm font-black uppercase text-[#0AA390]">{todayCheckIn?.body || 'Neutral'}</span>
-              </div>
-              <div className="h-8 w-px bg-amber-950/15"></div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-950/60">Energy</span>
-                <span className="text-sm font-black uppercase text-[#993366]">{todayCheckIn?.energy || 'Steady'}</span>
-              </div>
+              <Link
+                href="/dashboard/reflection"
+                className="text-[10px] font-black uppercase tracking-widest text-[#8E44AD] hover:underline"
+              >
+                Reflect with Neo →
+              </Link>
             </div>
-          ) : (
-            <Link href="/dashboard/check-in" className="block mt-6">
-              <button className="w-full py-4.5 bg-[#00538e] text-white rounded-[1.5rem] font-bold uppercase text-[12px] tracking-[0.2em] hover:shadow-2xl shadow-[#00538e]/20 hover:-translate-y-0.5 transition-all">
-                Begin Check-In
+            <p className="text-xs font-bold text-fuchsia-950 leading-relaxed">
+              Would you like to turn your reflection insight into one small action?
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                placeholder="One small intentional action..."
+                className="flex-1 min-w-0 px-4 py-2.5 bg-white border border-fuchsia-200 rounded-xl text-xs text-stone-800 outline-none focus:border-[#993366] transition-all"
+                defaultValue={typeof window !== 'undefined' ? localStorage.getItem('neomind_next_step') || '' : ''}
+                onChange={(e) => {
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('neomind_next_step', e.target.value);
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    alert('Your Next Step has been saved to your practice tracker!');
+                  }
+                }}
+                className="px-4 py-2.5 bg-[#993366] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#802652] transition-all shrink-0 cursor-pointer"
+              >
+                Save Step
               </button>
-            </Link>
-          )}
+            </div>
+          </div>
         </div>
 
-        {/* Momentum */}
+        {/* Right Column: Momentum */}
         <div>
           <ProgressSummary />
         </div>
@@ -298,10 +435,32 @@ export default function DashboardPage() {
       {/* Row 3: Micro-Resets + Direct Access */}
       <section className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
         {/* Micro-Resets Section (60%) */}
-        <div className="lg:col-span-3 space-y-6">
+        <div id="micro-resets" className="lg:col-span-3 space-y-6">
           <div>
             <h3 className="text-xl font-black text-[#00538e] uppercase tracking-tight">MICRO-RESETS</h3>
-            <p className="text-sm text-stone-500 mt-1 font-medium">Quick tools to reset your mind and body in moments.</p>
+            <p className="text-sm text-stone-500 mt-1 font-medium">
+              Short guided practices to pause, reset and create space for your next intentional response.
+            </p>
+
+            {/* Mentally Overloaded Recommendation Box */}
+            <div className="mt-4 p-5 rounded-2xl border border-emerald-200 bg-[#f0fdfa] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+              <div className="space-y-1">
+                <p className="text-xs font-black uppercase text-emerald-950 tracking-wider">
+                  You seem mentally overloaded today.
+                </p>
+                <p className="text-xs font-medium text-emerald-900/80">
+                  Try a 2-minute grounding reset to create immediate space.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/dashboard/micro-resets/grounding"
+                  className="px-4 py-2 bg-[#0AA390] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#088373] transition-all shadow-md shadow-[#0AA390]/20 shrink-0"
+                >
+                  2-Min Grounding →
+                </Link>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -322,7 +481,10 @@ export default function DashboardPage() {
                         <h4 className={`font-black text-[13px] ${reset.textColor} uppercase tracking-tight group-hover:text-[#00538e] transition-colors`}>
                           {reset.title}
                         </h4>
-                        <p className="text-[11px] text-stone-500 font-medium leading-normal mt-1 line-clamp-2">
+                        <p className="text-[11px] font-extrabold text-stone-700 mt-1">
+                          {reset.purpose}
+                        </p>
+                        <p className="text-[11px] text-stone-500 font-medium leading-normal mt-0.5 line-clamp-2">
                           {reset.description}
                         </p>
                       </div>
@@ -343,47 +505,88 @@ export default function DashboardPage() {
 
         {/* Direct Access (40%) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="space-y-3">
-            <h3 className="text-[12px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em] px-4">Direct Access</h3>
-            <nav className="space-y-2">
-              {[
-                { label: 'Reflection with Neo', href: '/dashboard/reflection', icon: Zap, color: '#8E44AD', minTier: 'free' },
-                { label: 'Self-Help Library', href: '/dashboard/library', icon: BookOpen, color: '#F39904', minTier: 'free' },
-                { label: 'Ask-the-Coach', href: '/dashboard/coach', icon: HelpCircle, color: '#0AA390', minTier: 'free' },
-                { label: 'Insights & Analytics', href: '/dashboard/insights', icon: TrendingUp, color: '#0AA390', minTier: 'free' },
-                { label: 'Shift History', href: '/dashboard/history', icon: History, color: '#0AA390', minTier: 'free' }
-              ].map((item, idx) => {
-                const isLocked = item.minTier === 'starter' && subscriptionTier === 'free';
-                return (
-                  <Link
-                    key={idx}
-                    href={isLocked ? '/pricing' : item.href}
-                    className={`flex items-center justify-between p-4 bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] shadow-sm transition-all group ${isLocked ? 'opacity-70 grayscale-[0.5]' : 'hover:border-[var(--text-dim)] hover:bg-[var(--border)]'}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-[var(--bg-input)] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform relative">
-                        <item.icon className="w-4 h-4" style={{ color: item.color }} />
-                        {isLocked && (
-                          <div className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-stone-200">
-                            <LucideIcons.Lock className="w-2.5 h-2.5 text-[#F39904]" />
+          <div className="space-y-4">
+            <h3 className="text-[12px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em] px-4">Direct Access Menu</h3>
+
+            {/* Categorized Menu */}
+            {[
+              {
+                category: "TODAY",
+                items: [
+                  { label: "Dashboard", href: "/dashboard", icon: LucideIcons.LayoutDashboard, color: "#00538e" },
+                  { label: "Daily Check-In", href: "/dashboard/check-in", icon: Heart, color: "#993366" },
+                  { label: "Micro-Resets", href: "/dashboard#micro-resets", icon: Zap, color: "#0AA390" },
+                ]
+              },
+              {
+                category: "REFLECT",
+                items: [
+                  { 
+                    label: "REFLECT WITH NEO", 
+                    subtext: "Explore your thoughts with your AI reflection coach.", 
+                    href: "/dashboard/reflection", 
+                    icon: Zap, 
+                    color: "#8E44AD" 
+                  },
+                  { label: "Shift History", href: "/dashboard/history", icon: History, color: "#0AA390" },
+                  { label: "Insights", href: "/dashboard/insights", icon: TrendingUp, color: "#0AA390" },
+                ]
+              },
+              {
+                category: "LEARN",
+                items: [
+                  { label: "Self-Help Library", href: "/dashboard/library", icon: BookOpen, color: "#F39904" },
+                  { label: "How-To", href: "/dashboard/how-to", icon: HelpCircle, color: "#0AA390" },
+                ]
+              },
+              {
+                category: "CONNECT",
+                items: [
+                  { 
+                    label: "ASK THE COACH", 
+                    subtext: "Send a question to Emmeline when you'd like human coaching guidance.", 
+                    href: "/dashboard/coach", 
+                    icon: MessageSquare, 
+                    color: "#4A90E2" 
+                  },
+                ]
+              }
+            ].map((catGroup) => (
+              <div key={catGroup.category} className="space-y-2">
+                <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#00538e] px-4">
+                  {catGroup.category}
+                </div>
+                <div className="space-y-2">
+                  {catGroup.items.map((item, idx) => (
+                    <Link
+                      key={idx}
+                      href={item.href}
+                      className="flex flex-col p-3.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] shadow-sm hover:border-[var(--text-muted)] hover:bg-[var(--border)] transition-all group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[var(--bg-input)] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <item.icon className="w-4 h-4" style={{ color: item.color }} />
                           </div>
-                        )}
+                          <span className="text-[12px] font-extrabold text-[var(--text-primary)] uppercase tracking-tight">
+                            {item.label}
+                          </span>
+                        </div>
+                        <ArrowRight className="w-3.5 h-3.5 text-[var(--text-dim)] group-hover:text-[var(--text-muted)] group-hover:translate-x-1 transition-all" />
                       </div>
-                      <span className="text-[13px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">{item.label}</span>
-                    </div>
-                    {isLocked ? (
-                      <span className="text-[10px] font-black uppercase text-[#F39904] tracking-widest bg-amber-50 px-2 py-1 rounded-md border border-amber-100">Unlock</span>
-                    ) : (
-                      <ArrowRight className="w-3.5 h-3.5 text-[var(--text-dim)] group-hover:text-[var(--text-muted)] group-hover:translate-x-1 transition-all" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
+                      {item.subtext && (
+                        <p className="text-[10px] font-medium text-[var(--text-muted)] mt-1 ml-11 leading-snug">
+                          {item.subtext}
+                        </p>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
-
 
     </div>
   );
