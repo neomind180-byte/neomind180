@@ -93,7 +93,7 @@ async function run() {
 
     console.log("6. Requesting Chat Completion from OpenRouter...");
     const response = await openrouter.chat.completions.create({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-3-flash-preview",
       messages: [
         { role: "system", content: "You are a helpful assistant." },
         { role: "user", content: "Hello" }

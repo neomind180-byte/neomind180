@@ -128,7 +128,7 @@ export async function runNeoConversation(
     model: NEO_CONVERSATION_MODEL,
     messages,
     temperature,
-    fallbacks: [NEO_BACKGROUND_MODEL],
+    fallbacks: ["google/gemini-2.5-flash", NEO_BACKGROUND_MODEL],
     maxRetries: 2, // 2 attempts × 15s timeout + 1s backoff = ~31s worst case (fits within client 35s abort)
   });
 }

@@ -63,10 +63,10 @@ export function getTierLimit(tier: string): number {
 
 /**
  * Model definitions for the NeoMind180 platform.
- * Gemini 2.5 Flash is used for the main conversational coach (Neo reflections) where high emotional intelligence is required.
+ * Gemini 3.0 Flash is used for the main conversational coach (Neo reflections) where high emotional intelligence is required.
  * Gemini 2.5 Flash-lite is used for lightweight structured backend tasks like summaries, prompts, and post-chat analysis.
  */
-export const NEO_CONVERSATION_MODEL = "google/gemini-2.5-flash";
+export const NEO_CONVERSATION_MODEL = "google/gemini-3-flash-preview";
 export const NEO_BACKGROUND_MODEL = "google/gemini-2.5-flash-lite";
 
 /**
