@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-import { ArrowLeft, Activity, Heart, Calendar, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Activity, Heart, Calendar, Zap, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 
 export default function HistoryPage() {
   const [historyItems, setHistoryItems] = useState<any[]>([]);
@@ -81,86 +81,110 @@ export default function HistoryPage() {
         </header>
 
         <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:w-0.5 before:-translate-x-px before:bg-[var(--border)]">
-          {historyItems.map((item) => (
-            <div key={item.id} className="relative flex items-start gap-8 group">
+          {historyItems.map((item) => {
+            const isIntentionalAction = item.type === 'shift' && (
+              item.data.thought?.startsWith('Intentional Action') ||
+              item.data.thought?.startsWith('Next Step') ||
+              item.data.evidence === 'Action Commitment' ||
+              item.data.evidence === 'Micro-Reset Response'
+            );
 
-              {/* Timeline Icon */}
-              <div className={`mt-2 w-10 h-10 rounded-2xl border-4 border-[var(--bg-primary)] flex items-center justify-center shrink-0 z-10 shadow-sm ${item.type === 'shift' ? 'bg-[#993366] text-white' :
-                item.type === 'reflection' ? 'bg-[#0AA390] text-white' : 'bg-[var(--bg-card)] text-[#0AA390]'
+            return (
+              <div key={item.id} className="relative flex items-start gap-8 group">
+
+                {/* Timeline Icon */}
+                <div className={`mt-2 w-10 h-10 rounded-2xl border-4 border-[var(--bg-primary)] flex items-center justify-center shrink-0 z-10 shadow-sm ${
+                  isIntentionalAction ? 'bg-[#8E44AD] text-white' :
+                  item.type === 'shift' ? 'bg-[#993366] text-white' :
+                  item.type === 'reflection' ? 'bg-[#0AA390] text-white' : 'bg-[var(--bg-card)] text-[#0AA390]'
                 }`}>
-                {item.type === 'shift' ? <Heart className="w-4 h-4" /> :
-                  item.type === 'reflection' ? <Zap className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
-              </div>
-
-              {/* Card Content */}
-              <div className="flex-grow bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`text-[12px] font-black uppercase tracking-widest ${item.type === 'shift' ? 'text-[#993366]' : 'text-[#0AA390]'
-                    }`}>
-                    {item.type === 'shift' ? 'Mindset Shift' :
-                      item.type === 'reflection' ? 'Reflection with Neo' : 'Daily Check-In'}
-                  </span>
-                  <span className="text-[12px] font-bold text-[var(--text-dim)] uppercase tracking-wide">
-                    {item.date.toLocaleString(undefined, {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
+                  {isIntentionalAction ? <Sparkles className="w-4 h-4" /> :
+                    item.type === 'shift' ? <Heart className="w-4 h-4" /> :
+                    item.type === 'reflection' ? <Zap className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
                 </div>
 
-                {item.type === 'check-in' ? (
-                  <div className="grid grid-cols-3 gap-2">
-                    {['Mind', 'Body', 'Energy'].map(k => (
-                      <div key={k} className="bg-[var(--bg-primary)] px-3 py-2 rounded-xl border border-[var(--border)]">
-                        <p className="text-[11px] uppercase text-[var(--text-muted)] font-bold">{k}</p>
-                        <p className="text-[14px] font-bold text-[var(--text-secondary)]">{item.data[k.toLowerCase()]}</p>
-                      </div>
-                    ))}
+                {/* Card Content */}
+                <div className="flex-grow bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-[2.5rem] shadow-sm">
+                  <div className="flex justify-between items-start mb-4">
+                    <span className={`text-[12px] font-black uppercase tracking-widest ${
+                      isIntentionalAction ? 'text-[#8E44AD]' :
+                      item.type === 'shift' ? 'text-[#993366]' : 'text-[#0AA390]'
+                    }`}>
+                      {isIntentionalAction ? 'Intentional Action Step' :
+                        item.type === 'shift' ? 'Mindset Shift' :
+                        item.type === 'reflection' ? 'Reflection with Neo' : 'Daily Check-In'}
+                    </span>
+                    <span className="text-[12px] font-bold text-[var(--text-dim)] uppercase tracking-wide">
+                      {item.date.toLocaleString(undefined, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
                   </div>
-                ) : item.type === 'reflection' ? (
-                  <div className="space-y-4">
-                    <p className="text-base text-[var(--text-secondary)] line-clamp-2 italic">
-                      {item.data.last_message ? `"${item.data.last_message}"` : "Session started"}
-                    </p>
-                    {expandedId === item.id && (
-                      <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-4 max-h-60 overflow-y-auto pr-2">
-                        {item.data.messages.map((msg: any, mIdx: number) => (
-                          <div key={mIdx} className={`p-4 rounded-2xl text-[13px] leading-relaxed ${msg.role === 'neo' ? 'bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border)]' : 'bg-[#00538e] text-white'
-                            }`}>
-                            <span className="font-bold uppercase text-[10px] block mb-1 opacity-50">
-                              {msg.role === 'neo' ? 'Neo' : 'You'}
-                            </span>
-                            {msg.content}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <button
-                      onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                      className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-[#0AA390] hover:opacity-70 transition-opacity"
-                    >
-                      {expandedId === item.id ? (
-                        <><ChevronUp className="w-3 h-3" /> Hide Conversation</>
-                      ) : (
-                        <><ChevronDown className="w-3 h-3" /> View Full Conversation</>
-                      )}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="text-base text-[var(--text-secondary)] italic">"{item.data.thought}"</p>
-                    <div className="pl-4 border-l-2 border-[#993366]/20">
-                      <p className="text-[14px] font-bold text-[#993366] uppercase tracking-widest mb-1">Shift:</p>
-                      <p className="text-base font-medium text-[var(--text-secondary)]">{item.data.new_perspective}</p>
+
+                  {item.type === 'check-in' ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      {['Mind', 'Body', 'Energy'].map(k => (
+                        <div key={k} className="bg-[var(--bg-primary)] px-3 py-2 rounded-xl border border-[var(--border)]">
+                          <p className="text-[11px] uppercase text-[var(--text-muted)] font-bold">{k}</p>
+                          <p className="text-[14px] font-bold text-[var(--text-secondary)]">{item.data[k.toLowerCase()]}</p>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                )}
+                  ) : item.type === 'reflection' ? (
+                    <div className="space-y-4">
+                      <p className="text-base text-[var(--text-secondary)] line-clamp-2 italic">
+                        {item.data.last_message ? `"${item.data.last_message}"` : "Session started"}
+                      </p>
+                      {expandedId === item.id && (
+                        <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-4 max-h-60 overflow-y-auto pr-2">
+                          {item.data.messages.map((msg: any, mIdx: number) => (
+                            <div key={mIdx} className={`p-4 rounded-2xl text-[13px] leading-relaxed ${msg.role === 'neo' ? 'bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border)]' : 'bg-[#00538e] text-white'
+                              }`}>
+                              <span className="font-bold uppercase text-[10px] block mb-1 opacity-50">
+                                {msg.role === 'neo' ? 'Neo' : 'You'}
+                              </span>
+                              {msg.content}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                        className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-[#0AA390] hover:opacity-70 transition-opacity"
+                      >
+                        {expandedId === item.id ? (
+                          <><ChevronUp className="w-3 h-3" /> Hide Conversation</>
+                        ) : (
+                          <><ChevronDown className="w-3 h-3" /> View Full Conversation</>
+                        )}
+                      </button>
+                    </div>
+                  ) : isIntentionalAction ? (
+                    <div className="space-y-2">
+                      <p className="text-base font-bold text-[var(--text-primary)] leading-relaxed">
+                        "{item.data.new_perspective}"
+                      </p>
+                      <p className="text-xs text-[var(--text-dim)] font-medium">
+                        Committed action step • Saved to practice tracker
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-base text-[var(--text-secondary)] italic">"{item.data.thought}"</p>
+                      <div className="pl-4 border-l-2 border-[#993366]/20">
+                        <p className="text-[14px] font-bold text-[#993366] uppercase tracking-widest mb-1">Shift:</p>
+                        <p className="text-base font-medium text-[var(--text-secondary)]">{item.data.new_perspective}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
       </div>

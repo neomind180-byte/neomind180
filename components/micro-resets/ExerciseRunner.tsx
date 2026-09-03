@@ -16,6 +16,36 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
     const [isCompleted, setIsCompleted] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+    const [spaceAction, setSpaceAction] = useState('');
+    const [isSavingSpaceAction, setIsSavingSpaceAction] = useState(false);
+    const [spaceActionSaved, setSpaceActionSaved] = useState(false);
+
+    const handleSaveSpaceAction = async () => {
+        if (!spaceAction.trim()) return;
+        setIsSavingSpaceAction(true);
+        try {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('neomind_next_step', spaceAction.trim());
+            }
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase.from('shifts').insert([
+                    {
+                        user_id: user.id,
+                        thought: `Intentional Action: ${spaceAction.trim()}`,
+                        emotion: 'Space Created',
+                        evidence: 'Micro-Reset Response',
+                        new_perspective: spaceAction.trim()
+                    }
+                ]);
+            }
+            setSpaceActionSaved(true);
+        } catch (err) {
+            console.error('Error saving intentional space action:', err);
+        } finally {
+            setIsSavingSpaceAction(false);
+        }
+    };
 
     useEffect(() => {
         if (isPlaying && !isCompleted && exercise.stepAudio && exercise.stepAudio[currentStep] && !isMuted) {
@@ -168,6 +198,35 @@ export default function ExerciseRunner({ exercise }: ExerciseRunnerProps) {
                         <p className="text-lg font-medium text-emerald-900/70 max-w-md mx-auto leading-relaxed">
                             {exercise.completionMessage}
                         </p>
+                    </div>
+
+                    <div className="p-6 bg-white/80 rounded-3xl border border-emerald-200 shadow-sm space-y-3 text-left">
+                        <label className="text-xs font-black uppercase text-emerald-950 tracking-wider block">
+                            Your Intentional Response Step:
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="text"
+                                value={spaceAction}
+                                onChange={(e) => setSpaceAction(e.target.value)}
+                                placeholder="One small intentional action..."
+                                className="flex-1 min-w-0 px-4 py-3 bg-white border border-emerald-200 rounded-xl text-xs text-stone-800 outline-none focus:border-[#00538e] transition-all"
+                                disabled={spaceActionSaved}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleSaveSpaceAction}
+                                disabled={!spaceAction.trim() || isSavingSpaceAction || spaceActionSaved}
+                                className="px-5 py-3 bg-[#00538e] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#004272] transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+                            >
+                                {isSavingSpaceAction ? 'Saving...' : spaceActionSaved ? 'Saved ✓' : 'Save Step'}
+                            </button>
+                        </div>
+                        {spaceActionSaved && (
+                            <p className="text-[11px] font-bold text-emerald-700 tracking-wide">
+                                ✓ Saved to your practice tracker & journey history!
+                            </p>
+                        )}
                     </div>
 
                     <div className="p-6 bg-white/60 rounded-2xl border border-emerald-200/50 space-y-3">

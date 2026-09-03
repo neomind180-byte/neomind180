@@ -33,6 +33,36 @@ export default function ReflectionPage() {
   const [completionSummary, setCompletionSummary] = useState<string[]>([]);
   const [lastSessionCheckIns, setLastSessionCheckIns] = useState<string[]>([]);
   const [hasCompletion, setHasCompletion] = useState(false);
+  const [reflectionNextStep, setReflectionNextStep] = useState('');
+  const [isSavingReflectionStep, setIsSavingReflectionStep] = useState(false);
+  const [reflectionStepSaved, setReflectionStepSaved] = useState(false);
+
+  const handleSaveReflectionNextStep = async () => {
+    const text = reflectionNextStep.trim() || (typeof window !== 'undefined' ? localStorage.getItem('neomind_next_step') || '' : '');
+    if (!text) return;
+    setIsSavingReflectionStep(true);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('neomind_next_step', text);
+      }
+      if (user) {
+        await supabase.from('shifts').insert([
+          {
+            user_id: user.id,
+            thought: `Intentional Action: ${text}`,
+            emotion: 'Reflection Action',
+            evidence: 'Reflection Insight',
+            new_perspective: text
+          }
+        ]);
+      }
+      setReflectionStepSaved(true);
+    } catch (err) {
+      console.error('Error saving reflection Next Step:', err);
+    } finally {
+      setIsSavingReflectionStep(false);
+    }
+  };
 
   // Speech Recognition states
   const [isListening, setIsListening] = useState(false);
@@ -42,6 +72,9 @@ export default function ReflectionPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('neomind_next_step');
+      if (saved) setReflectionNextStep(saved);
+
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
         setSupportSpeech(true);
@@ -907,22 +940,26 @@ export default function ReflectionPage() {
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
+                  value={reflectionNextStep}
+                  onChange={(e) => setReflectionNextStep(e.target.value)}
                   placeholder="One small intentional action..."
                   className="flex-1 min-w-0 px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-primary)] outline-none focus:border-[#8E44AD]"
-                  defaultValue={typeof window !== 'undefined' ? localStorage.getItem('neomind_next_step') || '' : ''}
-                  onChange={(e) => {
-                    if (typeof window !== 'undefined') {
-                      localStorage.setItem('neomind_next_step', e.target.value);
-                    }
-                  }}
+                  disabled={reflectionStepSaved}
                 />
                 <button
-                  onClick={() => alert('Your Next Step has been saved to your dashboard!')}
-                  className="px-4 py-2 bg-[#8E44AD] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#7D3C98] transition-all"
+                  type="button"
+                  onClick={handleSaveReflectionNextStep}
+                  disabled={isSavingReflectionStep || reflectionStepSaved}
+                  className="px-4 py-2 bg-[#8E44AD] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#7D3C98] transition-all cursor-pointer disabled:opacity-50"
                 >
-                  Save
+                  {isSavingReflectionStep ? 'Saving...' : reflectionStepSaved ? 'Saved ✓' : 'Save'}
                 </button>
               </div>
+              {reflectionStepSaved && (
+                <p className="text-[11px] font-bold text-[#8E44AD] tracking-wide">
+                  ✓ Saved to your practice tracker & journey history!
+                </p>
+              )}
             </div>
 
             <div className="flex gap-4">

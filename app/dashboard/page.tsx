@@ -151,10 +151,48 @@ export default function DashboardPage() {
   const { checkedInToday, todayCheckIn } = useCheckInData();
   const [dayIndex, setDayIndex] = useState(0);
 
+  // --- Next Step State ---
+  const [nextStepInput, setNextStepInput] = useState('');
+  const [isSavingNextStep, setIsSavingNextStep] = useState(false);
+  const [nextStepSaved, setNextStepSaved] = useState(false);
+
+  const handleSaveNextStep = async () => {
+    const text = nextStepInput.trim() || (typeof window !== 'undefined' ? localStorage.getItem('neomind_next_step') || '' : '');
+    if (!text) return;
+    setIsSavingNextStep(true);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('neomind_next_step', text);
+      }
+      if (user) {
+        await supabase.from('shifts').insert([
+          {
+            user_id: user.id,
+            thought: `Intentional Action: ${text}`,
+            emotion: 'Intentional Response',
+            evidence: 'Action Commitment',
+            new_perspective: text
+          }
+        ]);
+      }
+      setNextStepSaved(true);
+      setTimeout(() => setNextStepSaved(false), 3500);
+    } catch (err) {
+      console.error('Error saving Next Step:', err);
+    } finally {
+      setIsSavingNextStep(false);
+    }
+  };
+
   useEffect(() => {
     const today = new Date();
     const index = (today.getFullYear() + today.getMonth() + today.getDate()) % scriptureQuotes.length;
     setDayIndex(index);
+
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('neomind_next_step');
+      if (saved) setNextStepInput(saved);
+    }
   }, []);
 
   // --- Pending Payment State ---
@@ -403,26 +441,25 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
+                value={nextStepInput}
+                onChange={(e) => setNextStepInput(e.target.value)}
                 placeholder="One small intentional action..."
                 className="flex-1 min-w-0 px-4 py-2.5 bg-white border border-fuchsia-200 rounded-xl text-xs text-stone-800 outline-none focus:border-[#993366] transition-all"
-                defaultValue={typeof window !== 'undefined' ? localStorage.getItem('neomind_next_step') || '' : ''}
-                onChange={(e) => {
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('neomind_next_step', e.target.value);
-                  }
-                }}
               />
               <button
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    alert('Your Next Step has been saved to your practice tracker!');
-                  }
-                }}
-                className="px-4 py-2.5 bg-[#993366] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#802652] transition-all shrink-0 cursor-pointer"
+                type="button"
+                onClick={handleSaveNextStep}
+                disabled={isSavingNextStep}
+                className="px-4 py-2.5 bg-[#993366] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#802652] transition-all shrink-0 cursor-pointer disabled:opacity-50"
               >
-                Save Step
+                {isSavingNextStep ? 'Saving...' : nextStepSaved ? 'Saved ✓' : 'Save Step'}
               </button>
             </div>
+            {nextStepSaved && (
+              <p className="text-[11px] font-bold text-[#993366] tracking-wide">
+                ✓ Saved to your practice tracker & journey history!
+              </p>
+            )}
           </div>
         </div>
 
